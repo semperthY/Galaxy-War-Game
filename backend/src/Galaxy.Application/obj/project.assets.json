@@ -1,0 +1,95 @@
+{
+  "version": 3,
+  "targets": {
+    "net9.0": {
+      "Galaxy.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/Galaxy.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Galaxy.Domain.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Galaxy.Domain/1.0.0": {
+      "type": "project",
+      "path": "../Galaxy.Domain/Galaxy.Domain.csproj",
+      "msbuildProject": "../Galaxy.Domain/Galaxy.Domain.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net9.0": [
+      "Galaxy.Domain >= 1.0.0"
+    ]
+  },
+  "packageFolders": {
+    "/data/data/com.termux/files/home/.nuget/packages/": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/Galaxy.Application.csproj",
+      "projectName": "Galaxy.Application",
+      "projectPath": "/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/Galaxy.Application.csproj",
+      "packagesPath": "/data/data/com.termux/files/home/.nuget/packages/",
+      "outputPath": "/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "/data/data/com.termux/files/home/.nuget/NuGet/NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net9.0"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "projectReferences": {
+            "/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Domain/Galaxy.Domain.csproj": {
+              "projectPath": "/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Domain/Galaxy.Domain.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      },
+      "SdkAnalysisLevel": "9.0.100"
+    },
+    "frameworks": {
+      "net9.0": {
+        "targetAlias": "net9.0",
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "/data/data/com.termux/files/usr/lib/dotnet/sdk/9.0.119/PortableRuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}

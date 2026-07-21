@@ -1,0 +1,15 @@
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/bin/Debug/net9.0/Galaxy.Application.deps.json
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/bin/Debug/net9.0/Galaxy.Application.dll
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/bin/Debug/net9.0/Galaxy.Application.pdb
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/bin/Debug/net9.0/Galaxy.Domain.dll
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/bin/Debug/net9.0/Galaxy.Domain.pdb
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.csproj.AssemblyReference.cache
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.GeneratedMSBuildEditorConfig.editorconfig
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.AssemblyInfoInputs.cache
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.AssemblyInfo.cs
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.csproj.CoreCompileInputs.cache
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.A.193FFF52.Up2Date
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.dll
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/Debug/net9.0/refint/Galaxy.Application.dll
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.pdb
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/Debug/net9.0/ref/Galaxy.Application.dll

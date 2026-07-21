@@ -1,0 +1,17 @@
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/bin/Debug/net9.0/Galaxy.Infrastructure.deps.json
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/bin/Debug/net9.0/Galaxy.Infrastructure.dll
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/bin/Debug/net9.0/Galaxy.Infrastructure.pdb
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/bin/Debug/net9.0/Galaxy.Application.dll
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/bin/Debug/net9.0/Galaxy.Domain.dll
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/bin/Debug/net9.0/Galaxy.Application.pdb
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/bin/Debug/net9.0/Galaxy.Domain.pdb
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.csproj.AssemblyReference.cache
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.AssemblyInfoInputs.cache
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.AssemblyInfo.cs
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.csproj.CoreCompileInputs.cache
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.I.108FEFEA.Up2Date
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.dll
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/refint/Galaxy.Infrastructure.dll
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.pdb
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/ref/Galaxy.Infrastructure.dll

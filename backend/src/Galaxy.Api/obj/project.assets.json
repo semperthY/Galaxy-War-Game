@@ -1,0 +1,209 @@
+{
+  "version": 3,
+  "targets": {
+    "net9.0": {
+      "Microsoft.AspNetCore.OpenApi/9.0.18": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.OpenApi": "1.6.17"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.OpenApi.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.OpenApi.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
+      "Microsoft.OpenApi/1.6.17": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/Microsoft.OpenApi.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.OpenApi.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "Galaxy.Application/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Galaxy.Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Galaxy.Application.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Galaxy.Application.dll": {}
+        }
+      },
+      "Galaxy.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/Galaxy.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Galaxy.Domain.dll": {}
+        }
+      },
+      "Galaxy.Infrastructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Galaxy.Application": "1.0.0",
+          "Galaxy.Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Galaxy.Infrastructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Galaxy.Infrastructure.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Microsoft.AspNetCore.OpenApi/9.0.18": {
+      "sha512": "zL+MUFNrqVtnoYa/21c8Nq67Xcj569NLhjah8nhKubxA8s1zkhjhA+CzXIBwpjHWYKZ4JNH029S2RJvBotsQqQ==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.openapi/9.0.18",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net9.0/Microsoft.AspNetCore.OpenApi.dll",
+        "lib/net9.0/Microsoft.AspNetCore.OpenApi.xml",
+        "microsoft.aspnetcore.openapi.9.0.18.nupkg.sha512",
+        "microsoft.aspnetcore.openapi.nuspec"
+      ]
+    },
+    "Microsoft.OpenApi/1.6.17": {
+      "sha512": "Le+kehlmrlQfuDFUt1zZ2dVwrhFQtKREdKBo+rexOwaCoYP0/qpgT9tLxCsZjsgR5Itk1UKPcbgO+FyaNid/bA==",
+      "type": "package",
+      "path": "microsoft.openapi/1.6.17",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/netstandard2.0/Microsoft.OpenApi.dll",
+        "lib/netstandard2.0/Microsoft.OpenApi.pdb",
+        "lib/netstandard2.0/Microsoft.OpenApi.xml",
+        "microsoft.openapi.1.6.17.nupkg.sha512",
+        "microsoft.openapi.nuspec"
+      ]
+    },
+    "Galaxy.Application/1.0.0": {
+      "type": "project",
+      "path": "../Galaxy.Application/Galaxy.Application.csproj",
+      "msbuildProject": "../Galaxy.Application/Galaxy.Application.csproj"
+    },
+    "Galaxy.Domain/1.0.0": {
+      "type": "project",
+      "path": "../Galaxy.Domain/Galaxy.Domain.csproj",
+      "msbuildProject": "../Galaxy.Domain/Galaxy.Domain.csproj"
+    },
+    "Galaxy.Infrastructure/1.0.0": {
+      "type": "project",
+      "path": "../Galaxy.Infrastructure/Galaxy.Infrastructure.csproj",
+      "msbuildProject": "../Galaxy.Infrastructure/Galaxy.Infrastructure.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net9.0": [
+      "Galaxy.Application >= 1.0.0",
+      "Galaxy.Infrastructure >= 1.0.0",
+      "Microsoft.AspNetCore.OpenApi >= 9.0.18"
+    ]
+  },
+  "packageFolders": {
+    "/data/data/com.termux/files/home/.nuget/packages/": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Api/Galaxy.Api.csproj",
+      "projectName": "Galaxy.Api",
+      "projectPath": "/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Api/Galaxy.Api.csproj",
+      "packagesPath": "/data/data/com.termux/files/home/.nuget/packages/",
+      "outputPath": "/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Api/obj/",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "/data/data/com.termux/files/home/.nuget/NuGet/NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net9.0"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "projectReferences": {
+            "/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/Galaxy.Application.csproj": {
+              "projectPath": "/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/Galaxy.Application.csproj"
+            },
+            "/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/Galaxy.Infrastructure.csproj": {
+              "projectPath": "/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/Galaxy.Infrastructure.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      },
+      "SdkAnalysisLevel": "9.0.100"
+    },
+    "frameworks": {
+      "net9.0": {
+        "targetAlias": "net9.0",
+        "dependencies": {
+          "Microsoft.AspNetCore.OpenApi": {
+            "target": "Package",
+            "version": "[9.0.18, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.AspNetCore.App": {
+            "privateAssets": "none"
+          },
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "/data/data/com.termux/files/usr/lib/dotnet/sdk/9.0.119/PortableRuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}
