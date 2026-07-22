@@ -15,3 +15,6 @@
 /data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/refint/Galaxy.Infrastructure.dll
 /data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.pdb
 /data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/ref/Galaxy.Infrastructure.dll
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/bin/Debug/net9.0/Galaxy.Infrastructure.runtimeconfig.json
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.sourcelink.json
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.genruntimeconfig.cache

@@ -13,3 +13,4 @@
 /data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/Debug/net9.0/refint/Galaxy.Application.dll
 /data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.pdb
 /data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/Debug/net9.0/ref/Galaxy.Application.dll
+/data/data/com.termux/files/home/projects/Galaxy-War-Game/backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.sourcelink.json
