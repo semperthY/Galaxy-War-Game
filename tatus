@@ -1,0 +1,190 @@
+warning: in the working copy of 'backend/src/Galaxy.Api/bin/Debug/net9.0/Galaxy.Api.deps.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Api/bin/Debug/net9.0/Galaxy.Api.runtimeconfig.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Api/obj/Debug/net9.0/Galaxy.Api.AssemblyInfo.cs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Api/obj/Debug/net9.0/Galaxy.Api.AssemblyInfoInputs.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Api/obj/Debug/net9.0/Galaxy.Api.GeneratedMSBuildEditorConfig.editorconfig', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Api/obj/Debug/net9.0/Galaxy.Api.GlobalUsings.g.cs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Api/obj/Debug/net9.0/Galaxy.Api.MvcApplicationPartsAssemblyInfo.cs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Api/obj/Debug/net9.0/Galaxy.Api.csproj.CoreCompileInputs.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Api/obj/Debug/net9.0/Galaxy.Api.csproj.FileListAbsolute.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Api/obj/Debug/net9.0/Galaxy.Api.genruntimeconfig.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Api/obj/Galaxy.Api.csproj.nuget.dgspec.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Api/obj/Galaxy.Api.csproj.nuget.g.props', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Api/obj/Galaxy.Api.csproj.nuget.g.targets', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Api/obj/project.assets.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Api/obj/project.nuget.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Application/bin/Debug/net9.0/Galaxy.Application.deps.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.AssemblyInfo.cs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.AssemblyInfoInputs.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.GeneratedMSBuildEditorConfig.editorconfig', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.GlobalUsings.g.cs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.csproj.CoreCompileInputs.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Application/obj/Debug/net9.0/Galaxy.Application.csproj.FileListAbsolute.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Application/obj/Galaxy.Application.csproj.nuget.dgspec.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Application/obj/Galaxy.Application.csproj.nuget.g.props', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Application/obj/Galaxy.Application.csproj.nuget.g.targets', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Application/obj/project.assets.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Application/obj/project.nuget.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Domain/bin/Debug/net9.0/Galaxy.Domain.deps.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Domain/obj/Debug/net9.0/Galaxy.Domain.AssemblyInfo.cs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Domain/obj/Debug/net9.0/Galaxy.Domain.AssemblyInfoInputs.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Domain/obj/Debug/net9.0/Galaxy.Domain.GeneratedMSBuildEditorConfig.editorconfig', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Domain/obj/Debug/net9.0/Galaxy.Domain.GlobalUsings.g.cs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Domain/obj/Debug/net9.0/Galaxy.Domain.csproj.CoreCompileInputs.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Domain/obj/Debug/net9.0/Galaxy.Domain.csproj.FileListAbsolute.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Domain/obj/Galaxy.Domain.csproj.nuget.dgspec.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Domain/obj/Galaxy.Domain.csproj.nuget.g.props', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Domain/obj/project.assets.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Domain/obj/project.nuget.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Infrastructure/bin/Debug/net9.0/Galaxy.Infrastructure.deps.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Infrastructure/bin/Debug/net9.0/Galaxy.Infrastructure.runtimeconfig.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.AssemblyInfo.cs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.AssemblyInfoInputs.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.GlobalUsings.g.cs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.csproj.CoreCompileInputs.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.csproj.FileListAbsolute.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Infrastructure/obj/Debug/net9.0/Galaxy.Infrastructure.genruntimeconfig.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Infrastructure/obj/Galaxy.Infrastructure.csproj.nuget.dgspec.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Infrastructure/obj/Galaxy.Infrastructure.csproj.nuget.g.props', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Infrastructure/obj/Galaxy.Infrastructure.csproj.nuget.g.targets', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Infrastructure/obj/project.assets.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/src/Galaxy.Infrastructure/obj/project.nuget.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/Galaxy.Tests/bin/Debug/net9.0/Galaxy.Tests.deps.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/Galaxy.Tests/bin/Debug/net9.0/Galaxy.Tests.runtimeconfig.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/Galaxy.Tests/obj/Debug/net9.0/Galaxy.Tests.AssemblyInfo.cs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/Galaxy.Tests/obj/Debug/net9.0/Galaxy.Tests.AssemblyInfoInputs.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/Galaxy.Tests/obj/Debug/net9.0/Galaxy.Tests.GeneratedMSBuildEditorConfig.editorconfig', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/Galaxy.Tests/obj/Debug/net9.0/Galaxy.Tests.GlobalUsings.g.cs', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/Galaxy.Tests/obj/Debug/net9.0/Galaxy.Tests.csproj.CoreCompileInputs.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/Galaxy.Tests/obj/Debug/net9.0/Galaxy.Tests.csproj.FileListAbsolute.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/Galaxy.Tests/obj/Debug/net9.0/Galaxy.Tests.genruntimeconfig.cache', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/Galaxy.Tests/obj/Galaxy.Tests.csproj.nuget.dgspec.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/Galaxy.Tests/obj/Galaxy.Tests.csproj.nuget.g.props', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/Galaxy.Tests/obj/Galaxy.Tests.csproj.nuget.g.targets', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/Galaxy.Tests/obj/project.assets.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'backend/tests/Galaxy.Tests/obj/project.nuget.cache', CRLF will be replaced by LF the next time Git touches it
+ .../bin/Debug/net9.0/Galaxy.Api.deps.json          |   6 [32m+[m[31m-[m
+ .../src/Galaxy.Api/bin/Debug/net9.0/Galaxy.Api.dll | Bin [31m10240[m -> [32m10240[m bytes
+ .../src/Galaxy.Api/bin/Debug/net9.0/Galaxy.Api.pdb | Bin [31m22368[m -> [32m23396[m bytes
+ .../Galaxy.Api.staticwebassets.endpoints.json      |   6 [32m+[m[31m-[m
+ .../bin/Debug/net9.0/Galaxy.Application.dll        | Bin [31m4096[m -> [32m4096[m bytes
+ .../bin/Debug/net9.0/Galaxy.Application.pdb        | Bin [31m11420[m -> [32m12068[m bytes
+ .../Galaxy.Api/bin/Debug/net9.0/Galaxy.Domain.dll  | Bin [31m6656[m -> [32m6656[m bytes
+ .../Galaxy.Api/bin/Debug/net9.0/Galaxy.Domain.pdb  | Bin [31m12012[m -> [32m12644[m bytes
+ .../bin/Debug/net9.0/Galaxy.Infrastructure.dll     | Bin [31m8704[m -> [32m8704[m bytes
+ .../bin/Debug/net9.0/Galaxy.Infrastructure.pdb     | Bin [31m13416[m -> [32m14052[m bytes
+ .../obj/Debug/net9.0/Galaxy.Api.AssemblyInfo.cs    |   4 [32m+[m[31m-[m
+ .../net9.0/Galaxy.Api.AssemblyInfoInputs.cache     |   2 [32m+[m[31m-[m
+ ...y.Api.GeneratedMSBuildEditorConfig.editorconfig |   4 [32m+[m[31m-[m
+ .../Galaxy.Api.MvcApplicationPartsAssemblyInfo.cs  |   2 [32m+[m[31m-[m
+ .../obj/Debug/net9.0/Galaxy.Api.assets.cache       | Bin [31m18159[m -> [32m16674[m bytes
+ .../Galaxy.Api.csproj.AssemblyReference.cache      | Bin [31m10723[m -> [32m10543[m bytes
+ .../Galaxy.Api.csproj.CoreCompileInputs.cache      |   2 [32m+[m[31m-[m
+ .../net9.0/Galaxy.Api.csproj.FileListAbsolute.txt  |  62 [32m++++++++++[m
+ .../src/Galaxy.Api/obj/Debug/net9.0/Galaxy.Api.dll | Bin [31m10240[m -> [32m10240[m bytes
+ .../Debug/net9.0/Galaxy.Api.genruntimeconfig.cache |   2 [32m+[m[31m-[m
+ .../src/Galaxy.Api/obj/Debug/net9.0/Galaxy.Api.pdb | Bin [31m22368[m -> [32m23396[m bytes
+ .../obj/Debug/net9.0/Galaxy.Api.sourcelink.json    |   2 [32m+[m[31m-[m
+ .../Galaxy.Api/obj/Debug/net9.0/ref/Galaxy.Api.dll | Bin [31m6656[m -> [32m7168[m bytes
+ .../obj/Debug/net9.0/refint/Galaxy.Api.dll         | Bin [31m6656[m -> [32m7168[m bytes
+ .../net9.0/staticwebassets.build.endpoints.json    |   6 [32m+[m[31m-[m
+ .../obj/Galaxy.Api.csproj.nuget.dgspec.json        |  86 [32m+++++++[m[31m-------[m
+ .../Galaxy.Api/obj/Galaxy.Api.csproj.nuget.g.props |  10 [32m+[m[31m-[m
+ .../obj/Galaxy.Api.csproj.nuget.g.targets          |   4 [32m+[m[31m-[m
+ backend/src/Galaxy.Api/obj/project.assets.json     |  24 [32m++[m[31m--[m
+ backend/src/Galaxy.Api/obj/project.nuget.cache     |  56 [32m++++[m[31m-----[m
+ .../bin/Debug/net9.0/Galaxy.Application.deps.json  |   2 [32m+[m[31m-[m
+ .../bin/Debug/net9.0/Galaxy.Application.dll        | Bin [31m4096[m -> [32m4096[m bytes
+ .../bin/Debug/net9.0/Galaxy.Application.pdb        | Bin [31m11420[m -> [32m12068[m bytes
+ .../bin/Debug/net9.0/Galaxy.Domain.dll             | Bin [31m6656[m -> [32m6656[m bytes
+ .../bin/Debug/net9.0/Galaxy.Domain.pdb             | Bin [31m12012[m -> [32m12644[m bytes
+ .../net9.0/Galaxy.Application.AssemblyInfo.cs      |   4 [32m+[m[31m-[m
+ .../Galaxy.Application.AssemblyInfoInputs.cache    |   2 [32m+[m[31m-[m
+ ...ation.GeneratedMSBuildEditorConfig.editorconfig |   2 [32m+[m[31m-[m
+ .../Debug/net9.0/Galaxy.Application.assets.cache   | Bin [31m8370[m -> [32m7674[m bytes
+ ...laxy.Application.csproj.AssemblyReference.cache | Bin [31m6135[m -> [32m6039[m bytes
+ ...laxy.Application.csproj.CoreCompileInputs.cache |   2 [32m+[m[31m-[m
+ .../Galaxy.Application.csproj.FileListAbsolute.txt |  16 [32m+++[m
+ .../obj/Debug/net9.0/Galaxy.Application.dll        | Bin [31m4096[m -> [32m4096[m bytes
+ .../obj/Debug/net9.0/Galaxy.Application.pdb        | Bin [31m11420[m -> [32m12068[m bytes
+ .../net9.0/Galaxy.Application.sourcelink.json      |   2 [32m+[m[31m-[m
+ .../obj/Debug/net9.0/ref/Galaxy.Application.dll    | Bin [31m4608[m -> [32m4608[m bytes
+ .../obj/Debug/net9.0/refint/Galaxy.Application.dll | Bin [31m4608[m -> [32m4608[m bytes
+ .../Galaxy.Application.csproj.nuget.dgspec.json    |  38 [32m+++[m[31m---[m
+ .../obj/Galaxy.Application.csproj.nuget.g.props    |   8 [32m+[m[31m-[m
+ .../obj/Galaxy.Application.csproj.nuget.g.targets  |   2 [32m+[m[31m-[m
+ .../src/Galaxy.Application/obj/project.assets.json |  20 [32m++[m[31m--[m
+ .../src/Galaxy.Application/obj/project.nuget.cache |  26 [32m++[m[31m---[m
+ .../bin/Debug/net9.0/Galaxy.Domain.dll             | Bin [31m6656[m -> [32m6656[m bytes
+ .../bin/Debug/net9.0/Galaxy.Domain.pdb             | Bin [31m12012[m -> [32m12644[m bytes
+ .../obj/Debug/net9.0/Galaxy.Domain.AssemblyInfo.cs |   4 [32m+[m[31m-[m
+ .../net9.0/Galaxy.Domain.AssemblyInfoInputs.cache  |   2 [32m+[m[31m-[m
+ ...omain.GeneratedMSBuildEditorConfig.editorconfig |   2 [32m+[m[31m-[m
+ .../obj/Debug/net9.0/Galaxy.Domain.assets.cache    | Bin [31m170[m -> [32m152[m bytes
+ .../Galaxy.Domain.csproj.CoreCompileInputs.cache   |   2 [32m+[m[31m-[m
+ .../Galaxy.Domain.csproj.FileListAbsolute.txt      |  12 [32m++[m
+ .../obj/Debug/net9.0/Galaxy.Domain.dll             | Bin [31m6656[m -> [32m6656[m bytes
+ .../obj/Debug/net9.0/Galaxy.Domain.pdb             | Bin [31m12012[m -> [32m12644[m bytes
+ .../obj/Debug/net9.0/Galaxy.Domain.sourcelink.json |   2 [32m+[m[31m-[m
+ .../obj/Debug/net9.0/ref/Galaxy.Domain.dll         | Bin [31m6656[m -> [32m6656[m bytes
+ .../obj/Debug/net9.0/refint/Galaxy.Domain.dll      | Bin [31m6656[m -> [32m6656[m bytes
+ .../obj/Galaxy.Domain.csproj.nuget.dgspec.json     |  18 [32m+[m[31m--[m
+ .../obj/Galaxy.Domain.csproj.nuget.g.props         |   8 [32m+[m[31m-[m
+ backend/src/Galaxy.Domain/obj/project.assets.json  |  16 [32m+[m[31m--[m
+ backend/src/Galaxy.Domain/obj/project.nuget.cache  |   4 [32m+[m[31m-[m
+ .../bin/Debug/net9.0/Galaxy.Application.dll        | Bin [31m4096[m -> [32m4096[m bytes
+ .../bin/Debug/net9.0/Galaxy.Application.pdb        | Bin [31m11420[m -> [32m12068[m bytes
+ .../bin/Debug/net9.0/Galaxy.Domain.dll             | Bin [31m6656[m -> [32m6656[m bytes
+ .../bin/Debug/net9.0/Galaxy.Domain.pdb             | Bin [31m12012[m -> [32m12644[m bytes
+ .../Debug/net9.0/Galaxy.Infrastructure.deps.json   |   4 [32m+[m[31m-[m
+ .../bin/Debug/net9.0/Galaxy.Infrastructure.dll     | Bin [31m8704[m -> [32m8704[m bytes
+ .../bin/Debug/net9.0/Galaxy.Infrastructure.pdb     | Bin [31m13416[m -> [32m14052[m bytes
+ .../net9.0/Galaxy.Infrastructure.AssemblyInfo.cs   |   4 [32m+[m[31m-[m
+ .../Galaxy.Infrastructure.AssemblyInfoInputs.cache |   2 [32m+[m[31m-[m
+ ...cture.GeneratedMSBuildEditorConfig.editorconfig |   2 [32m+[m[31m-[m
+ .../net9.0/Galaxy.Infrastructure.assets.cache      | Bin [31m49711[m -> [32m46519[m bytes
+ ...y.Infrastructure.csproj.AssemblyReference.cache | Bin [31m12778[m -> [32m12578[m bytes
+ ...y.Infrastructure.csproj.CoreCompileInputs.cache |   2 [32m+[m[31m-[m
+ ...laxy.Infrastructure.csproj.FileListAbsolute.txt |  20 [32m++++[m
+ .../obj/Debug/net9.0/Galaxy.Infrastructure.dll     | Bin [31m8704[m -> [32m8704[m bytes
+ .../Galaxy.Infrastructure.genruntimeconfig.cache   |   2 [32m+[m[31m-[m
+ .../obj/Debug/net9.0/Galaxy.Infrastructure.pdb     | Bin [31m13416[m -> [32m14052[m bytes
+ .../net9.0/Galaxy.Infrastructure.sourcelink.json   |   2 [32m+[m[31m-[m
+ .../obj/Debug/net9.0/ref/Galaxy.Infrastructure.dll | Bin [31m6144[m -> [32m6144[m bytes
+ .../Debug/net9.0/refint/Galaxy.Infrastructure.dll  | Bin [31m6144[m -> [32m6144[m bytes
+ .../Galaxy.Infrastructure.csproj.nuget.dgspec.json |  62 [32m+++++[m[31m-----[m
+ .../obj/Galaxy.Infrastructure.csproj.nuget.g.props |  16 [32m+[m[31m--[m
+ .../Galaxy.Infrastructure.csproj.nuget.g.targets   |  10 [32m+[m[31m-[m
+ .../Galaxy.Infrastructure/obj/project.assets.json  |  24 [32m++[m[31m--[m
+ .../Galaxy.Infrastructure/obj/project.nuget.cache  | 104 [32m++++++++[m[31m---------[m
+ .../.msCoverageSourceRootsMapping_Galaxy.Tests     | Bin [31m2674[m -> [32m1750[m bytes
+ .../net9.0/CoverletSourceRootsMapping_Galaxy.Tests | Bin [31m2674[m -> [32m1750[m bytes
+ .../bin/Debug/net9.0/Galaxy.Application.dll        | Bin [31m4096[m -> [32m4096[m bytes
+ .../bin/Debug/net9.0/Galaxy.Application.pdb        | Bin [31m11420[m -> [32m12068[m bytes
+ .../bin/Debug/net9.0/Galaxy.Domain.dll             | Bin [31m6656[m -> [32m6656[m bytes
+ .../bin/Debug/net9.0/Galaxy.Domain.pdb             | Bin [31m12012[m -> [32m12644[m bytes
+ .../bin/Debug/net9.0/Galaxy.Infrastructure.dll     | Bin [31m8704[m -> [32m8704[m bytes
+ .../bin/Debug/net9.0/Galaxy.Infrastructure.pdb     | Bin [31m13416[m -> [32m14052[m bytes
+ .../bin/Debug/net9.0/Galaxy.Tests.deps.json        |   8 [32m+[m[31m-[m
+ .../Galaxy.Tests/bin/Debug/net9.0/Galaxy.Tests.dll | Bin [31m4608[m -> [32m4608[m bytes
+ .../Galaxy.Tests/bin/Debug/net9.0/Galaxy.Tests.pdb | Bin [31m13684[m -> [32m14336[m bytes
+ .../obj/Debug/net9.0/Galaxy.Tests.AssemblyInfo.cs  |   4 [32m+[m[31m-[m
+ .../net9.0/Galaxy.Tests.AssemblyInfoInputs.cache   |   2 [32m+[m[31m-[m
+ ...Tests.GeneratedMSBuildEditorConfig.editorconfig |   2 [32m+[m[31m-[m
+ .../obj/Debug/net9.0/Galaxy.Tests.assets.cache     | Bin [31m51386[m -> [32m48004[m bytes
+ .../Galaxy.Tests.csproj.AssemblyReference.cache    | Bin [31m21888[m -> [32m21550[m bytes
+ .../Galaxy.Tests.csproj.CoreCompileInputs.cache    |   2 [32m+[m[31m-[m
+ .../Galaxy.Tests.csproj.FileListAbsolute.txt       | 130 [32m+++++++++++++++++++++[m
+ .../Galaxy.Tests/obj/Debug/net9.0/Galaxy.Tests.dll | Bin [31m4608[m -> [32m4608[m bytes
+ .../net9.0/Galaxy.Tests.genruntimeconfig.cache     |   2 [32m+[m[31m-[m
+ .../Galaxy.Tests/obj/Debug/net9.0/Galaxy.Tests.pdb | Bin [31m13684[m -> [32m14336[m bytes
+ .../obj/Debug/net9.0/Galaxy.Tests.sourcelink.json  |   2 [32m+[m[31m-[m
+ .../obj/Debug/net9.0/ref/Galaxy.Tests.dll          | Bin [31m5632[m -> [32m5632[m bytes
+ .../obj/Debug/net9.0/refint/Galaxy.Tests.dll       | Bin [31m5632[m -> [32m5632[m bytes
+ .../obj/Galaxy.Tests.csproj.nuget.dgspec.json      |  90 [32m+++++++[m[31m-------[m
+ .../obj/Galaxy.Tests.csproj.nuget.g.props          |  22 [32m++[m[31m--[m
+ .../obj/Galaxy.Tests.csproj.nuget.g.targets        |  12 [32m+[m[31m-[m
+ backend/tests/Galaxy.Tests/obj/project.assets.json |  28 [32m++[m[31m---[m
+ backend/tests/Galaxy.Tests/obj/project.nuget.cache |  82 [32m++++++[m[31m-------[m
+ 123 files changed, 672 insertions(+), 440 deletions(-)

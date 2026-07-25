@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="../build/Galaxy.Api.props" />
-</Project>
