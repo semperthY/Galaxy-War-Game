@@ -6,9 +6,17 @@ public class Planet
 
     public string Name { get; set; } = null!;
 
-    public Guid PlayerId { get; set; }
+    public int Position { get; set; }
 
-    public Player Player { get; set; } = null!;
+    public long Metal { get; set; }
+
+    public long Crystal { get; set; }
+
+    public long Deuterium { get; set; }
+
+    public Guid? PlayerId { get; set; }
+
+    public Player? Player { get; set; }
 
     public Guid StarSystemId { get; set; }
 

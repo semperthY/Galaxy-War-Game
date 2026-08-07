@@ -10,8 +10,20 @@ public class StarSystemConfiguration : IEntityTypeConfiguration<StarSystem>
     {
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.GalaxyNumber)
+            .IsRequired();
+
+        builder.Property(x => x.SystemNumber)
+            .IsRequired();
+
         builder.Property(x => x.Name)
             .HasMaxLength(64)
             .IsRequired();
+
+        builder.HasIndex(x => new
+        {
+            x.GalaxyNumber,
+            x.SystemNumber
+        }).IsUnique();
     }
 }
