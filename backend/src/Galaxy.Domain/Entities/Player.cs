@@ -6,10 +6,6 @@ public class Player
 
     public string Username { get; set; } = null!;
 
-    public string Email { get; set; } = null!;
-
-    public string PasswordHash { get; set; } = null!;
-
     public DateTime CreatedAt { get; set; }
 
     public ICollection<Planet> Planets { get; set; } = new List<Planet>();

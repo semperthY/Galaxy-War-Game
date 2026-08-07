@@ -1,3 +1,4 @@
+using Galaxy.Api.Endpoints;
 using Galaxy.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,9 +22,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.MapGameEndpoints();
+
 app.MapGet("/health", () => Results.Ok(new
 {
     status = "Healthy"
 }));
 
 app.Run();
+
