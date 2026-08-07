@@ -4,6 +4,9 @@ namespace Galaxy.Application.Games;
 
 public static class NewGameFactory
 {
+    private const int SystemsPerGalaxy = 10;
+    private const int PlanetsPerSystem = 8;
+
     public static NewGame Create(string username)
     {
         username = username.Trim();
@@ -22,36 +25,64 @@ public static class NewGameFactory
             CreatedAt = DateTime.UtcNow
         };
 
-        var starSystem = new StarSystem
+        var systems = new List<StarSystem>();
+        Planet? homeworld = null;
+
+        for (var systemNumber = 1;
+             systemNumber <= SystemsPerGalaxy;
+             systemNumber++)
         {
-            Id = Guid.NewGuid(),
-            GalaxyNumber = 1,
-            SystemNumber = 1,
-            Name = "System 1"
-        };
+            var starSystem = new StarSystem
+            {
+                Id = Guid.NewGuid(),
+                GalaxyNumber = 1,
+                SystemNumber = systemNumber,
+                Name = $"System {systemNumber}"
+            };
 
-        var planet = new Planet
-        {
-            Id = Guid.NewGuid(),
-            Name = "Homeworld",
-            Position = 1,
-            Metal = 500,
-            Crystal = 500,
-            Deuterium = 0,
-            PlayerId = player.Id,
-            Player = player,
-            StarSystemId = starSystem.Id,
-            StarSystem = starSystem
-        };
+            for (var position = 1;
+                 position <= PlanetsPerSystem;
+                 position++)
+            {
+                var isHomeworld = systemNumber == 1 && position == 1;
 
-        player.Planets.Add(planet);
-        starSystem.Planets.Add(planet);
+                var planet = new Planet
+                {
+                    Id = Guid.NewGuid(),
+                    Name = isHomeworld
+                        ? "Homeworld"
+                        : $"Planet {systemNumber}:{position}",
+                    Position = position,
+                    Metal = isHomeworld ? 500 : 0,
+                    Crystal = isHomeworld ? 500 : 0,
+                    Deuterium = 0,
+                    PlayerId = isHomeworld ? player.Id : null,
+                    Player = isHomeworld ? player : null,
+                    StarSystemId = starSystem.Id,
+                    StarSystem = starSystem
+                };
 
-        return new NewGame(player, starSystem, planet);
+                starSystem.Planets.Add(planet);
+
+                if (isHomeworld)
+                {
+                    player.Planets.Add(planet);
+                    homeworld = planet;
+                }
+            }
+
+            systems.Add(starSystem);
+        }
+
+        return new NewGame(
+            player,
+            systems,
+            homeworld ?? throw new InvalidOperationException(
+                "Homeworld was not generated."));
     }
 }
 
 public sealed record NewGame(
     Player Player,
-    StarSystem StarSystem,
-    Planet Planet);
+    IReadOnlyCollection<StarSystem> StarSystems,
+    Planet Homeworld);

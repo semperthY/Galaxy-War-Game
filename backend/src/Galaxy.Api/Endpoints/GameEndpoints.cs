@@ -42,13 +42,13 @@ public static class GameEndpoints
         }
 
         dbContext.Players.Add(game.Player);
-        dbContext.StarSystems.Add(game.StarSystem);
+        dbContext.StarSystems.AddRange(game.StarSystems);
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return Results.Created(
             "/api/game/current",
-            CreateResponse(game.Player, game.StarSystem, game.Planet));
+            CreateResponse(game.Player, game.Homeworld.StarSystem, game.Homeworld));
     }
 
     private static async Task<IResult> GetCurrentGameAsync(
@@ -57,6 +57,7 @@ public static class GameEndpoints
     {
         var game = await dbContext.Planets
             .AsNoTracking()
+            .Where(planet => planet.PlayerId != null)
             .Select(planet => new GameResponse(
                 planet.Player!.Id,
                 planet.Player.Username,
@@ -107,3 +108,4 @@ public sealed record GameResponse(
     long Metal,
     long Crystal,
     long Deuterium);
+
