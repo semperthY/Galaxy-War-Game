@@ -61,29 +61,20 @@ public static class GameEndpoints
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
-        var game = await dbContext.Planets
+        var planet = await dbContext.Planets
             .AsNoTracking()
-            .Where(planet => planet.PlayerId != null)
-            .Select(planet => new GameResponse(
-                planet.Player!.Id,
-                planet.Player.Username,
-                planet.Id,
-                planet.Name,
-                planet.StarSystem.GalaxyNumber,
-                planet.StarSystem.SystemNumber,
-                planet.Position,
-                planet.Metal,
-                planet.Crystal,
-                planet.Deuterium,
-                planet.MetalMineLevel,
-                planet.CrystalMineLevel,
-                planet.DeuteriumMineLevel,
-                planet.ResourcesUpdatedAt))
-            .SingleOrDefaultAsync(cancellationToken);
+            .Include(x => x.Player)
+            .Include(x => x.StarSystem)
+            .SingleOrDefaultAsync(
+                x => x.PlayerId != null,
+                cancellationToken);
 
-        return game is null
+        return planet is null
             ? Results.NotFound()
-            : Results.Ok(game);
+            : Results.Ok(CreateResponse(
+                planet.Player!,
+                planet.StarSystem,
+                planet));
     }
 
     private static async Task<IResult> CollectResourcesAsync(
@@ -119,6 +110,8 @@ public static class GameEndpoints
         StarSystem starSystem,
         Planet planet)
     {
+        var energy = EnergyCalculator.Calculate(planet);
+
         return new GameResponse(
             player.Id,
             player.Username,
@@ -127,12 +120,14 @@ public static class GameEndpoints
             starSystem.GalaxyNumber,
             starSystem.SystemNumber,
             planet.Position,
-            planet.Metal,
-            planet.Crystal,
+            planet.Materials,
             planet.Deuterium,
-            planet.MetalMineLevel,
-            planet.CrystalMineLevel,
-            planet.DeuteriumMineLevel,
+            planet.MaterialsExtractorLevel,
+            planet.DeuteriumExtractorLevel,
+            planet.PowerPlantLevel,
+            energy.Production,
+            energy.Consumption,
+            energy.Efficiency,
             planet.ResourcesUpdatedAt);
     }
 }
@@ -147,10 +142,12 @@ public sealed record GameResponse(
     int Galaxy,
     int System,
     int Position,
-    decimal Metal,
-    decimal Crystal,
+    decimal Materials,
     decimal Deuterium,
-    int MetalMineLevel,
-    int CrystalMineLevel,
-    int DeuteriumMineLevel,
+    int MaterialsExtractorLevel,
+    int DeuteriumExtractorLevel,
+    int PowerPlantLevel,
+    decimal EnergyProduction,
+    decimal EnergyConsumption,
+    decimal ProductionEfficiency,
     DateTime ResourcesUpdatedAt);

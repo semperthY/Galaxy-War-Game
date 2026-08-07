@@ -46,7 +46,9 @@ public static class NewGameFactory
                  position <= PlanetsPerSystem;
                  position++)
             {
-                var isHomeworld = systemNumber == 1 && position == 1;
+                var isHomeworld =
+                    systemNumber == 1 &&
+                    position == 1;
 
                 var planet = new Planet
                 {
@@ -55,12 +57,11 @@ public static class NewGameFactory
                         ? "Homeworld"
                         : $"Planet {systemNumber}:{position}",
                     Position = position,
-                    Metal = isHomeworld ? 500m : 0m,
-                    Crystal = isHomeworld ? 500m : 0m,
-                    Deuterium = 0m,
-                    MetalMineLevel = isHomeworld ? 1 : 0,
-                    CrystalMineLevel = isHomeworld ? 1 : 0,
-                    DeuteriumMineLevel = 0,
+                    Materials = isHomeworld ? 500m : 0m,
+                    Deuterium = isHomeworld ? 100m : 0m,
+                    MaterialsExtractorLevel = isHomeworld ? 1 : 0,
+                    DeuteriumExtractorLevel = 0,
+                    PowerPlantLevel = isHomeworld ? 1 : 0,
                     ResourcesUpdatedAt = createdAt,
                     PlayerId = isHomeworld ? player.Id : null,
                     Player = isHomeworld ? player : null,
@@ -92,4 +93,3 @@ public sealed record NewGame(
     Player Player,
     IReadOnlyCollection<StarSystem> StarSystems,
     Planet Homeworld);
-

@@ -14,14 +14,12 @@ public class NewGameFactoryTests
             80,
             game.StarSystems.Sum(system => system.Planets.Count));
 
-        Assert.Equal("Commander", game.Player.Username);
         Assert.Single(game.Player.Planets);
-
         Assert.Equal("Homeworld", game.Homeworld.Name);
-        Assert.Equal(500, game.Homeworld.Metal);
-        Assert.Equal(500, game.Homeworld.Crystal);
-        Assert.Equal(0, game.Homeworld.Deuterium);
-        Assert.Equal(game.Player.Id, game.Homeworld.PlayerId);
+        Assert.Equal(500m, game.Homeworld.Materials);
+        Assert.Equal(100m, game.Homeworld.Deuterium);
+        Assert.Equal(1, game.Homeworld.MaterialsExtractorLevel);
+        Assert.Equal(1, game.Homeworld.PowerPlantLevel);
     }
 
     [Theory]

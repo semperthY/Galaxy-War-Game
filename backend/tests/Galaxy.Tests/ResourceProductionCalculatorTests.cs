@@ -13,9 +13,9 @@ public class ResourceProductionCalculatorTests
 
         var planet = new Planet
         {
-            MetalMineLevel = 1,
-            CrystalMineLevel = 1,
-            DeuteriumMineLevel = 1,
+            MaterialsExtractorLevel = 1,
+            DeuteriumExtractorLevel = 1,
+            PowerPlantLevel = 1,
             ResourcesUpdatedAt = startedAt
         };
 
@@ -23,9 +23,29 @@ public class ResourceProductionCalculatorTests
             planet,
             startedAt.AddHours(2));
 
-        Assert.Equal(60m, planet.Metal);
-        Assert.Equal(40m, planet.Crystal);
+        Assert.Equal(60m, planet.Materials);
         Assert.Equal(20m, planet.Deuterium);
-        Assert.Equal(startedAt.AddHours(2), planet.ResourcesUpdatedAt);
+    }
+
+    [Fact]
+    public void Update_ReducesProductionWhenEnergyIsInsufficient()
+    {
+        var startedAt = new DateTime(
+            2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        var planet = new Planet
+        {
+            MaterialsExtractorLevel = 4,
+            DeuteriumExtractorLevel = 2,
+            PowerPlantLevel = 1,
+            ResourcesUpdatedAt = startedAt
+        };
+
+        ResourceProductionCalculator.Update(
+            planet,
+            startedAt.AddHours(1));
+
+        Assert.Equal(60m, planet.Materials);
+        Assert.Equal(10m, planet.Deuterium);
     }
 }

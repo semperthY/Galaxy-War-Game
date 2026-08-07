@@ -17,11 +17,7 @@ public class PlanetConfiguration : IEntityTypeConfiguration<Planet>
         builder.Property(x => x.Position)
             .IsRequired();
 
-        builder.Property(x => x.Metal)
-            .HasPrecision(20, 4)
-            .IsRequired();
-
-        builder.Property(x => x.Crystal)
+        builder.Property(x => x.Materials)
             .HasPrecision(20, 4)
             .IsRequired();
 
@@ -29,13 +25,13 @@ public class PlanetConfiguration : IEntityTypeConfiguration<Planet>
             .HasPrecision(20, 4)
             .IsRequired();
 
-        builder.Property(x => x.MetalMineLevel)
+        builder.Property(x => x.MaterialsExtractorLevel)
             .IsRequired();
 
-        builder.Property(x => x.CrystalMineLevel)
+        builder.Property(x => x.DeuteriumExtractorLevel)
             .IsRequired();
 
-        builder.Property(x => x.DeuteriumMineLevel)
+        builder.Property(x => x.PowerPlantLevel)
             .IsRequired();
 
         builder.Property(x => x.ResourcesUpdatedAt)

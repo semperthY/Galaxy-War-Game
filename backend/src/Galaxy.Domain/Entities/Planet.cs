@@ -8,17 +8,15 @@ public class Planet
 
     public int Position { get; set; }
 
-    public decimal Metal { get; set; }
-
-    public decimal Crystal { get; set; }
+    public decimal Materials { get; set; }
 
     public decimal Deuterium { get; set; }
 
-    public int MetalMineLevel { get; set; }
+    public int MaterialsExtractorLevel { get; set; }
 
-    public int CrystalMineLevel { get; set; }
+    public int DeuteriumExtractorLevel { get; set; }
 
-    public int DeuteriumMineLevel { get; set; }
+    public int PowerPlantLevel { get; set; }
 
     public DateTime ResourcesUpdatedAt { get; set; }
 
