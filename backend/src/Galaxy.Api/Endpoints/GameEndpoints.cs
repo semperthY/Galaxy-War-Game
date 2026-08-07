@@ -1,4 +1,6 @@
+using Galaxy.Application.Economy;
 using Galaxy.Application.Games;
+using Galaxy.Domain.Entities;
 using Galaxy.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +14,7 @@ public static class GameEndpoints
 
         group.MapPost("/new", CreateGameAsync);
         group.MapGet("/current", GetCurrentGameAsync);
+        group.MapPost("/resources/collect", CollectResourcesAsync);
     }
 
     private static async Task<IResult> CreateGameAsync(
@@ -48,7 +51,10 @@ public static class GameEndpoints
 
         return Results.Created(
             "/api/game/current",
-            CreateResponse(game.Player, game.Homeworld.StarSystem, game.Homeworld));
+            CreateResponse(
+                game.Player,
+                game.Homeworld.StarSystem,
+                game.Homeworld));
     }
 
     private static async Task<IResult> GetCurrentGameAsync(
@@ -68,7 +74,11 @@ public static class GameEndpoints
                 planet.Position,
                 planet.Metal,
                 planet.Crystal,
-                planet.Deuterium))
+                planet.Deuterium,
+                planet.MetalMineLevel,
+                planet.CrystalMineLevel,
+                planet.DeuteriumMineLevel,
+                planet.ResourcesUpdatedAt))
             .SingleOrDefaultAsync(cancellationToken);
 
         return game is null
@@ -76,10 +86,38 @@ public static class GameEndpoints
             : Results.Ok(game);
     }
 
+    private static async Task<IResult> CollectResourcesAsync(
+        ApplicationDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        var planet = await dbContext.Planets
+            .Include(x => x.Player)
+            .Include(x => x.StarSystem)
+            .SingleOrDefaultAsync(
+                x => x.PlayerId != null,
+                cancellationToken);
+
+        if (planet is null)
+        {
+            return Results.NotFound();
+        }
+
+        ResourceProductionCalculator.Update(
+            planet,
+            DateTime.UtcNow);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return Results.Ok(CreateResponse(
+            planet.Player!,
+            planet.StarSystem,
+            planet));
+    }
+
     private static GameResponse CreateResponse(
-        Galaxy.Domain.Entities.Player player,
-        Galaxy.Domain.Entities.StarSystem starSystem,
-        Galaxy.Domain.Entities.Planet planet)
+        Player player,
+        StarSystem starSystem,
+        Planet planet)
     {
         return new GameResponse(
             player.Id,
@@ -91,7 +129,11 @@ public static class GameEndpoints
             planet.Position,
             planet.Metal,
             planet.Crystal,
-            planet.Deuterium);
+            planet.Deuterium,
+            planet.MetalMineLevel,
+            planet.CrystalMineLevel,
+            planet.DeuteriumMineLevel,
+            planet.ResourcesUpdatedAt);
     }
 }
 
@@ -105,7 +147,10 @@ public sealed record GameResponse(
     int Galaxy,
     int System,
     int Position,
-    long Metal,
-    long Crystal,
-    long Deuterium);
-
+    decimal Metal,
+    decimal Crystal,
+    decimal Deuterium,
+    int MetalMineLevel,
+    int CrystalMineLevel,
+    int DeuteriumMineLevel,
+    DateTime ResourcesUpdatedAt);

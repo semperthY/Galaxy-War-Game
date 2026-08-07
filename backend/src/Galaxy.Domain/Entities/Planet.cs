@@ -8,11 +8,19 @@ public class Planet
 
     public int Position { get; set; }
 
-    public long Metal { get; set; }
+    public decimal Metal { get; set; }
 
-    public long Crystal { get; set; }
+    public decimal Crystal { get; set; }
 
-    public long Deuterium { get; set; }
+    public decimal Deuterium { get; set; }
+
+    public int MetalMineLevel { get; set; }
+
+    public int CrystalMineLevel { get; set; }
+
+    public int DeuteriumMineLevel { get; set; }
+
+    public DateTime ResourcesUpdatedAt { get; set; }
 
     public Guid? PlayerId { get; set; }
 

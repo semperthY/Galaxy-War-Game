@@ -18,11 +18,13 @@ public static class NewGameFactory
                 nameof(username));
         }
 
+        var createdAt = DateTime.UtcNow;
+
         var player = new Player
         {
             Id = Guid.NewGuid(),
             Username = username,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = createdAt
         };
 
         var systems = new List<StarSystem>();
@@ -53,9 +55,13 @@ public static class NewGameFactory
                         ? "Homeworld"
                         : $"Planet {systemNumber}:{position}",
                     Position = position,
-                    Metal = isHomeworld ? 500 : 0,
-                    Crystal = isHomeworld ? 500 : 0,
-                    Deuterium = 0,
+                    Metal = isHomeworld ? 500m : 0m,
+                    Crystal = isHomeworld ? 500m : 0m,
+                    Deuterium = 0m,
+                    MetalMineLevel = isHomeworld ? 1 : 0,
+                    CrystalMineLevel = isHomeworld ? 1 : 0,
+                    DeuteriumMineLevel = 0,
+                    ResourcesUpdatedAt = createdAt,
                     PlayerId = isHomeworld ? player.Id : null,
                     Player = isHomeworld ? player : null,
                     StarSystemId = starSystem.Id,
@@ -86,3 +92,4 @@ public sealed record NewGame(
     Player Player,
     IReadOnlyCollection<StarSystem> StarSystems,
     Planet Homeworld);
+
