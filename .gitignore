@@ -1,8 +1,15 @@
 **/bin/
 **/obj/
+TestResults/
+
 .vs/
 .vscode/
+.idea/
 *.user
 *.suo
-.env
+
 .aider*
+.env
+
+Thumbs.db
+.DS_Store
