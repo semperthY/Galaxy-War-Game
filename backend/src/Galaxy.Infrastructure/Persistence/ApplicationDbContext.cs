@@ -5,7 +5,8 @@ namespace Galaxy.Infrastructure.Persistence;
 
 public class ApplicationDbContext : DbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    public ApplicationDbContext(
+        DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
@@ -31,13 +32,17 @@ public class ApplicationDbContext : DbContext
     public DbSet<ShipBlueprintModule> ShipBlueprintModules =>
         Set<ShipBlueprintModule>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    public DbSet<ShipAssemblyOrder> ShipAssemblyOrders =>
+        Set<ShipAssemblyOrder>();
+
+    public DbSet<Ship> Ships => Set<Ship>();
+
+    protected override void OnModelCreating(
+        ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(
+            typeof(ApplicationDbContext).Assembly);
     }
 }
-
-
-

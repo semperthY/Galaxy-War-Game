@@ -24,6 +24,8 @@ public class Planet
 
     public int ProductionComplexLevel { get; set; }
 
+    public int AssemblyComplexLevel { get; set; }
+
     public int BuildingSiteCapacity { get; set; }
 
     public DateTime ResourcesUpdatedAt { get; set; }
@@ -47,7 +49,10 @@ public class Planet
 
     public ICollection<ComponentProductionOrder> ProductionOrders { get; set; } =
         new List<ComponentProductionOrder>();
+
+    public ICollection<ShipAssemblyOrder> AssemblyOrders { get; set; } =
+        new List<ShipAssemblyOrder>();
+
+    public ICollection<Ship> Ships { get; set; } =
+        new List<Ship>();
 }
-
-
-

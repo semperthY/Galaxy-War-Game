@@ -86,39 +86,18 @@ public static class BuildingService
 
     public static int GetUsedSites(Planet planet)
     {
-        var usedSites = 0;
-
-        if (planet.MaterialsExtractorLevel > 0)
+        var levels = new[]
         {
-            usedSites++;
-        }
+            planet.MaterialsExtractorLevel,
+            planet.DeuteriumExtractorLevel,
+            planet.PowerPlantLevel,
+            planet.WarehouseLevel,
+            planet.ResearchLaboratoryLevel,
+            planet.ProductionComplexLevel,
+            planet.AssemblyComplexLevel
+        };
 
-        if (planet.DeuteriumExtractorLevel > 0)
-        {
-            usedSites++;
-        }
-
-        if (planet.PowerPlantLevel > 0)
-        {
-            usedSites++;
-        }
-
-        if (planet.WarehouseLevel > 0)
-        {
-            usedSites++;
-        }
-
-        if (planet.ResearchLaboratoryLevel > 0)
-        {
-            usedSites++;
-        }
-
-        if (planet.ProductionComplexLevel > 0)
-        {
-            usedSites++;
-        }
-
-        return usedSites;
+        return levels.Count(level => level > 0);
     }
 
     public static BuildingCost CalculateCost(
@@ -165,6 +144,11 @@ public static class BuildingService
                     decimal.Ceiling(200m * multiplier),
                     decimal.Ceiling(50m * multiplier)),
 
+            BuildingType.AssemblyComplex =>
+                new BuildingCost(
+                    decimal.Ceiling(300m * multiplier),
+                    decimal.Ceiling(100m * multiplier)),
+
             _ => throw new ArgumentOutOfRangeException(
                 nameof(building))
         };
@@ -193,6 +177,9 @@ public static class BuildingService
 
             BuildingType.ProductionComplex =>
                 planet.ProductionComplexLevel,
+
+            BuildingType.AssemblyComplex =>
+                planet.AssemblyComplexLevel,
 
             _ => throw new ArgumentOutOfRangeException(
                 nameof(building))
@@ -230,6 +217,10 @@ public static class BuildingService
                 planet.ProductionComplexLevel = level;
                 break;
 
+            case BuildingType.AssemblyComplex:
+                planet.AssemblyComplexLevel = level;
+                break;
+
             default:
                 throw new ArgumentOutOfRangeException(
                     nameof(building));
@@ -260,5 +251,3 @@ public sealed record ConstructionResult(
     int TargetLevel,
     BuildingCost Cost,
     DateTime CompletesAt);
-
-

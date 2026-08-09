@@ -7,5 +7,6 @@ public enum BuildingType
     PowerPlant = 3,
     Warehouse = 4,
     ResearchLaboratory = 5,
-    ProductionComplex = 6
+    ProductionComplex = 6,
+    AssemblyComplex = 7
 }

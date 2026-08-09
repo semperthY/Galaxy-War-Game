@@ -24,6 +24,7 @@ public class Player
 
     public ICollection<ShipBlueprint> Blueprints { get; set; } =
         new List<ShipBlueprint>();
+
+    public ICollection<Ship> Ships { get; set; } =
+        new List<Ship>();
 }
-
-
