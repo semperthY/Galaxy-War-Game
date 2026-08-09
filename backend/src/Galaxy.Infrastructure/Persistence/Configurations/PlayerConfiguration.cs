@@ -17,7 +17,14 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
         builder.Property(x => x.CreatedAt)
             .IsRequired();
 
+        builder.Property(x => x.QueuedTechnology);
+
+        builder.Property(x => x.QueuedTechnologyLevel);
+
+        builder.Property(x => x.ResearchCompletesAt);
+
         builder.HasIndex(x => x.Username)
             .IsUnique();
     }
 }
+

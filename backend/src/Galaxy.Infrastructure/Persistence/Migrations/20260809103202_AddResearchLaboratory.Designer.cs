@@ -3,6 +3,7 @@ using System;
 using Galaxy.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Galaxy.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260809103202_AddResearchLaboratory")]
+    partial class AddResearchLaboratory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -99,15 +102,6 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("QueuedTechnology")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("QueuedTechnologyLevel")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ResearchCompletesAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -119,29 +113,6 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Players");
-                });
-
-            modelBuilder.Entity("Galaxy.Domain.Entities.PlayerTechnology", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("PlayerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Technology")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlayerId", "Technology")
-                        .IsUnique();
-
-                    b.ToTable("PlayerTechnologies");
                 });
 
             modelBuilder.Entity("Galaxy.Domain.Entities.StarSystem", b =>
@@ -187,22 +158,9 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                     b.Navigation("StarSystem");
                 });
 
-            modelBuilder.Entity("Galaxy.Domain.Entities.PlayerTechnology", b =>
-                {
-                    b.HasOne("Galaxy.Domain.Entities.Player", "Player")
-                        .WithMany("Technologies")
-                        .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Player");
-                });
-
             modelBuilder.Entity("Galaxy.Domain.Entities.Player", b =>
                 {
                     b.Navigation("Planets");
-
-                    b.Navigation("Technologies");
                 });
 
             modelBuilder.Entity("Galaxy.Domain.Entities.StarSystem", b =>

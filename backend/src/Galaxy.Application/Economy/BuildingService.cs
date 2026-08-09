@@ -108,6 +108,11 @@ public static class BuildingService
             usedSites++;
         }
 
+        if (planet.ResearchLaboratoryLevel > 0)
+        {
+            usedSites++;
+        }
+
         return usedSites;
     }
 
@@ -145,6 +150,11 @@ public static class BuildingService
                     decimal.Ceiling(100m * multiplier),
                     0m),
 
+            BuildingType.ResearchLaboratory =>
+                new BuildingCost(
+                    decimal.Ceiling(150m * multiplier),
+                    decimal.Ceiling(25m * multiplier)),
+
             _ => throw new ArgumentOutOfRangeException(
                 nameof(building))
         };
@@ -167,6 +177,9 @@ public static class BuildingService
 
             BuildingType.Warehouse =>
                 planet.WarehouseLevel,
+
+            BuildingType.ResearchLaboratory =>
+                planet.ResearchLaboratoryLevel,
 
             _ => throw new ArgumentOutOfRangeException(
                 nameof(building))
@@ -194,6 +207,10 @@ public static class BuildingService
 
             case BuildingType.Warehouse:
                 planet.WarehouseLevel = level;
+                break;
+
+            case BuildingType.ResearchLaboratory:
+                planet.ResearchLaboratoryLevel = level;
                 break;
 
             default:
@@ -226,3 +243,4 @@ public sealed record ConstructionResult(
     int TargetLevel,
     BuildingCost Cost,
     DateTime CompletesAt);
+

@@ -63,6 +63,7 @@ public static class NewGameFactory
                     DeuteriumExtractorLevel = 0,
                     PowerPlantLevel = isHomeworld ? 1 : 0,
                     WarehouseLevel = isHomeworld ? 1 : 0,
+                    ResearchLaboratoryLevel = 0,
                     BuildingSiteCapacity = isHomeworld
                         ? 20
                         : 15 + ((systemNumber * 7 + position * 3) % 11),
@@ -97,4 +98,5 @@ public sealed record NewGame(
     Player Player,
     IReadOnlyCollection<StarSystem> StarSystems,
     Planet Homeworld);
+
 

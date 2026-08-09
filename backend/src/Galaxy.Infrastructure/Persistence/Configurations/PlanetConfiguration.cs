@@ -37,6 +37,9 @@ public class PlanetConfiguration : IEntityTypeConfiguration<Planet>
         builder.Property(x => x.WarehouseLevel)
             .IsRequired();
 
+        builder.Property(x => x.ResearchLaboratoryLevel)
+            .IsRequired();
+
         builder.Property(x => x.BuildingSiteCapacity)
             .IsRequired();
 
@@ -66,3 +69,4 @@ public class PlanetConfiguration : IEntityTypeConfiguration<Planet>
         }).IsUnique();
     }
 }
+

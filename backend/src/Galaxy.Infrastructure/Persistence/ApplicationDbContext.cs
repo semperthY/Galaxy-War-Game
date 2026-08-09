@@ -16,6 +16,9 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<StarSystem> StarSystems => Set<StarSystem>();
 
+    public DbSet<PlayerTechnology> PlayerTechnologies =>
+        Set<PlayerTechnology>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -23,3 +26,4 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }
+

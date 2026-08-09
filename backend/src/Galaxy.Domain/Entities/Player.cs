@@ -8,5 +8,15 @@ public class Player
 
     public DateTime CreatedAt { get; set; }
 
-    public ICollection<Planet> Planets { get; set; } = new List<Planet>();
+    public TechnologyType? QueuedTechnology { get; set; }
+
+    public int? QueuedTechnologyLevel { get; set; }
+
+    public DateTime? ResearchCompletesAt { get; set; }
+
+    public ICollection<Planet> Planets { get; set; } =
+        new List<Planet>();
+
+    public ICollection<PlayerTechnology> Technologies { get; set; } =
+        new List<PlayerTechnology>();
 }

@@ -32,6 +32,7 @@ app.UseHttpsRedirection();
 app.MapGameEndpoints();
 app.MapGalaxyEndpoints();
 app.MapBuildingEndpoints();
+app.MapResearchEndpoints();
 
 app.MapGet("/health", () => Results.Ok(new
 {
@@ -39,6 +40,7 @@ app.MapGet("/health", () => Results.Ok(new
 }));
 
 app.Run();
+
 
 
 
