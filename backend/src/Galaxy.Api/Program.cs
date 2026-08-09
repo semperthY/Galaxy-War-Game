@@ -38,6 +38,7 @@ app.MapGalaxyEndpoints();
 app.MapBuildingEndpoints();
 app.MapResearchEndpoints();
 app.MapProductionEndpoints();
+app.MapComponentCatalogEndpoints();
 app.MapShipBlueprintEndpoints();
 app.MapShipAssemblyEndpoints();
 app.MapColonizationEndpoints();
@@ -48,13 +49,3 @@ app.MapGet("/health", () => Results.Ok(new
 }));
 
 app.Run();
-
-
-
-
-
-
-
-
-
-

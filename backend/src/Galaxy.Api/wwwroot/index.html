@@ -106,11 +106,10 @@
                     <svg><use href="#icon-factory"></use></svg>
                     <span>Производство</span>
                 </a>
-                <div class="nav-item locked">
+                <a href="#ship-designer" class="nav-item">
                     <svg><use href="#icon-ship"></use></svg>
-                    <span>Флот</span>
-                    <small>скоро</small>
-                </div>
+                    <span>Конструктор</span>
+                </a>
                 <div class="nav-item locked">
                     <svg><use href="#icon-galaxy"></use></svg>
                     <span>Галактика</span>
@@ -135,6 +134,38 @@
                 </div>
 
                 <div class="topbar-actions">
+                    <div class="header-resources">
+                        <div class="header-resource materials">
+                            <svg>
+                                <use href="#icon-materials"></use>
+                            </svg>
+                            <div>
+                                <span>Материалы</span>
+                                <strong id="headerMaterials">0</strong>
+                            </div>
+                        </div>
+
+                        <div class="header-resource deuterium">
+                            <svg>
+                                <use href="#icon-deuterium"></use>
+                            </svg>
+                            <div>
+                                <span>Дейтерий</span>
+                                <strong id="headerDeuterium">0</strong>
+                            </div>
+                        </div>
+
+                        <div class="header-resource energy">
+                            <svg>
+                                <use href="#icon-energy"></use>
+                            </svg>
+                            <div>
+                                <span>Энергия</span>
+                                <strong id="headerEnergy">0 / 0</strong>
+                            </div>
+                        </div>
+                    </div>
+
                     <button
                         id="refreshButton"
                         class="icon-button"
@@ -386,6 +417,229 @@
                         </aside>
                     </div>
                 </section>
+
+                <section
+                    id="ship-designer"
+                    class="content-panel designer-panel">
+
+                    <div class="designer-hero">
+                        <div>
+                            <span class="section-label">
+                                ИНЖЕНЕРНЫЙ ЦЕНТР
+                            </span>
+                            <h2>Конструктор кораблей</h2>
+                            <p>
+                                Создавайте собственные проекты,
+                                смешивая технологии разных цивилизаций.
+                            </p>
+                        </div>
+
+                        <div class="designer-status">
+                            <span class="status-light"></span>
+                            Проектная система активна
+                        </div>
+                    </div>
+
+                    <div class="designer-layout">
+                        <div class="designer-form">
+                            <label class="designer-field name-field">
+                                <span>Название проекта</span>
+                                <input
+                                    id="blueprintName"
+                                    maxlength="64"
+                                    value="Pioneer"
+                                    placeholder="Название серии">
+                            </label>
+
+                            <div class="designer-field">
+                                <span>Корпус</span>
+                                <select id="designerHull"></select>
+                            </div>
+
+                            <div class="module-row">
+                                <label class="designer-field">
+                                    <span>Двигатель</span>
+                                    <select
+                                        id="designerEngine"
+                                        data-designer-module>
+                                    </select>
+                                </label>
+
+                                <label class="quantity-field">
+                                    <span>Количество</span>
+                                    <input
+                                        id="designerEngineQuantity"
+                                        type="number"
+                                        min="1"
+                                        max="5"
+                                        value="1"
+                                        data-designer-quantity>
+                                </label>
+                            </div>
+
+                            <div class="module-row">
+                                <label class="designer-field">
+                                    <span>Реактор</span>
+                                    <select
+                                        id="designerReactor"
+                                        data-designer-module>
+                                    </select>
+                                </label>
+
+                                <label class="quantity-field">
+                                    <span>Количество</span>
+                                    <input
+                                        id="designerReactorQuantity"
+                                        type="number"
+                                        min="1"
+                                        max="5"
+                                        value="1"
+                                        data-designer-quantity>
+                                </label>
+                            </div>
+
+                            <div class="module-row">
+                                <label class="designer-field">
+                                    <span>Система управления</span>
+                                    <select
+                                        id="designerControl"
+                                        data-designer-module>
+                                    </select>
+                                </label>
+
+                                <label class="quantity-field">
+                                    <span>Количество</span>
+                                    <input
+                                        id="designerControlQuantity"
+                                        type="number"
+                                        min="1"
+                                        max="5"
+                                        value="1"
+                                        data-designer-quantity>
+                                </label>
+                            </div>
+
+                            <div class="module-row">
+                                <label class="designer-field">
+                                    <span>Специальная система</span>
+                                    <select
+                                        id="designerSpecial"
+                                        data-designer-module>
+                                    </select>
+                                </label>
+
+                                <label class="quantity-field">
+                                    <span>Количество</span>
+                                    <input
+                                        id="designerSpecialQuantity"
+                                        type="number"
+                                        min="1"
+                                        max="3"
+                                        value="1"
+                                        data-designer-quantity>
+                                </label>
+                            </div>
+
+                            <button
+                                id="saveBlueprintButton"
+                                class="save-blueprint-button">
+                                <svg>
+                                    <use href="#icon-command"></use>
+                                </svg>
+                                Сохранить проект
+                            </button>
+                        </div>
+
+                        <div class="design-analysis">
+                            <div class="analysis-heading">
+                                <div>
+                                    <span class="section-label">
+                                        АНАЛИЗ КОНСТРУКЦИИ
+                                    </span>
+                                    <h3 id="designStatus">
+                                        Ожидание конфигурации
+                                    </h3>
+                                </div>
+
+                                <div
+                                    id="designValidity"
+                                    class="design-validity">
+                                    НЕ ПРОВЕРЕН
+                                </div>
+                            </div>
+
+                            <div class="capacity-block">
+                                <div class="capacity-heading">
+                                    <span>Использованный объём</span>
+                                    <strong id="designVolume">
+                                        0 / 0
+                                    </strong>
+                                </div>
+
+                                <div class="capacity-track">
+                                    <div
+                                        id="designVolumeBar"
+                                        class="capacity-fill">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="capacity-block energy-capacity">
+                                <div class="capacity-heading">
+                                    <span>Энергетический баланс</span>
+                                    <strong id="designEnergy">
+                                        0 / 0
+                                    </strong>
+                                </div>
+
+                                <div class="capacity-track">
+                                    <div
+                                        id="designEnergyBar"
+                                        class="capacity-fill">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="design-stat-grid">
+                                <div>
+                                    <span>Прочность</span>
+                                    <strong id="designIntegrity">0</strong>
+                                </div>
+                                <div>
+                                    <span>Локальная скорость</span>
+                                    <strong id="designLocalSpeed">0</strong>
+                                </div>
+                                <div>
+                                    <span>Межсистемная скорость</span>
+                                    <strong id="designInterSpeed">0</strong>
+                                </div>
+                                <div>
+                                    <span>Управление</span>
+                                    <strong id="designCommand">0</strong>
+                                </div>
+                            </div>
+
+                            <div id="designWarnings" class="design-warnings">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="blueprint-library">
+                        <div class="subsection-heading">
+                            <div>
+                                <span class="section-label">
+                                    БИБЛИОТЕКА
+                                </span>
+                                <h3>Сохранённые проекты</h3>
+                            </div>
+                        </div>
+
+                        <div
+                            id="blueprintGrid"
+                            class="blueprint-grid">
+                        </div>
+                    </div>
+                </section>
             </main>
         </div>
     </div>
@@ -393,5 +647,3 @@
     <script src="/app.js"></script>
 </body>
 </html>
-
-

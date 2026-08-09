@@ -1,3 +1,150 @@
+const buildingLevelSummaries = {
+    MaterialsExtractor:
+        "Каждый уровень добавляет 30 материалов в час и потребляет ещё 5 единиц энергии.",
+    DeuteriumExtractor:
+        "Каждый уровень добавляет 10 дейтерия в час и потребляет ещё 10 единиц энергии.",
+    PowerPlant:
+        "Каждый уровень добавляет 20 единиц производства энергии.",
+    Warehouse:
+        "Каждый уровень удваивает вместимость: базово 1000 материалов и 500 дейтерия.",
+    ResearchLaboratory:
+        "Уровень лаборатории ограничивает максимальный уровень исследования и сокращает его продолжительность.",
+    ProductionComplex:
+        "Каждый уровень открывает дополнительную независимую линию. После первого уровня скорость растёт на 10% за уровень.",
+    AssemblyComplex:
+        "Каждый уровень после первого ускоряет сборку кораблей на 10%."
+};
+
+const technologyLevelSummaries = {
+    MaterialsScience:
+        "Повышает уровень материаловедения и выполняет требования новых корпусов, компонентов и технологий.",
+    EnergySystems:
+        "Повышает уровень энергетических систем и открывает более сложные реакторы и энергетические технологии.",
+    DeuteriumTechnology:
+        "Повышает уровень дейтериевых технологий для топлива, двигателей и высокотехнологичных компонентов.",
+    ControlSystems:
+        "Повышает уровень систем управления и открывает более сложные командные комплексы.",
+    Propulsion:
+        "Повышает уровень двигательных технологий и выполняет требования новых двигателей.",
+    ComponentEngineering:
+        "Повышает уровень инженерии компонентов и открывает специализированные корабельные системы."
+};
+
+const staticTooltipDefinitions = [
+    {
+        selector: ".brand-mark",
+        title: "Галактическое командование",
+        text: "Главный центр управления вашей космической империей."
+    },
+    {
+        selector: '.nav-item[href="#overview"]',
+        title: "Планета",
+        text: "Сводка ресурсов, энергетики и состояния активной колонии."
+    },
+    {
+        selector: '.nav-item[href="#buildings"]',
+        title: "Строительство",
+        text: "Развитие инфраструктуры и специализация планеты."
+    },
+    {
+        selector: '.nav-item[href="#research"]',
+        title: "Исследования",
+        text: "Имперские технологии, открывающие здания и компоненты."
+    },
+    {
+        selector: '.nav-item[href="#production"]',
+        title: "Производство",
+        text: "Создание корабельных комплектующих на независимых линиях."
+    },
+    {
+        selector: '.nav-item[href="#ship-designer"]',
+        title: "Конструктор кораблей",
+        text: "Создание собственных проектов с контролем объёма и энергии."
+    },
+    {
+        selector: ".nav-item.locked",
+        title: "Галактика",
+        text: "Карта систем, планет и будущих космических операций."
+    },
+    {
+        selector: ".header-resource.materials",
+        title: "Материалы",
+        text: "Основной ресурс строительства, инфраструктуры, корпусов и компонентов."
+    },
+    {
+        selector: ".header-resource.deuterium",
+        title: "Дейтерий",
+        text: "Топливо и энергетический ресурс для двигателей и высоких технологий."
+    },
+    {
+        selector: ".header-resource.energy",
+        title: "Энергия",
+        text: "Производство и потребление энергии активной планеты."
+    },
+    {
+        selector: ".materials-card",
+        title: "Материалы",
+        text: "Добываются Экстрактором материалов. Производство зависит от доступной энергии."
+    },
+    {
+        selector: ".deuterium-card",
+        title: "Дейтерий",
+        text: "Добывается Дейтериевым экстрактором. Используется как топливо и технологический ресурс."
+    },
+    {
+        selector: ".energy-card",
+        title: "Энергетический баланс",
+        text: "При нехватке энергии добывающие здания работают с пониженной эффективностью."
+    },
+    {
+        selector: ".sites-card",
+        title: "Строительные площадки",
+        text: "Количество разных зданий на планете ограничено. Это формирует специализацию колонии."
+    },
+    {
+        selector: "#refreshButton",
+        title: "Обновить данные",
+        text: "Немедленно запросить актуальное состояние игры у сервера."
+    },
+    {
+        selector: ".lab-status",
+        title: "Исследовательская лаборатория",
+        text: "Определяет максимальный уровень исследований и влияет на их скорость."
+    }
+];
+const raceNames = {
+    Humans: "Люди",
+    Synthetics: "Синтетики",
+    Insectoids: "Инсектоиды",
+    EnergyForms: "Энергоформы"
+};
+
+const componentNames = {
+    Hull: "Лёгкий корпус",
+    Engine: "Базовый двигатель",
+    Reactor: "Базовый реактор",
+    ControlSystem: "Система управления",
+    ColonyModule: "Колонизационный модуль"
+};
+
+function localizeRace(race) {
+    return raceNames[race] ?? race;
+}
+
+function localizeComponentName(component) {
+    if (!component) {
+        return "Неизвестный компонент";
+    }
+
+    const race =
+        localizeRace(component.race);
+
+    const type =
+        componentNames[component.type] ??
+        component.type;
+
+    return `${race} · ${type}`;
+}
 const componentTypeInfo = {
     Hull: {
         name: "Корпус",
@@ -103,7 +250,11 @@ const state = {
     queueCompletionRequested: false,
     researchQueue: null,
     researchCompletionRequested: false,
-    productionStatus: null
+    productionStatus: null,
+    components: [],
+    blueprints: [],
+    designIsValid: false,
+    productionDrafts: {}
 };
 
 const elements = {
@@ -137,6 +288,371 @@ const elements = {
         document.querySelector("#productionLines")
 };
 
+const designerElements = {
+    blueprintName:
+        document.querySelector("#blueprintName"),
+    designerHull:
+        document.querySelector("#designerHull"),
+    designerEngine:
+        document.querySelector("#designerEngine"),
+    designerEngineQuantity:
+        document.querySelector("#designerEngineQuantity"),
+    designerReactor:
+        document.querySelector("#designerReactor"),
+    designerReactorQuantity:
+        document.querySelector("#designerReactorQuantity"),
+    designerControl:
+        document.querySelector("#designerControl"),
+    designerControlQuantity:
+        document.querySelector("#designerControlQuantity"),
+    designerSpecial:
+        document.querySelector("#designerSpecial"),
+    designerSpecialQuantity:
+        document.querySelector("#designerSpecialQuantity"),
+    saveBlueprintButton:
+        document.querySelector("#saveBlueprintButton"),
+    designStatus:
+        document.querySelector("#designStatus"),
+    designValidity:
+        document.querySelector("#designValidity"),
+    designVolume:
+        document.querySelector("#designVolume"),
+    designVolumeBar:
+        document.querySelector("#designVolumeBar"),
+    designEnergy:
+        document.querySelector("#designEnergy"),
+    designEnergyBar:
+        document.querySelector("#designEnergyBar"),
+    designIntegrity:
+        document.querySelector("#designIntegrity"),
+    designLocalSpeed:
+        document.querySelector("#designLocalSpeed"),
+    designInterSpeed:
+        document.querySelector("#designInterSpeed"),
+    designCommand:
+        document.querySelector("#designCommand"),
+    designWarnings:
+        document.querySelector("#designWarnings"),
+    blueprintGrid:
+        document.querySelector("#blueprintGrid")
+};
+
+Object.assign(elements, designerElements);
+const headerResourceElements = {
+    headerMaterials:
+        document.querySelector("#headerMaterials"),
+    headerDeuterium:
+        document.querySelector("#headerDeuterium"),
+    headerEnergy:
+        document.querySelector("#headerEnergy")
+};
+
+Object.assign(elements, headerResourceElements);
+function applyStaticTooltips() {
+    for (const definition of staticTooltipDefinitions) {
+        document
+            .querySelectorAll(definition.selector)
+            .forEach(element => {
+                element.dataset.tooltipTitle =
+                    definition.title;
+
+                element.dataset.tooltip =
+                    definition.text;
+
+                if (!element.hasAttribute("tabindex")) {
+                    element.setAttribute("tabindex", "0");
+                }
+            });
+    }
+}
+
+function createTooltipSystem() {
+    const tooltip = document.createElement("div");
+
+    tooltip.className = "game-tooltip";
+    tooltip.setAttribute("role", "tooltip");
+
+    tooltip.innerHTML = `
+        <strong class="tooltip-title"></strong>
+        <span class="tooltip-content"></span>
+        <small class="tooltip-hint"></small>
+    `;
+
+    document.body.appendChild(tooltip);
+
+    const titleElement =
+        tooltip.querySelector(".tooltip-title");
+
+    const contentElement =
+        tooltip.querySelector(".tooltip-content");
+
+    const hintElement =
+        tooltip.querySelector(".tooltip-hint");
+
+    let activeTarget = null;
+    let longPressTimer = null;
+    let longPressTriggered = false;
+    let pointerStartX = 0;
+    let pointerStartY = 0;
+
+    function positionTooltip(target) {
+        const targetRect =
+            target.getBoundingClientRect();
+
+        const tooltipRect =
+            tooltip.getBoundingClientRect();
+
+        const spacing = 10;
+        const viewportPadding = 8;
+
+        let left =
+            targetRect.left +
+            targetRect.width / 2 -
+            tooltipRect.width / 2;
+
+        left = Math.max(
+            viewportPadding,
+            Math.min(
+                left,
+                window.innerWidth -
+                tooltipRect.width -
+                viewportPadding
+            )
+        );
+
+        let top =
+            targetRect.top -
+            tooltipRect.height -
+            spacing;
+
+        if (top < viewportPadding) {
+            top =
+                targetRect.bottom +
+                spacing;
+        }
+
+        if (
+            top + tooltipRect.height >
+            window.innerHeight - viewportPadding
+        ) {
+            top =
+                window.innerHeight -
+                tooltipRect.height -
+                viewportPadding;
+        }
+
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+    }
+
+    function showTooltip(
+        target,
+        mobile = false)
+    {
+        if (!target?.dataset.tooltip) {
+            return;
+        }
+
+        activeTarget = target;
+
+        titleElement.textContent =
+            target.dataset.tooltipTitle ?? "Подсказка";
+
+        contentElement.textContent =
+            target.dataset.tooltip;
+
+        hintElement.textContent = mobile
+            ? "Коснитесь вне подсказки, чтобы закрыть"
+            : "";
+
+        tooltip.classList.add("visible");
+
+        requestAnimationFrame(() => {
+            positionTooltip(target);
+        });
+    }
+
+    function hideTooltip() {
+        activeTarget = null;
+        tooltip.classList.remove("visible");
+    }
+
+    function clearLongPress() {
+        if (longPressTimer !== null) {
+            window.clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
+    }
+
+    document.addEventListener(
+        "pointerover",
+        event => {
+            if (event.pointerType !== "mouse") {
+                return;
+            }
+
+            const target =
+                event.target.closest("[data-tooltip]");
+
+            if (target) {
+                showTooltip(target);
+            }
+        }
+    );
+
+    document.addEventListener(
+        "pointerout",
+        event => {
+            if (event.pointerType !== "mouse") {
+                return;
+            }
+
+            const target =
+                event.target.closest("[data-tooltip]");
+
+            if (
+                target &&
+                !target.contains(event.relatedTarget)
+            ) {
+                hideTooltip();
+            }
+        }
+    );
+
+    document.addEventListener(
+        "focusin",
+        event => {
+            const target =
+                event.target.closest("[data-tooltip]");
+
+            if (target) {
+                showTooltip(target);
+            }
+        }
+    );
+
+    document.addEventListener(
+        "focusout",
+        event => {
+            if (
+                activeTarget &&
+                !activeTarget.contains(event.relatedTarget)
+            ) {
+                hideTooltip();
+            }
+        }
+    );
+
+    document.addEventListener(
+        "pointerdown",
+        event => {
+            if (
+                event.pointerType !== "touch" &&
+                event.pointerType !== "pen"
+            ) {
+                return;
+            }
+
+            const target =
+                event.target.closest("[data-tooltip]");
+
+            if (!target) {
+                hideTooltip();
+                return;
+            }
+
+            clearLongPress();
+
+            longPressTriggered = false;
+            pointerStartX = event.clientX;
+            pointerStartY = event.clientY;
+
+            longPressTimer = window.setTimeout(
+                () => {
+                    longPressTriggered = true;
+                    showTooltip(target, true);
+
+                    if (navigator.vibrate) {
+                        navigator.vibrate(18);
+                    }
+                },
+                550
+            );
+        }
+    );
+
+    document.addEventListener(
+        "pointermove",
+        event => {
+            const distance =
+                Math.abs(event.clientX - pointerStartX) +
+                Math.abs(event.clientY - pointerStartY);
+
+            if (distance > 12) {
+                clearLongPress();
+            }
+        }
+    );
+
+    document.addEventListener(
+        "pointerup",
+        event => {
+            clearLongPress();
+
+            if (longPressTriggered) {
+                event.preventDefault();
+            }
+        }
+    );
+
+    document.addEventListener(
+        "pointercancel",
+        clearLongPress
+    );
+
+    document.addEventListener(
+        "contextmenu",
+        event => {
+            if (
+                event.target.closest("[data-tooltip]") &&
+                longPressTriggered
+            ) {
+                event.preventDefault();
+            }
+        }
+    );
+
+    window.addEventListener(
+        "resize",
+        () => {
+            if (activeTarget) {
+                positionTooltip(activeTarget);
+            }
+        }
+    );
+
+    window.addEventListener(
+        "scroll",
+        hideTooltip,
+        true
+    );
+}
+
+function getComponentTooltip(component) {
+    const stats = getComponentStats(component);
+
+    const production =
+        component.canManufacture
+            ? "Может производиться вашей расой."
+            : "Чужая технология: доступна для установки после покупки или обмена.";
+
+    const characteristics =
+        stats.length > 0
+            ? ` Характеристики: ${stats.join(", ")}.`
+            : "";
+
+    return `${production}${characteristics}`;
+}
 async function api(path, options = {}) {
     const response = await fetch(path, {
         headers: {
@@ -196,6 +712,15 @@ function renderPlanet(planet) {
     const efficiency =
         formatNumber(planet.productionEfficiency * 100);
 
+    elements.headerMaterials.textContent =
+        formatNumber(planet.materials);
+
+    elements.headerDeuterium.textContent =
+        formatNumber(planet.deuterium);
+
+    elements.headerEnergy.textContent =
+        `${formatNumber(planet.energyProduction)} / ` +
+        `${formatNumber(planet.energyConsumption)}`;
     elements.planetName.textContent = planet.name;
     elements.coordinates.textContent =
         `Сектор ${planet.galaxy} · Система ${planet.system} · Орбита ${planet.position}`;
@@ -267,7 +792,47 @@ function updateQueueCountdown() {
         !state.queueCompletionRequested
     ) {
         state.queueCompletionRequested = true;
-        loadDashboard();
+        function bindDesignerEvents() {
+    if (
+        !elements.saveBlueprintButton ||
+        elements.saveBlueprintButton.dataset.bound === "true"
+    ) {
+        return;
+    }
+
+    elements.saveBlueprintButton.dataset.bound = "true";
+
+    elements.saveBlueprintButton.addEventListener(
+        "click",
+        saveBlueprint
+    );
+
+    document
+        .querySelectorAll(
+            "[data-designer-module], [data-designer-quantity]"
+        )
+        .forEach(element => {
+            element.addEventListener(
+                "input",
+                updateDesignPreview
+            );
+
+            element.addEventListener(
+                "change",
+                updateDesignPreview
+            );
+        });
+
+    elements.designerHull?.addEventListener(
+        "change",
+        updateDesignPreview
+    );
+}
+
+applyStaticTooltips();
+createTooltipSystem();
+bindDesignerEvents();
+loadDashboard();
     }
 }
 
@@ -350,7 +915,11 @@ function renderBuildings(status) {
 
             return `
                 <article class="building-card">
-                    <div class="building-icon">
+                    <div
+                        class="building-icon"
+                        tabindex="0"
+                        data-tooltip-title="${info.name}"
+                        data-tooltip="${info.description}">
                         <svg>
                             <use href="#${info.icon}"></use>
                         </svg>
@@ -359,7 +928,15 @@ function renderBuildings(status) {
                     <div class="building-content">
                         <div class="building-title">
                             <h3>${info.name}</h3>
-                            <span class="level-badge">
+                            <span
+                                class="level-badge"
+                                tabindex="0"
+                                data-tooltip-title="Развитие: ${info.name}"
+                                data-tooltip="${
+                                    buildingLevelSummaries[
+                                        building.building
+                                    ] ?? "Повышает эффективность здания."
+                                }">
                                 УР. ${building.currentLevel}
                             </span>
                         </div>
@@ -437,7 +1014,47 @@ function updateResearchCountdown() {
         !state.researchCompletionRequested
     ) {
         state.researchCompletionRequested = true;
-        loadDashboard();
+        function bindDesignerEvents() {
+    if (
+        !elements.saveBlueprintButton ||
+        elements.saveBlueprintButton.dataset.bound === "true"
+    ) {
+        return;
+    }
+
+    elements.saveBlueprintButton.dataset.bound = "true";
+
+    elements.saveBlueprintButton.addEventListener(
+        "click",
+        saveBlueprint
+    );
+
+    document
+        .querySelectorAll(
+            "[data-designer-module], [data-designer-quantity]"
+        )
+        .forEach(element => {
+            element.addEventListener(
+                "input",
+                updateDesignPreview
+            );
+
+            element.addEventListener(
+                "change",
+                updateDesignPreview
+            );
+        });
+
+    elements.designerHull?.addEventListener(
+        "change",
+        updateDesignPreview
+    );
+}
+
+applyStaticTooltips();
+createTooltipSystem();
+bindDesignerEvents();
+loadDashboard();
     }
 }
 
@@ -528,13 +1145,25 @@ function renderResearch(status) {
                     ${laboratoryTooLow ? "locked" : ""}
                 ">
                     <div class="technology-heading">
-                        <div class="technology-icon">
+                        <div
+                            class="technology-icon"
+                            tabindex="0"
+                            data-tooltip-title="${info.name}"
+                            data-tooltip="${info.description}">
                             <svg>
                                 <use href="#${info.icon}"></use>
                             </svg>
                         </div>
 
-                        <span class="technology-level">
+                        <span
+                            class="technology-level"
+                            tabindex="0"
+                            data-tooltip-title="Уровни: ${info.name}"
+                            data-tooltip="${
+                                technologyLevelSummaries[
+                                    technology.technology
+                                ] ?? "Открывает новые технологии."
+                            }">
                             УР. ${technology.currentLevel}
                         </span>
                     </div>
@@ -591,7 +1220,47 @@ async function startResearch(technology) {
         );
 
         showMessage("Исследовательская программа запущена.");
-        await loadDashboard();
+        await function bindDesignerEvents() {
+    if (
+        !elements.saveBlueprintButton ||
+        elements.saveBlueprintButton.dataset.bound === "true"
+    ) {
+        return;
+    }
+
+    elements.saveBlueprintButton.dataset.bound = "true";
+
+    elements.saveBlueprintButton.addEventListener(
+        "click",
+        saveBlueprint
+    );
+
+    document
+        .querySelectorAll(
+            "[data-designer-module], [data-designer-quantity]"
+        )
+        .forEach(element => {
+            element.addEventListener(
+                "input",
+                updateDesignPreview
+            );
+
+            element.addEventListener(
+                "change",
+                updateDesignPreview
+            );
+        });
+
+    elements.designerHull?.addEventListener(
+        "change",
+        updateDesignPreview
+    );
+}
+
+applyStaticTooltips();
+createTooltipSystem();
+bindDesignerEvents();
+loadDashboard();
     } catch (error) {
         showMessage(error.message, true);
     }
@@ -650,7 +1319,7 @@ function getComponentName(code) {
     const component = state.productionStatus?.catalog
         .find(item => item.code === code);
 
-    return component?.name ?? code;
+    return component ? localizeComponentName(component) : code;
 }
 
 function updateProductionCountdowns() {
@@ -687,7 +1356,66 @@ function updateProductionCountdowns() {
         });
 }
 
+function captureProductionDrafts() {
+    document
+        .querySelectorAll("[data-quantity-for]")
+        .forEach(input => {
+            const code = input.dataset.quantityFor;
+
+            state.productionDrafts[code] = {
+                ...state.productionDrafts[code],
+                quantity: Math.max(
+                    1,
+                    Number(input.value) || 1
+                )
+            };
+        });
+
+    document
+        .querySelectorAll("[data-line-for]")
+        .forEach(select => {
+            const code = select.dataset.lineFor;
+
+            state.productionDrafts[code] = {
+                ...state.productionDrafts[code],
+                lineNumber: Math.max(
+                    1,
+                    Number(select.value) || 1
+                )
+            };
+        });
+}
+
+function updateProductionDraft(event) {
+    const element = event.currentTarget;
+
+    const code =
+        element.dataset.quantityFor ??
+        element.dataset.lineFor;
+
+    const draft = state.productionDrafts[code] ?? {
+        quantity: 1,
+        lineNumber: 1
+    };
+
+    if (element.dataset.quantityFor) {
+        draft.quantity = Math.max(
+            1,
+            Number(element.value) || 1
+        );
+    }
+
+    if (element.dataset.lineFor) {
+        draft.lineNumber = Math.max(
+            1,
+            Number(element.value) || 1
+        );
+    }
+
+    state.productionDrafts[code] = draft;
+}
 function renderProduction(status) {
+    captureProductionDrafts();
     state.productionStatus = status;
 
     elements.productionComplexLevel.textContent =
@@ -696,14 +1424,23 @@ function renderProduction(status) {
     elements.productionLineCount.textContent =
         status.lineCount;
 
-    const lineOptions = Array.from(
-        { length: status.lineCount },
-        (_, index) => `
-            <option value="${index + 1}">
-                Линия ${index + 1}
-            </option>
-        `
-    ).join("");
+    const createLineOptions = selectedLine =>
+        Array.from(
+            { length: status.lineCount },
+            (_, index) => {
+                const lineNumber = index + 1;
+
+                return `
+                    <option
+                        value="${lineNumber}"
+                        ${lineNumber === selectedLine
+                            ? "selected"
+                            : ""}>
+                        Линия ${lineNumber}
+                    </option>
+                `;
+            }
+        ).join("");
 
     elements.componentCatalog.innerHTML = status.catalog
         .map(component => {
@@ -711,6 +1448,12 @@ function renderProduction(status) {
                 componentTypeInfo[component.type] ?? {
                     name: component.type,
                     icon: "icon-factory"
+                };
+
+            const draft =
+                state.productionDrafts[component.code] ?? {
+                    quantity: 1,
+                    lineNumber: 1
                 };
 
             const stats = getComponentStats(component)
@@ -734,7 +1477,15 @@ function renderProduction(status) {
                     component-card
                     ${component.unlocked ? "" : "locked"}
                 ">
-                    <div class="component-icon">
+                    <div
+                        class="component-icon"
+                        tabindex="0"
+                        data-tooltip-title="${
+                            localizeComponentName(component)
+                        }"
+                        data-tooltip="${
+                            getComponentTooltip(component)
+                        }">
                         <svg>
                             <use href="#${typeInfo.icon}"></use>
                         </svg>
@@ -742,14 +1493,14 @@ function renderProduction(status) {
 
                     <div class="component-body">
                         <div class="component-heading">
-                            <h4>${component.name}</h4>
+                            <h4>${localizeComponentName(component)}</h4>
                             <span class="component-type">
                                 ${typeInfo.name}
                             </span>
                         </div>
 
                         <div class="component-race">
-                            Инженерная школа: ${component.race}
+                            Инженерная школа: ${localizeRace(component.race)}
                         </div>
 
                         <div class="component-stats">
@@ -776,14 +1527,14 @@ function renderProduction(status) {
                                 type="number"
                                 min="1"
                                 max="100"
-                                value="1"
+                                value="${draft.quantity}"
                                 aria-label="Количество"
                                 data-quantity-for="${component.code}">
 
                             <select
                                 aria-label="Производственная линия"
                                 data-line-for="${component.code}">
-                                ${lineOptions}
+                                ${createLineOptions(draft.lineNumber)}
                             </select>
 
                             <button
@@ -807,6 +1558,21 @@ function renderProduction(status) {
             });
         });
 
+    elements.componentCatalog
+        .querySelectorAll(
+            "[data-quantity-for], [data-line-for]"
+        )
+        .forEach(element => {
+            element.addEventListener(
+                "input",
+                updateProductionDraft
+            );
+
+            element.addEventListener(
+                "change",
+                updateProductionDraft
+            );
+        });
     const inventoryItems = status.catalog
         .map(component => {
             const inventory = status.inventory.find(
@@ -814,7 +1580,7 @@ function renderProduction(status) {
             );
 
             return {
-                name: component.name,
+                name: localizeComponentName(component),
                 quantity: inventory?.quantity ?? 0
             };
         })
@@ -929,7 +1695,490 @@ async function startProduction(componentCode) {
 
         showMessage("Производственный заказ добавлен.");
         renderProduction(status);
-        await loadDashboard();
+        await function bindDesignerEvents() {
+    if (
+        !elements.saveBlueprintButton ||
+        elements.saveBlueprintButton.dataset.bound === "true"
+    ) {
+        return;
+    }
+
+    elements.saveBlueprintButton.dataset.bound = "true";
+
+    elements.saveBlueprintButton.addEventListener(
+        "click",
+        saveBlueprint
+    );
+
+    document
+        .querySelectorAll(
+            "[data-designer-module], [data-designer-quantity]"
+        )
+        .forEach(element => {
+            element.addEventListener(
+                "input",
+                updateDesignPreview
+            );
+
+            element.addEventListener(
+                "change",
+                updateDesignPreview
+            );
+        });
+
+    elements.designerHull?.addEventListener(
+        "change",
+        updateDesignPreview
+    );
+}
+
+applyStaticTooltips();
+createTooltipSystem();
+bindDesignerEvents();
+loadDashboard();
+    } catch (error) {
+        showMessage(error.message, true);
+    }
+}
+function componentOption(component) {
+    const manufactureMark =
+        component.canManufacture ? "своя технология" : "импорт";
+
+    return `
+        <option value="${component.code}">
+            ${localizeComponentName(component)} · ${manufactureMark}
+        </option>
+    `;
+}
+
+function sortDesignerComponents(components) {
+    return [...components].sort((left, right) => {
+        if (left.canManufacture !== right.canManufacture) {
+            return left.canManufacture ? -1 : 1;
+        }
+
+        return left.name.localeCompare(right.name);
+    });
+}
+
+function renderDesignerOptions() {
+    const byType = type =>
+        sortDesignerComponents(
+            state.components.filter(
+                component => component.type === type
+            )
+        );
+
+    elements.designerHull.innerHTML =
+        byType("Hull").map(componentOption).join("");
+
+    elements.designerEngine.innerHTML =
+        byType("Engine").map(componentOption).join("");
+
+    elements.designerReactor.innerHTML =
+        byType("Reactor").map(componentOption).join("");
+
+    elements.designerControl.innerHTML =
+        byType("ControlSystem").map(componentOption).join("");
+
+    elements.designerSpecial.innerHTML =
+        `<option value="">Не устанавливать</option>` +
+        byType("ColonyModule").map(componentOption).join("");
+}
+
+function selectedComponent(selectElement) {
+    if (!selectElement) {
+        return undefined;
+    }
+
+    return state.components.find(
+        component => component.code === selectElement.value
+    );
+}
+
+function readDesignerModules() {
+    const selections = [
+        {
+            select: elements.designerEngine,
+            quantity: elements.designerEngineQuantity
+        },
+        {
+            select: elements.designerReactor,
+            quantity: elements.designerReactorQuantity
+        },
+        {
+            select: elements.designerControl,
+            quantity: elements.designerControlQuantity
+        },
+        {
+            select: elements.designerSpecial,
+            quantity: elements.designerSpecialQuantity
+        }
+    ];
+
+    return selections
+        .filter(selection => selection.select.value)
+        .map(selection => ({
+            component:
+                selectedComponent(selection.select),
+            componentCode:
+                selection.select.value,
+            quantity: Math.max(
+                1,
+                Number(selection.quantity.value) || 1
+            )
+        }));
+}
+
+function updateDesignPreview() {
+    const hull = selectedComponent(
+        elements.designerHull
+    );
+
+    const modules = readDesignerModules();
+    const warnings = [];
+
+    if (!hull) {
+        state.designIsValid = false;
+        return;
+    }
+
+    const hasEngine = modules.some(
+        module => module.component?.type === "Engine"
+    );
+
+    const hasReactor = modules.some(
+        module => module.component?.type === "Reactor"
+    );
+
+    const hasControl = modules.some(
+        module => module.component?.type === "ControlSystem"
+    );
+
+    if (!hasEngine) {
+        warnings.push("Не установлен обязательный двигатель.");
+    }
+
+    if (!hasReactor) {
+        warnings.push("Не установлен обязательный реактор.");
+    }
+
+    if (!hasControl) {
+        warnings.push("Не установлена система управления.");
+    }
+
+    const usedVolume = modules.reduce(
+        (total, module) =>
+            total +
+            (module.component?.volume ?? 0) *
+            module.quantity,
+        0
+    );
+
+    const energyProduction = modules.reduce(
+        (total, module) =>
+            total +
+            (module.component?.energyOutput ?? 0) *
+            module.quantity,
+        0
+    );
+
+    const energyConsumption = modules.reduce(
+        (total, module) =>
+            total +
+            (module.component?.energyConsumption ?? 0) *
+            module.quantity,
+        0
+    );
+
+    const localSpeed = modules.reduce(
+        (total, module) =>
+            total +
+            (module.component?.inSystemSpeed ?? 0) *
+            module.quantity,
+        0
+    );
+
+    const interSpeed = modules.reduce(
+        (total, module) =>
+            total +
+            (module.component?.interSystemSpeed ?? 0) *
+            module.quantity,
+        0
+    );
+
+    const commandRating = modules.reduce(
+        (total, module) =>
+            total +
+            (module.component?.commandRating ?? 0) *
+            module.quantity,
+        0
+    );
+
+    if (usedVolume > hull.capacity) {
+        warnings.push(
+            `Превышена вместимость корпуса на ` +
+            `${formatNumber(usedVolume - hull.capacity)}.`
+        );
+    }
+
+    if (energyConsumption > energyProduction) {
+        warnings.push(
+            `Дефицит энергии: ` +
+            `${formatNumber(energyConsumption - energyProduction)}.`
+        );
+    }
+
+    state.designIsValid =
+        warnings.length === 0;
+
+    elements.designStatus.textContent =
+        state.designIsValid
+            ? "Проект готов к сохранению"
+            : "Обнаружены инженерные проблемы";
+
+    elements.designValidity.textContent =
+        state.designIsValid
+            ? "КОНФИГУРАЦИЯ ВАЛИДНА"
+            : "ТРЕБУЕТ ДОРАБОТКИ";
+
+    elements.designValidity.classList.toggle(
+        "valid",
+        state.designIsValid
+    );
+
+    elements.designValidity.classList.toggle(
+        "invalid",
+        !state.designIsValid
+    );
+
+    elements.designVolume.textContent =
+        `${formatNumber(usedVolume)} / ` +
+        `${formatNumber(hull.capacity)}`;
+
+    elements.designEnergy.textContent =
+        `${formatNumber(energyConsumption)} / ` +
+        `${formatNumber(energyProduction)}`;
+
+    const volumePercent = Math.min(
+        100,
+        hull.capacity > 0
+            ? usedVolume / hull.capacity * 100
+            : 0
+    );
+
+    const energyPercent = Math.min(
+        100,
+        energyProduction > 0
+            ? energyConsumption / energyProduction * 100
+            : 100
+    );
+
+    elements.designVolumeBar.style.width =
+        `${volumePercent}%`;
+
+    elements.designEnergyBar.style.width =
+        `${energyPercent}%`;
+
+    elements.designVolumeBar.classList.toggle(
+        "overloaded",
+        usedVolume > hull.capacity
+    );
+
+    elements.designEnergyBar.classList.toggle(
+        "overloaded",
+        energyConsumption > energyProduction
+    );
+
+    elements.designIntegrity.textContent =
+        formatNumber(hull.structuralIntegrity);
+
+    elements.designLocalSpeed.textContent =
+        formatNumber(localSpeed);
+
+    elements.designInterSpeed.textContent =
+        formatNumber(interSpeed);
+
+    elements.designCommand.textContent =
+        formatNumber(commandRating);
+
+    elements.designWarnings.innerHTML =
+        warnings.length > 0
+            ? warnings
+                .map(warning => `
+                    <div class="design-warning">
+                        ${warning}
+                    </div>
+                `)
+                .join("")
+            : `
+                <div class="design-warning success">
+                    Все обязательные системы установлены.
+                    Объём и энергетический баланс соблюдены.
+                </div>
+            `;
+
+    elements.saveBlueprintButton.disabled =
+        !state.designIsValid;
+}
+
+function renderBlueprints() {
+    elements.blueprintGrid.innerHTML =
+        state.blueprints.length > 0
+            ? state.blueprints
+                .map(blueprint => `
+                    <article class="blueprint-card">
+                        <div class="component-heading">
+                            <h4>${blueprint.name}</h4>
+                            <span class="blueprint-version">
+                                Mk.${blueprint.version}
+                            </span>
+                        </div>
+
+                        <p>
+                            Корпус: ${getComponentName(blueprint.hullCode)}<br>
+                            Модулей: ${
+                                blueprint.modules.reduce(
+                                    (total, module) =>
+                                        total + module.quantity,
+                                    0
+                                )
+                            }
+                        </p>
+
+                        <div class="blueprint-stats">
+                            <span class="component-stat">
+                                Объём
+                                ${formatNumber(
+                                    blueprint.design.usedVolume
+                                )}
+                                /
+                                ${formatNumber(
+                                    blueprint.design.hullCapacity
+                                )}
+                            </span>
+                            <span class="component-stat">
+                                Энергия
+                                ${formatNumber(
+                                    blueprint.design.energyConsumption
+                                )}
+                                /
+                                ${formatNumber(
+                                    blueprint.design.energyProduction
+                                )}
+                            </span>
+                        </div>
+                    </article>
+                `)
+                .join("")
+            : `
+                <div class="empty-state">
+                    Сохранённых проектов пока нет.
+                </div>
+            `;
+}
+
+function renderShipDesigner(
+    components,
+    blueprints)
+{
+    const firstLoad =
+        state.components.length === 0;
+
+    state.components = components;
+    state.blueprints = blueprints;
+
+    if (firstLoad) {
+        renderDesignerOptions();
+    }
+
+    updateDesignPreview();
+    renderBlueprints();
+}
+
+async function saveBlueprint() {
+    const name =
+        elements.blueprintName.value.trim();
+
+    if (name.length < 3) {
+        showMessage(
+            "Название должно содержать минимум 3 символа.",
+            true
+        );
+
+        return;
+    }
+
+    if (!state.designIsValid) {
+        showMessage(
+            "Исправьте инженерные ошибки проекта.",
+            true
+        );
+
+        return;
+    }
+
+    const modules = readDesignerModules()
+        .map(module => ({
+            componentCode: module.componentCode,
+            quantity: module.quantity
+        }));
+
+    try {
+        await api(
+            "/api/game/blueprints/",
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    name,
+                    hullCode: elements.designerHull.value,
+                    modules
+                })
+            }
+        );
+
+        showMessage("Проект корабля сохранён.");
+        await function bindDesignerEvents() {
+    if (
+        !elements.saveBlueprintButton ||
+        elements.saveBlueprintButton.dataset.bound === "true"
+    ) {
+        return;
+    }
+
+    elements.saveBlueprintButton.dataset.bound = "true";
+
+    elements.saveBlueprintButton.addEventListener(
+        "click",
+        saveBlueprint
+    );
+
+    document
+        .querySelectorAll(
+            "[data-designer-module], [data-designer-quantity]"
+        )
+        .forEach(element => {
+            element.addEventListener(
+                "input",
+                updateDesignPreview
+            );
+
+            element.addEventListener(
+                "change",
+                updateDesignPreview
+            );
+        });
+
+    elements.designerHull?.addEventListener(
+        "change",
+        updateDesignPreview
+    );
+}
+
+applyStaticTooltips();
+createTooltipSystem();
+bindDesignerEvents();
+loadDashboard();
     } catch (error) {
         showMessage(error.message, true);
     }
@@ -953,7 +2202,13 @@ async function loadDashboard() {
 
         renderPlanet(activePlanet);
 
-        const [buildings, research, production] = await Promise.all([
+        const [
+            buildings,
+            research,
+            production,
+            components,
+            blueprints
+        ] = await Promise.all([
             api(
                 `/api/game/buildings/?planetId=${state.activePlanetId}`
             ),
@@ -962,12 +2217,15 @@ async function loadDashboard() {
             ),
             api(
                 `/api/game/production/?planetId=${state.activePlanetId}`
-            )
+            ),
+            api("/api/game/components"),
+            api("/api/game/blueprints/")
         ]);
 
         renderBuildings(buildings);
         renderResearch(research);
         renderProduction(production);
+        renderShipDesigner(components, blueprints);
     } catch (error) {
         showMessage(error.message, true);
     }
@@ -984,7 +2242,47 @@ async function startBuilding(building) {
         );
 
         showMessage("Строительный проект запущен.");
-        await loadDashboard();
+        await function bindDesignerEvents() {
+    if (
+        !elements.saveBlueprintButton ||
+        elements.saveBlueprintButton.dataset.bound === "true"
+    ) {
+        return;
+    }
+
+    elements.saveBlueprintButton.dataset.bound = "true";
+
+    elements.saveBlueprintButton.addEventListener(
+        "click",
+        saveBlueprint
+    );
+
+    document
+        .querySelectorAll(
+            "[data-designer-module], [data-designer-quantity]"
+        )
+        .forEach(element => {
+            element.addEventListener(
+                "input",
+                updateDesignPreview
+            );
+
+            element.addEventListener(
+                "change",
+                updateDesignPreview
+            );
+        });
+
+    elements.designerHull?.addEventListener(
+        "change",
+        updateDesignPreview
+    );
+}
+
+applyStaticTooltips();
+createTooltipSystem();
+bindDesignerEvents();
+loadDashboard();
     } catch (error) {
         showMessage(error.message, true);
     }
@@ -992,16 +2290,113 @@ async function startBuilding(building) {
 
 elements.planetSelect.addEventListener("change", event => {
     state.activePlanetId = event.target.value;
-    loadDashboard();
+    function bindDesignerEvents() {
+    if (
+        !elements.saveBlueprintButton ||
+        elements.saveBlueprintButton.dataset.bound === "true"
+    ) {
+        return;
+    }
+
+    elements.saveBlueprintButton.dataset.bound = "true";
+
+    elements.saveBlueprintButton.addEventListener(
+        "click",
+        saveBlueprint
+    );
+
+    document
+        .querySelectorAll(
+            "[data-designer-module], [data-designer-quantity]"
+        )
+        .forEach(element => {
+            element.addEventListener(
+                "input",
+                updateDesignPreview
+            );
+
+            element.addEventListener(
+                "change",
+                updateDesignPreview
+            );
+        });
+
+    elements.designerHull?.addEventListener(
+        "change",
+        updateDesignPreview
+    );
+}
+
+applyStaticTooltips();
+createTooltipSystem();
+bindDesignerEvents();
+loadDashboard();
 });
 
 elements.refreshButton.addEventListener("click", loadDashboard);
+elements.saveBlueprintButton.addEventListener(
+    "click",
+    saveBlueprint
+);
 
+document
+    .querySelectorAll(
+        "[data-designer-module], [data-designer-quantity]"
+    )
+    .forEach(element => {
+        element.addEventListener(
+            "input",
+            updateDesignPreview
+        );
+
+        element.addEventListener(
+            "change",
+            updateDesignPreview
+        );
+    });
+
+function bindDesignerEvents() {
+    if (
+        !elements.saveBlueprintButton ||
+        elements.saveBlueprintButton.dataset.bound === "true"
+    ) {
+        return;
+    }
+
+    elements.saveBlueprintButton.dataset.bound = "true";
+
+    elements.saveBlueprintButton.addEventListener(
+        "click",
+        saveBlueprint
+    );
+
+    document
+        .querySelectorAll(
+            "[data-designer-module], [data-designer-quantity]"
+        )
+        .forEach(element => {
+            element.addEventListener(
+                "input",
+                updateDesignPreview
+            );
+
+            element.addEventListener(
+                "change",
+                updateDesignPreview
+            );
+        });
+
+    elements.designerHull?.addEventListener(
+        "change",
+        updateDesignPreview
+    );
+}
+
+applyStaticTooltips();
+createTooltipSystem();
+bindDesignerEvents();
 loadDashboard();
 window.setInterval(loadDashboard, 5000);
 window.setInterval(updateQueueCountdown, 1000);
 window.setInterval(updateResearchCountdown, 1000);
 window.setInterval(updateProductionCountdowns, 1000);
-
-
-

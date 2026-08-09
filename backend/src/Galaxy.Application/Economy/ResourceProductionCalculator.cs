@@ -4,8 +4,23 @@ namespace Galaxy.Application.Economy;
 
 public static class ResourceProductionCalculator
 {
-    private const decimal MaterialsPerHourPerLevel = 30m;
-    private const decimal DeuteriumPerHourPerLevel = 10m;
+    public const decimal MaterialsBaseHourlyRate = 40m;
+    public const decimal DeuteriumBaseHourlyRate = 15m;
+    public const decimal ProductionGrowthFactor = 1.12m;
+
+    public static decimal CalculateMaterialsPerHour(int level)
+    {
+        return CalculateHourlyProduction(
+            MaterialsBaseHourlyRate,
+            level);
+    }
+
+    public static decimal CalculateDeuteriumPerHour(int level)
+    {
+        return CalculateHourlyProduction(
+            DeuteriumBaseHourlyRate,
+            level);
+    }
 
     public static void Update(Planet planet, DateTime utcNow)
     {
@@ -14,22 +29,22 @@ public static class ResourceProductionCalculator
             return;
         }
 
-        var elapsedSeconds =
-            (decimal)(utcNow - planet.ResourcesUpdatedAt).TotalSeconds;
+        var elapsedHours =
+            (decimal)(utcNow - planet.ResourcesUpdatedAt).TotalSeconds /
+            3600m;
 
-        var elapsedHours = elapsedSeconds / 3600m;
         var energy = EnergyCalculator.Calculate(planet);
         var storage = StorageCalculator.Calculate(planet);
 
         var producedMaterials =
-            MaterialsPerHourPerLevel *
-            planet.MaterialsExtractorLevel *
+            CalculateMaterialsPerHour(
+                planet.MaterialsExtractorLevel) *
             elapsedHours *
             energy.Efficiency;
 
         var producedDeuterium =
-            DeuteriumPerHourPerLevel *
-            planet.DeuteriumExtractorLevel *
+            CalculateDeuteriumPerHour(
+                planet.DeuteriumExtractorLevel) *
             elapsedHours *
             energy.Efficiency;
 
@@ -44,6 +59,23 @@ public static class ResourceProductionCalculator
             storage.Deuterium);
 
         planet.ResourcesUpdatedAt = utcNow;
+    }
+
+    private static decimal CalculateHourlyProduction(
+        decimal baseRate,
+        int level)
+    {
+        if (level <= 0)
+        {
+            return 0m;
+        }
+
+        return decimal.Round(
+            baseRate *
+            level *
+            Pow(ProductionGrowthFactor, level - 1),
+            4,
+            MidpointRounding.ToZero);
     }
 
     private static decimal AddProducedResource(
@@ -63,5 +95,17 @@ public static class ResourceProductionCalculator
             current + acceptedProduction,
             4,
             MidpointRounding.ToZero);
+    }
+
+    private static decimal Pow(decimal value, int exponent)
+    {
+        var result = 1m;
+
+        for (var index = 0; index < exponent; index++)
+        {
+            result *= value;
+        }
+
+        return result;
     }
 }

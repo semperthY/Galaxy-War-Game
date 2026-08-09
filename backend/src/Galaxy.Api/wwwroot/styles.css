@@ -1422,3 +1422,554 @@ main {
         grid-template-columns: 1fr;
     }
 }
+
+.designer-panel {
+    padding: 0;
+    overflow: hidden;
+    scroll-margin-top: 105px;
+}
+
+.designer-hero {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    min-height: 260px;
+    padding: 30px;
+    overflow: hidden;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(5, 11, 21, 0.98) 0%,
+            rgba(6, 14, 27, 0.90) 42%,
+            rgba(5, 11, 21, 0.18) 100%
+        ),
+        url("/assets/ship-designer-bg.png") center / cover,
+        radial-gradient(circle at 80% 40%, #183969, #050b15 65%);
+}
+
+.designer-hero::after {
+    position: absolute;
+    inset: auto 0 0;
+    height: 80px;
+    pointer-events: none;
+    content: "";
+    background:
+        linear-gradient(
+            to bottom,
+            transparent,
+            rgba(7, 15, 28, 0.96)
+        );
+}
+
+.designer-hero > * {
+    position: relative;
+    z-index: 2;
+}
+
+.designer-hero h2 {
+    margin: 7px 0 6px;
+    font-size: 32px;
+    font-weight: 550;
+}
+
+.designer-hero p {
+    max-width: 520px;
+    margin: 0;
+    color: var(--muted-light);
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.designer-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    color: var(--muted-light);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(5, 12, 23, 0.74);
+    backdrop-filter: blur(10px);
+}
+
+.designer-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(380px, 1.1fr);
+    gap: 16px;
+    padding: 26px;
+}
+
+.designer-form,
+.design-analysis {
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    background: rgba(9, 19, 34, 0.78);
+}
+
+.designer-form {
+    display: grid;
+    gap: 13px;
+}
+
+.designer-field,
+.quantity-field {
+    display: grid;
+    gap: 6px;
+}
+
+.designer-field > span,
+.quantity-field > span {
+    color: var(--muted);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.designer-field input,
+.designer-field select,
+.quantity-field input {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 11px;
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    outline: none;
+    background: rgba(4, 11, 21, 0.88);
+}
+
+.designer-field input:focus,
+.designer-field select:focus,
+.quantity-field input:focus {
+    border-color: var(--line-active);
+    box-shadow: 0 0 0 3px rgba(82, 217, 255, 0.06);
+}
+
+.module-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 90px;
+    gap: 8px;
+}
+
+.save-blueprint-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    margin-top: 5px;
+    padding: 11px;
+    color: #e4f9ff;
+    border: 1px solid rgba(82, 217, 255, 0.32);
+    border-radius: 8px;
+    cursor: pointer;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(27, 132, 184, 0.76),
+            rgba(83, 74, 184, 0.68)
+        );
+}
+
+.save-blueprint-button:hover:not(:disabled) {
+    border-color: rgba(82, 217, 255, 0.7);
+    filter: brightness(1.13);
+}
+
+.save-blueprint-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+}
+
+.analysis-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.analysis-heading h3 {
+    margin: 5px 0 0;
+    font-size: 17px;
+}
+
+.design-validity {
+    padding: 5px 8px;
+    color: var(--orange);
+    border: 1px solid rgba(255, 180, 84, 0.3);
+    border-radius: 5px;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+}
+
+.design-validity.valid {
+    color: var(--green);
+    border-color: rgba(69, 224, 160, 0.3);
+}
+
+.design-validity.invalid {
+    color: var(--danger);
+    border-color: rgba(255, 102, 125, 0.3);
+}
+
+.capacity-block {
+    margin-top: 24px;
+}
+
+.capacity-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    color: var(--muted-light);
+    font-size: 10px;
+}
+
+.capacity-heading strong {
+    color: var(--cyan);
+}
+
+.capacity-track {
+    height: 7px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(2, 7, 14, 0.8);
+}
+
+.capacity-fill {
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background:
+        linear-gradient(
+            90deg,
+            var(--cyan),
+            var(--blue)
+        );
+    box-shadow: 0 0 12px rgba(82, 217, 255, 0.45);
+    transition: width 220ms ease;
+}
+
+.capacity-fill.overloaded {
+    background:
+        linear-gradient(
+            90deg,
+            var(--orange),
+            var(--danger)
+        );
+}
+
+.energy-capacity .capacity-fill {
+    background:
+        linear-gradient(
+            90deg,
+            var(--green),
+            var(--cyan)
+        );
+}
+
+.design-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 22px;
+}
+
+.design-stat-grid div {
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(4, 11, 21, 0.58);
+}
+
+.design-stat-grid span,
+.design-stat-grid strong {
+    display: block;
+}
+
+.design-stat-grid span {
+    color: var(--muted);
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.design-stat-grid strong {
+    margin-top: 5px;
+    font-size: 17px;
+}
+
+.design-warnings {
+    display: grid;
+    gap: 5px;
+    margin-top: 15px;
+}
+
+.design-warning {
+    padding: 8px 10px;
+    color: var(--danger);
+    border-left: 2px solid var(--danger);
+    font-size: 9px;
+    background: rgba(64, 15, 27, 0.34);
+}
+
+.design-warning.success {
+    color: var(--green);
+    border-color: var(--green);
+    background: rgba(10, 53, 39, 0.28);
+}
+
+.blueprint-library {
+    padding: 0 26px 26px;
+}
+
+.blueprint-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 11px;
+    margin-top: 14px;
+}
+
+.blueprint-card {
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(17, 32, 54, 0.8),
+            rgba(7, 15, 27, 0.85)
+        );
+}
+
+.blueprint-card h4 {
+    margin: 0;
+    font-size: 13px;
+}
+
+.blueprint-version {
+    color: var(--cyan);
+    font-size: 9px;
+}
+
+.blueprint-card p {
+    margin: 8px 0 12px;
+    color: var(--muted);
+    font-size: 9px;
+}
+
+.blueprint-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+@media (max-width: 1050px) {
+    .designer-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .blueprint-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 580px) {
+    .designer-layout {
+        padding: 15px;
+    }
+
+    .blueprint-library {
+        padding: 0 15px 15px;
+    }
+
+    .blueprint-grid,
+    .design-stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .module-row {
+        grid-template-columns: 1fr 80px;
+    }
+}
+
+.header-resources {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    margin-right: 8px;
+}
+
+.header-resource {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 112px;
+    padding: 7px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(10, 22, 38, 0.76);
+}
+
+.header-resource svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+}
+
+.header-resource span,
+.header-resource strong {
+    display: block;
+    white-space: nowrap;
+}
+
+.header-resource span {
+    color: var(--muted);
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.header-resource strong {
+    margin-top: 2px;
+    font-size: 11px;
+}
+
+.header-resource.materials svg {
+    color: var(--cyan);
+}
+
+.header-resource.deuterium svg {
+    color: var(--violet);
+}
+
+.header-resource.energy svg {
+    color: var(--green);
+}
+
+@media (max-width: 1250px) {
+    .header-resource {
+        min-width: 0;
+    }
+
+    .header-resource span {
+        display: none;
+    }
+}
+
+@media (max-width: 980px) {
+    .header-resources {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    .header-resource {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .topbar-actions {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 580px) {
+    .header-resource {
+        padding: 7px;
+    }
+
+    .header-resource svg {
+        display: none;
+    }
+
+    .header-resource strong {
+        font-size: 9px;
+    }
+}
+
+[data-tooltip] {
+    touch-action: manipulation;
+}
+
+.game-tooltip {
+    position: fixed;
+    z-index: 1000;
+    width: max-content;
+    max-width: min(330px, calc(100vw - 24px));
+    padding: 12px 14px;
+    pointer-events: none;
+    visibility: hidden;
+    color: var(--muted-light);
+    border: 1px solid rgba(82, 217, 255, 0.3);
+    border-radius: 9px;
+    opacity: 0;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(12, 27, 47, 0.98),
+            rgba(5, 12, 23, 0.98)
+        );
+    box-shadow:
+        0 18px 55px rgba(0, 0, 0, 0.55),
+        inset 0 1px rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(18px);
+    transform: translateY(5px);
+    transition:
+        opacity 120ms ease,
+        transform 120ms ease,
+        visibility 120ms ease;
+}
+
+.game-tooltip.visible {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.game-tooltip::before {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 2px;
+    content: "";
+    border-radius: 9px 0 0 9px;
+    background: var(--cyan);
+    box-shadow: 0 0 12px var(--cyan);
+}
+
+.tooltip-title {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.tooltip-content {
+    display: block;
+    font-size: 10px;
+    line-height: 1.55;
+    white-space: normal;
+}
+
+.tooltip-hint {
+    display: block;
+    margin-top: 7px;
+    color: #536a83;
+    font-size: 8px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+@media (hover: hover) {
+    [data-tooltip] {
+        cursor: help;
+    }
+}
