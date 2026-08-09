@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: galaxy-war-game-test
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ConnectionStrings__Database
+        sync: false
+      - key: Database__MigrateOnStartup
+        value: "true"
+      - key: DevelopmentTools__Enabled
+        value: "true"
+      - key: TestAccess__Username
+        value: tester
+      - key: TestAccess__Password
+        sync: false

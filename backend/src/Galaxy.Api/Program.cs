@@ -1,4 +1,5 @@
 using Galaxy.Api.Endpoints;
+using Galaxy.Api.Hosting;
 using Galaxy.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
@@ -10,7 +11,10 @@ var connectionString = builder.Configuration.GetConnectionString("Database")
         "Connection string 'Database' was not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(
+        connectionString,
+        npgsqlOptions =>
+            npgsqlOptions.EnableRetryOnFailure()));
 
 builder.Services.AddOpenApi();
 
@@ -22,9 +26,19 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 var app = builder.Build();
 
+await app.MigrateDatabaseAsync();
+
+app.UseTestAccessProtection();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+}
+
+if (app.Environment.IsDevelopment() ||
+    app.Configuration.GetValue<bool>(
+        "DevelopmentTools:Enabled"))
+{
     app.MapDevelopmentEndpoints();
 }
 
