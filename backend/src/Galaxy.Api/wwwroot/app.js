@@ -2118,6 +2118,13 @@ GalaxyUi.init({
     reload: loadDashboard
 });
 
+DevToolsUi.init({
+    api,
+    message: showMessage,
+    reload: loadDashboard,
+    planetId: () => state.activePlanetId
+});
+
 applyStaticTooltips();
 createTooltipSystem();
 loadDashboard();

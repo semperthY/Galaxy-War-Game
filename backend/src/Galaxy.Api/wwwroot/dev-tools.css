@@ -1,0 +1,44 @@
+[hidden] {
+    display: none !important;
+}
+
+.dev-supply-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    margin-top: auto;
+    padding: 0 12px;
+    color: var(--orange);
+    border: 1px solid rgba(255, 180, 84, .25);
+    border-radius: 10px;
+    background: rgba(255, 180, 84, .06);
+    cursor: pointer;
+    transition: 160ms ease;
+}
+
+.dev-supply-button:hover:not(:disabled) {
+    border-color: rgba(255, 180, 84, .5);
+    background: rgba(255, 180, 84, .12);
+}
+
+.dev-supply-button svg {
+    width: 18px;
+    height: 18px;
+}
+
+.dev-supply-button span {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .08em;
+}
+
+.dev-supply-button:disabled {
+    cursor: wait;
+    opacity: .55;
+}
+
+.dev-supply-button + .server-status {
+    margin-top: 10px;
+}
