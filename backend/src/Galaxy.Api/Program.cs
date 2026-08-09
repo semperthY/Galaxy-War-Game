@@ -29,6 +29,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.MapGameEndpoints();
 app.MapPlanetEndpoints();
 app.MapGalaxyEndpoints();
@@ -45,6 +48,7 @@ app.MapGet("/health", () => Results.Ok(new
 }));
 
 app.Run();
+
 
 
 

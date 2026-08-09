@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050912">
+    <title>Galaxy War Game</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <svg class="svg-library" aria-hidden="true">
+        <symbol id="icon-command" viewBox="0 0 24 24">
+            <path d="M12 2 19 6v8l-7 8-7-8V6l7-4Z"/>
+            <path d="m8 9 4-3 4 3-1.5 6h-5L8 9Z"/>
+        </symbol>
+        <symbol id="icon-planet" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="6"/>
+            <path d="M3 16c3 2 9 1 14-2s6-6 4-7"/>
+        </symbol>
+        <symbol id="icon-buildings" viewBox="0 0 24 24">
+            <path d="M4 21V9l6-3v15M10 21V3l10 4v14"/>
+            <path d="M7 12h1M7 16h1M14 9h2M14 13h2M14 17h2"/>
+        </symbol>
+        <symbol id="icon-research" viewBox="0 0 24 24">
+            <path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/>
+            <path d="M8 15h8"/>
+        </symbol>
+        <symbol id="icon-factory" viewBox="0 0 24 24">
+            <path d="M3 21V10l6 3V9l6 4V5h4l2 16H3Z"/>
+            <path d="M7 17h2M13 17h2M18 17h1"/>
+        </symbol>
+        <symbol id="icon-ship" viewBox="0 0 24 24">
+            <path d="M12 2c4 3 6 8 6 14l-6 5-6-5c0-6 2-11 6-14Z"/>
+            <circle cx="12" cy="10" r="2"/>
+            <path d="M6 14 3 18l4-1M18 14l3 4-4-1"/>
+        </symbol>
+        <symbol id="icon-galaxy" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="2"/>
+            <path d="M4 7c4-4 11-3 14 1 3 5 0 11-5 13"/>
+            <path d="M20 17c-4 4-11 3-14-1C3 11 6 5 11 3"/>
+        </symbol>
+        <symbol id="icon-materials" viewBox="0 0 24 24">
+            <path d="m12 2 8 5-8 5-8-5 8-5Z"/>
+            <path d="m4 12 8 5 8-5M4 17l8 5 8-5"/>
+        </symbol>
+        <symbol id="icon-deuterium" viewBox="0 0 24 24">
+            <path d="M12 2S5 10 5 15a7 7 0 0 0 14 0c0-5-7-13-7-13Z"/>
+            <path d="M9 16c.5 2 2 3 4 3"/>
+        </symbol>
+        <symbol id="icon-energy" viewBox="0 0 24 24">
+            <path d="m13 2-8 12h7l-1 8 8-12h-7l1-8Z"/>
+        </symbol>
+        <symbol id="icon-sites" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </symbol>
+        <symbol id="icon-refresh" viewBox="0 0 24 24">
+            <path d="M20 6v5h-5"/>
+            <path d="M19 11a8 8 0 1 0 1 5"/>
+        </symbol>
+        <symbol id="icon-extractor" viewBox="0 0 24 24">
+            <path d="M4 20h16M7 20V9h10v11M9 9l3-6 3 6"/>
+            <path d="M10 13h4M10 16h4"/>
+        </symbol>
+        <symbol id="icon-warehouse" viewBox="0 0 24 24">
+            <path d="m3 10 9-6 9 6v11H3V10Z"/>
+            <path d="M8 21v-7h8v7"/>
+        </symbol>
+        <symbol id="icon-power" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>
+        </symbol>
+    </svg>
+
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">
+                    <svg><use href="#icon-command"></use></svg>
+                </div>
+                <div>
+                    <strong>GALAXY</strong>
+                    <span>WAR GAME</span>
+                </div>
+            </div>
+
+            <nav class="navigation">
+                <a href="#overview" class="nav-item active">
+                    <svg><use href="#icon-planet"></use></svg>
+                    <span>Планета</span>
+                </a>
+                <a href="#buildings" class="nav-item">
+                    <svg><use href="#icon-buildings"></use></svg>
+                    <span>Строительство</span>
+                </a>
+                <div class="nav-divider"></div>
+                <div class="nav-item locked">
+                    <svg><use href="#icon-research"></use></svg>
+                    <span>Исследования</span>
+                    <small>скоро</small>
+                </div>
+                <div class="nav-item locked">
+                    <svg><use href="#icon-factory"></use></svg>
+                    <span>Производство</span>
+                    <small>скоро</small>
+                </div>
+                <div class="nav-item locked">
+                    <svg><use href="#icon-ship"></use></svg>
+                    <span>Флот</span>
+                    <small>скоро</small>
+                </div>
+                <div class="nav-item locked">
+                    <svg><use href="#icon-galaxy"></use></svg>
+                    <span>Галактика</span>
+                    <small>скоро</small>
+                </div>
+            </nav>
+
+            <div class="server-status">
+                <span class="status-light"></span>
+                <div>
+                    <strong>Локальный сервер</strong>
+                    <small>Система активна</small>
+                </div>
+            </div>
+        </aside>
+
+        <div class="workspace">
+            <header class="topbar">
+                <div>
+                    <span class="breadcrumb">ИМПЕРИЯ / КОМАНДНЫЙ ЦЕНТР</span>
+                    <h1>Планетарное управление</h1>
+                </div>
+
+                <div class="topbar-actions">
+                    <button
+                        id="refreshButton"
+                        class="icon-button"
+                        title="Обновить">
+                        <svg><use href="#icon-refresh"></use></svg>
+                    </button>
+
+                    <label class="planet-selector">
+                        <span>Активная колония</span>
+                        <select id="planetSelect"></select>
+                    </label>
+                </div>
+            </header>
+
+            <main>
+                <section id="message" class="message hidden"></section>
+
+                <section id="overview" class="command-hero">
+                    <div class="hero-content">
+                        <span class="sector-label">ПЛАНЕТАРНЫЙ УЗЕЛ</span>
+                        <h2 id="planetName">Загрузка системы...</h2>
+                        <p id="coordinates">Координаты неизвестны</p>
+
+                        <div class="hero-status">
+                            <span>
+                                <i class="status-light"></i>
+                                Колония функционирует
+                            </span>
+                            <span id="heroEfficiency">
+                                Эффективность 100%
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="orbit-display">
+                        <div class="orbit orbit-one"></div>
+                        <div class="orbit orbit-two"></div>
+                        <div class="planet-core"></div>
+                    </div>
+                </section>
+
+                <section class="resource-grid">
+                    <article class="resource-card materials-card">
+                        <div class="resource-icon">
+                            <svg><use href="#icon-materials"></use></svg>
+                        </div>
+                        <div class="resource-content">
+                            <span>Материалы</span>
+                            <strong id="materials">0</strong>
+                            <div class="capacity-line">
+                                <span id="materialsCapacity">0 / 0</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="resource-card deuterium-card">
+                        <div class="resource-icon">
+                            <svg><use href="#icon-deuterium"></use></svg>
+                        </div>
+                        <div class="resource-content">
+                            <span>Дейтерий</span>
+                            <strong id="deuterium">0</strong>
+                            <div class="capacity-line">
+                                <span id="deuteriumCapacity">0 / 0</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="resource-card energy-card">
+                        <div class="resource-icon">
+                            <svg><use href="#icon-energy"></use></svg>
+                        </div>
+                        <div class="resource-content">
+                            <span>Энергосистема</span>
+                            <strong id="energy">0 / 0</strong>
+                            <div class="capacity-line">
+                                <span id="efficiency">Эффективность 100%</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="resource-card sites-card">
+                        <div class="resource-icon">
+                            <svg><use href="#icon-sites"></use></svg>
+                        </div>
+                        <div class="resource-content">
+                            <span>Площадки</span>
+                            <strong id="buildingSites">0 / 0</strong>
+                            <div class="capacity-line">
+                                <span>Планетарная инфраструктура</span>
+                            </div>
+                        </div>
+                    </article>
+                </section>
+
+                <section id="buildings" class="content-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <span class="section-label">ИНФРАСТРУКТУРА</span>
+                            <h2>Планетарные комплексы</h2>
+                            <p>
+                                Развивайте колонию и определяйте её специализацию.
+                            </p>
+                        </div>
+
+                        <div id="queueStatus" class="queue-status">
+                            <span class="queue-indicator"></span>
+                            <div>
+                                <small>СТРОИТЕЛЬНАЯ ОЧЕРЕДЬ</small>
+                                <strong>Свободна</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="buildingGrid" class="building-grid"></div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
