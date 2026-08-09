@@ -3,6 +3,7 @@ services:
     name: galaxy-war-game-test
     runtime: docker
     plan: free
+    region: frankfurt
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health
     envVars:
@@ -16,3 +17,4 @@ services:
         value: tester
       - key: TestAccess__Password
         sync: false
+
