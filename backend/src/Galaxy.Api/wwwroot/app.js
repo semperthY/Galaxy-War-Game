@@ -1,3 +1,25 @@
+const componentTypeInfo = {
+    Hull: {
+        name: "Корпус",
+        icon: "icon-ship"
+    },
+    Engine: {
+        name: "Двигатель",
+        icon: "icon-energy"
+    },
+    Reactor: {
+        name: "Реактор",
+        icon: "icon-power"
+    },
+    ControlSystem: {
+        name: "Система управления",
+        icon: "icon-command"
+    },
+    ColonyModule: {
+        name: "Колонизационный модуль",
+        icon: "icon-planet"
+    }
+};
 const technologyInfo = {
     MaterialsScience: {
         name: "Материаловедение",
@@ -80,7 +102,8 @@ const state = {
     buildingQueue: null,
     queueCompletionRequested: false,
     researchQueue: null,
-    researchCompletionRequested: false
+    researchCompletionRequested: false,
+    productionStatus: null
 };
 
 const elements = {
@@ -101,7 +124,17 @@ const elements = {
     message: document.querySelector("#message"),
     researchGrid: document.querySelector("#researchGrid"),
     researchQueueStatus: document.querySelector("#researchQueueStatus"),
-    laboratoryLevel: document.querySelector("#laboratoryLevel")
+    laboratoryLevel: document.querySelector("#laboratoryLevel"),
+    productionComplexLevel:
+        document.querySelector("#productionComplexLevel"),
+    productionLineCount:
+        document.querySelector("#productionLineCount"),
+    componentCatalog:
+        document.querySelector("#componentCatalog"),
+    componentInventory:
+        document.querySelector("#componentInventory"),
+    productionLines:
+        document.querySelector("#productionLines")
 };
 
 async function api(path, options = {}) {
@@ -563,6 +596,344 @@ async function startResearch(technology) {
         showMessage(error.message, true);
     }
 }
+function getComponentStats(component) {
+    const stats = [];
+
+    if (component.capacity !== undefined) {
+        stats.push(`Вместимость ${formatNumber(component.capacity)}`);
+    }
+
+    if (component.structuralIntegrity !== undefined) {
+        stats.push(
+            `Прочность ${formatNumber(component.structuralIntegrity)}`
+        );
+    }
+
+    if (component.volume !== undefined) {
+        stats.push(`Объём ${formatNumber(component.volume)}`);
+    }
+
+    if (component.inSystemSpeed !== undefined) {
+        stats.push(
+            `Локальная скорость ${formatNumber(component.inSystemSpeed)}`
+        );
+    }
+
+    if (component.interSystemSpeed !== undefined) {
+        stats.push(
+            `Межсистемная скорость ${formatNumber(component.interSystemSpeed)}`
+        );
+    }
+
+    if (component.energyOutput !== undefined) {
+        stats.push(
+            `Энергия +${formatNumber(component.energyOutput)}`
+        );
+    }
+
+    if (component.energyConsumption !== undefined) {
+        stats.push(
+            `Потребление ${formatNumber(component.energyConsumption)}`
+        );
+    }
+
+    if (component.commandRating !== undefined) {
+        stats.push(
+            `Управление ${formatNumber(component.commandRating)}`
+        );
+    }
+
+    return stats;
+}
+
+function getComponentName(code) {
+    const component = state.productionStatus?.catalog
+        .find(item => item.code === code);
+
+    return component?.name ?? code;
+}
+
+function updateProductionCountdowns() {
+    document
+        .querySelectorAll("[data-production-completes-at]")
+        .forEach(element => {
+            const completesAt =
+                element.dataset.productionCompletesAt;
+
+            if (!completesAt) {
+                element.textContent = "Ожидает запуска";
+                return;
+            }
+
+            const milliseconds =
+                new Date(completesAt).getTime() - Date.now();
+
+            const seconds = Math.max(
+                0,
+                Math.ceil(milliseconds / 1000)
+            );
+
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+
+            element.textContent = minutes > 0
+                ? `${minutes}:` +
+                    remainingSeconds.toString().padStart(2, "0")
+                : `${remainingSeconds} сек.`;
+
+            if (seconds === 0) {
+                element.textContent = "Завершение...";
+            }
+        });
+}
+
+function renderProduction(status) {
+    state.productionStatus = status;
+
+    elements.productionComplexLevel.textContent =
+        status.productionComplexLevel;
+
+    elements.productionLineCount.textContent =
+        status.lineCount;
+
+    const lineOptions = Array.from(
+        { length: status.lineCount },
+        (_, index) => `
+            <option value="${index + 1}">
+                Линия ${index + 1}
+            </option>
+        `
+    ).join("");
+
+    elements.componentCatalog.innerHTML = status.catalog
+        .map(component => {
+            const typeInfo =
+                componentTypeInfo[component.type] ?? {
+                    name: component.type,
+                    icon: "icon-factory"
+                };
+
+            const stats = getComponentStats(component)
+                .map(stat => `
+                    <span class="component-stat">${stat}</span>
+                `)
+                .join("");
+
+            const disabled =
+                !component.unlocked ||
+                status.lineCount < 1;
+
+            const requirement = component.unlocked
+                ? `Время производства: ` +
+                    `${component.productionSeconds} сек.`
+                : `Требуется: ${component.requiredTechnology} ` +
+                    `ур. ${component.requiredTechnologyLevel}`;
+
+            return `
+                <article class="
+                    component-card
+                    ${component.unlocked ? "" : "locked"}
+                ">
+                    <div class="component-icon">
+                        <svg>
+                            <use href="#${typeInfo.icon}"></use>
+                        </svg>
+                    </div>
+
+                    <div class="component-body">
+                        <div class="component-heading">
+                            <h4>${component.name}</h4>
+                            <span class="component-type">
+                                ${typeInfo.name}
+                            </span>
+                        </div>
+
+                        <div class="component-race">
+                            Инженерная школа: ${component.race}
+                        </div>
+
+                        <div class="component-stats">
+                            ${stats}
+                        </div>
+
+                        <div class="cost-row">
+                            <span class="cost-item">
+                                Материалы ·
+                                ${formatNumber(component.cost.materials)}
+                            </span>
+                            <span class="cost-item">
+                                Дейтерий ·
+                                ${formatNumber(component.cost.deuterium)}
+                            </span>
+                        </div>
+
+                        <div class="unlock-requirement">
+                            ${requirement}
+                        </div>
+
+                        <div class="production-controls">
+                            <input
+                                type="number"
+                                min="1"
+                                max="100"
+                                value="1"
+                                aria-label="Количество"
+                                data-quantity-for="${component.code}">
+
+                            <select
+                                aria-label="Производственная линия"
+                                data-line-for="${component.code}">
+                                ${lineOptions}
+                            </select>
+
+                            <button
+                                class="produce-button"
+                                data-produce="${component.code}"
+                                ${disabled ? "disabled" : ""}>
+                                Запустить производство
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            `;
+        })
+        .join("");
+
+    elements.componentCatalog
+        .querySelectorAll("[data-produce]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                startProduction(button.dataset.produce);
+            });
+        });
+
+    const inventoryItems = status.catalog
+        .map(component => {
+            const inventory = status.inventory.find(
+                item => item.componentCode === component.code
+            );
+
+            return {
+                name: component.name,
+                quantity: inventory?.quantity ?? 0
+            };
+        })
+        .filter(item => item.quantity > 0);
+
+    elements.componentInventory.innerHTML =
+        inventoryItems.length > 0
+            ? inventoryItems
+                .map(item => `
+                    <div class="inventory-item">
+                        <span title="${item.name}">
+                            ${item.name}
+                        </span>
+                        <strong>${item.quantity}</strong>
+                    </div>
+                `)
+                .join("")
+            : `
+                <div class="empty-state">
+                    Склад комплектующих пуст.
+                </div>
+            `;
+
+    if (status.lineCount < 1) {
+        elements.productionLines.innerHTML = `
+            <div class="empty-state">
+                Постройте Производственный комплекс,
+                чтобы открыть производственные линии.
+            </div>
+        `;
+
+        return;
+    }
+
+    elements.productionLines.innerHTML = Array.from(
+        { length: status.lineCount },
+        (_, index) => {
+            const lineNumber = index + 1;
+
+            const orders = status.orders
+                .filter(order => order.lineNumber === lineNumber)
+                .sort(
+                    (left, right) =>
+                        left.queuePosition - right.queuePosition
+                );
+
+            const orderMarkup = orders.length > 0
+                ? orders.map(order => `
+                    <div class="line-order">
+                        <strong>
+                            ${getComponentName(order.componentCode)}
+                            × ${order.quantity}
+                        </strong>
+                        <small
+                            data-production-completes-at="${
+                                order.completesAt ?? ""
+                            }">
+                            ${order.startedAt
+                                ? "Расчёт времени..."
+                                : "Ожидает запуска"}
+                        </small>
+                    </div>
+                `).join("")
+                : `
+                    <div class="empty-state">
+                        Линия свободна
+                    </div>
+                `;
+
+            return `
+                <div class="production-line">
+                    <div class="line-heading">
+                        <strong>Линия ${lineNumber}</strong>
+                        <span class="${orders.length ? "busy" : ""}">
+                            ${orders.length ? "Работает" : "Свободна"}
+                        </span>
+                    </div>
+
+                    ${orderMarkup}
+                </div>
+            `;
+        }
+    ).join("");
+
+    updateProductionCountdowns();
+}
+
+async function startProduction(componentCode) {
+    const quantityInput = document.querySelector(
+        `[data-quantity-for="${componentCode}"]`
+    );
+
+    const lineSelect = document.querySelector(
+        `[data-line-for="${componentCode}"]`
+    );
+
+    const quantity = Number(quantityInput.value);
+    const lineNumber = Number(lineSelect.value);
+
+    try {
+        const status = await api(
+            `/api/game/production/lines/${lineNumber}/orders` +
+            `?planetId=${state.activePlanetId}`,
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    componentCode,
+                    quantity
+                })
+            }
+        );
+
+        showMessage("Производственный заказ добавлен.");
+        renderProduction(status);
+        await loadDashboard();
+    } catch (error) {
+        showMessage(error.message, true);
+    }
+}
 async function loadDashboard() {
     try {
         state.planets = await api("/api/game/planets");
@@ -582,17 +953,21 @@ async function loadDashboard() {
 
         renderPlanet(activePlanet);
 
-        const [buildings, research] = await Promise.all([
+        const [buildings, research, production] = await Promise.all([
             api(
                 `/api/game/buildings/?planetId=${state.activePlanetId}`
             ),
             api(
                 `/api/game/research/?planetId=${state.activePlanetId}`
+            ),
+            api(
+                `/api/game/production/?planetId=${state.activePlanetId}`
             )
         ]);
 
         renderBuildings(buildings);
         renderResearch(research);
+        renderProduction(production);
     } catch (error) {
         showMessage(error.message, true);
     }
@@ -626,5 +1001,7 @@ loadDashboard();
 window.setInterval(loadDashboard, 5000);
 window.setInterval(updateQueueCountdown, 1000);
 window.setInterval(updateResearchCountdown, 1000);
+window.setInterval(updateProductionCountdowns, 1000);
+
 
 

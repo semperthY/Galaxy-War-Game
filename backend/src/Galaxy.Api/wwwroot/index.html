@@ -102,11 +102,10 @@
                     <svg><use href="#icon-research"></use></svg>
                     <span>Исследования</span>
                 </a>
-                <div class="nav-item locked">
+                <a href="#production" class="nav-item">
                     <svg><use href="#icon-factory"></use></svg>
                     <span>Производство</span>
-                    <small>скоро</small>
-                </div>
+                </a>
                 <div class="nav-item locked">
                     <svg><use href="#icon-ship"></use></svg>
                     <span>Флот</span>
@@ -291,6 +290,102 @@
 
                     <div id="researchGrid" class="research-grid"></div>
                 </section>
+
+                <section
+                    id="production"
+                    class="content-panel production-panel">
+
+                    <div class="panel-heading">
+                        <div>
+                            <span class="section-label">
+                                ПРОМЫШЛЕННОСТЬ
+                            </span>
+                            <h2>Производственный комплекс</h2>
+                            <p>
+                                Производство корабельных компонентов
+                                на независимых линиях.
+                            </p>
+                        </div>
+
+                        <div class="production-summary">
+                            <div class="industrial-stat">
+                                <svg>
+                                    <use href="#icon-factory"></use>
+                                </svg>
+                                <div>
+                                    <small>УРОВЕНЬ КОМПЛЕКСА</small>
+                                    <strong id="productionComplexLevel">
+                                        0
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="industrial-stat">
+                                <svg>
+                                    <use href="#icon-sites"></use>
+                                </svg>
+                                <div>
+                                    <small>РАБОЧИЕ ЛИНИИ</small>
+                                    <strong id="productionLineCount">
+                                        0
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="production-layout">
+                        <div>
+                            <div class="subsection-heading">
+                                <div>
+                                    <span class="section-label">
+                                        КАТАЛОГ
+                                    </span>
+                                    <h3>Доступные компоненты</h3>
+                                </div>
+                            </div>
+
+                            <div
+                                id="componentCatalog"
+                                class="component-catalog">
+                            </div>
+                        </div>
+
+                        <aside class="production-sidebar">
+                            <section class="industrial-panel">
+                                <div class="subsection-heading">
+                                    <div>
+                                        <span class="section-label">
+                                            СКЛАД
+                                        </span>
+                                        <h3>Комплектующие</h3>
+                                    </div>
+                                </div>
+
+                                <div
+                                    id="componentInventory"
+                                    class="inventory-list">
+                                </div>
+                            </section>
+
+                            <section class="industrial-panel">
+                                <div class="subsection-heading">
+                                    <div>
+                                        <span class="section-label">
+                                            ЛИНИИ
+                                        </span>
+                                        <h3>Очереди производства</h3>
+                                    </div>
+                                </div>
+
+                                <div
+                                    id="productionLines"
+                                    class="production-lines">
+                                </div>
+                            </section>
+                        </aside>
+                    </div>
+                </section>
             </main>
         </div>
     </div>
@@ -298,4 +393,5 @@
     <script src="/app.js"></script>
 </body>
 </html>
+
 
