@@ -7,7 +7,7 @@ public static class NewGameFactory
     private const int SystemsPerGalaxy = 10;
     private const int PlanetsPerSystem = 8;
 
-    public static NewGame Create(string username)
+    public static NewGame Create(string username, RaceType race)
     {
         username = username.Trim();
 
@@ -24,7 +24,8 @@ public static class NewGameFactory
         {
             Id = Guid.NewGuid(),
             Username = username,
-            CreatedAt = createdAt
+            CreatedAt = createdAt,
+            Race = race
         };
 
         var systems = new List<StarSystem>();
@@ -64,6 +65,7 @@ public static class NewGameFactory
                     PowerPlantLevel = isHomeworld ? 1 : 0,
                     WarehouseLevel = isHomeworld ? 1 : 0,
                     ResearchLaboratoryLevel = 0,
+                    ProductionComplexLevel = 0,
                     BuildingSiteCapacity = isHomeworld
                         ? 20
                         : 15 + ((systemNumber * 7 + position * 3) % 11),
@@ -98,5 +100,7 @@ public sealed record NewGame(
     Player Player,
     IReadOnlyCollection<StarSystem> StarSystems,
     Planet Homeworld);
+
+
 
 

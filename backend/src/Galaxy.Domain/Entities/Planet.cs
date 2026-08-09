@@ -22,6 +22,8 @@ public class Planet
 
     public int ResearchLaboratoryLevel { get; set; }
 
+    public int ProductionComplexLevel { get; set; }
+
     public int BuildingSiteCapacity { get; set; }
 
     public DateTime ResourcesUpdatedAt { get; set; }
@@ -40,4 +42,5 @@ public class Planet
 
     public StarSystem StarSystem { get; set; } = null!;
 }
+
 

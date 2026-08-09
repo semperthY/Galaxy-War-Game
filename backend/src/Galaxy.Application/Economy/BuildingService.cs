@@ -113,6 +113,11 @@ public static class BuildingService
             usedSites++;
         }
 
+        if (planet.ProductionComplexLevel > 0)
+        {
+            usedSites++;
+        }
+
         return usedSites;
     }
 
@@ -155,6 +160,11 @@ public static class BuildingService
                     decimal.Ceiling(150m * multiplier),
                     decimal.Ceiling(25m * multiplier)),
 
+            BuildingType.ProductionComplex =>
+                new BuildingCost(
+                    decimal.Ceiling(200m * multiplier),
+                    decimal.Ceiling(50m * multiplier)),
+
             _ => throw new ArgumentOutOfRangeException(
                 nameof(building))
         };
@@ -180,6 +190,9 @@ public static class BuildingService
 
             BuildingType.ResearchLaboratory =>
                 planet.ResearchLaboratoryLevel,
+
+            BuildingType.ProductionComplex =>
+                planet.ProductionComplexLevel,
 
             _ => throw new ArgumentOutOfRangeException(
                 nameof(building))
@@ -213,6 +226,10 @@ public static class BuildingService
                 planet.ResearchLaboratoryLevel = level;
                 break;
 
+            case BuildingType.ProductionComplex:
+                planet.ProductionComplexLevel = level;
+                break;
+
             default:
                 throw new ArgumentOutOfRangeException(
                     nameof(building));
@@ -243,4 +260,5 @@ public sealed record ConstructionResult(
     int TargetLevel,
     BuildingCost Cost,
     DateTime CompletesAt);
+
 

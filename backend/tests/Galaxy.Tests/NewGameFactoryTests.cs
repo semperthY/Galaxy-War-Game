@@ -1,4 +1,5 @@
 using Galaxy.Application.Games;
+using Galaxy.Domain.Entities;
 
 namespace Galaxy.Tests;
 
@@ -7,7 +8,7 @@ public class NewGameFactoryTests
     [Fact]
     public void Create_GeneratesGalaxyAndHomeworld()
     {
-        var game = NewGameFactory.Create("Commander");
+        var game = NewGameFactory.Create("Commander", RaceType.Humans);
 
         Assert.Equal(10, game.StarSystems.Count);
         Assert.Equal(
@@ -30,7 +31,8 @@ public class NewGameFactoryTests
     public void Create_RejectsInvalidUsername(string username)
     {
         Assert.Throws<ArgumentException>(
-            () => NewGameFactory.Create(username));
+            () => NewGameFactory.Create(username, RaceType.Humans));
     }
 }
+
 

@@ -34,7 +34,7 @@ public static class GameEndpoints
 
         try
         {
-            game = NewGameFactory.Create(request.Username);
+            game = NewGameFactory.Create(request.Username, request.Race);
         }
         catch (ArgumentException exception)
         {
@@ -116,6 +116,7 @@ public static class GameEndpoints
         return new GameResponse(
             player.Id,
             player.Username,
+            player.Race,
             planet.Id,
             planet.Name,
             starSystem.GalaxyNumber,
@@ -135,11 +136,12 @@ public static class GameEndpoints
     }
 }
 
-public sealed record CreateGameRequest(string Username);
+public sealed record CreateGameRequest(string Username, RaceType Race);
 
 public sealed record GameResponse(
     Guid PlayerId,
     string Username,
+    RaceType Race,
     Guid PlanetId,
     string PlanetName,
     int Galaxy,
@@ -156,4 +158,5 @@ public sealed record GameResponse(
     decimal EnergyConsumption,
     decimal ProductionEfficiency,
     DateTime ResourcesUpdatedAt);
+
 
