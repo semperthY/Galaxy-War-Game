@@ -1,0 +1,193 @@
+.galaxy-panel {
+    position: relative;
+    overflow: hidden;
+    background:
+        linear-gradient(120deg, rgba(4, 10, 22, .96), rgba(8, 19, 37, .86)),
+        url("/assets/space-command-bg.png") center / cover;
+}
+
+.galaxy-panel > * { position: relative; }
+
+.galaxy-heading,
+.galaxy-layout,
+.colonization-target {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.galaxy-heading {
+    align-items: end;
+    padding-bottom: 23px;
+    border-bottom: 1px solid var(--line);
+}
+
+.galaxy-heading h2 {
+    margin: 6px 0;
+    font-size: 25px;
+}
+
+.galaxy-heading p {
+    margin: 0;
+    color: var(--muted-light);
+    font-size: 12px;
+}
+
+.system-selector {
+    display: grid;
+    gap: 6px;
+    min-width: 210px;
+}
+
+.system-selector span,
+.colonization-console label > span {
+    color: var(--muted);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.galaxy-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 310px;
+    margin-top: 24px;
+}
+
+.system-chart,
+.colonization-console {
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(4, 12, 24, .86);
+    backdrop-filter: blur(18px);
+}
+
+.system-chart-header h3 { margin: 5px 0 2px; }
+.system-chart-header p { margin: 0; color: var(--muted); font-size: 9px; }
+
+.system-map {
+    position: relative;
+    min-height: 430px;
+    margin-top: 18px;
+    padding: 25px;
+    overflow: hidden;
+    border: 1px solid rgba(82, 217, 255, .1);
+    border-radius: 13px;
+    background:
+        radial-gradient(circle at center, rgba(82, 217, 255, .08), transparent 38%),
+        linear-gradient(rgba(82, 217, 255, .025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(82, 217, 255, .025) 1px, transparent 1px),
+        rgba(2, 8, 17, .82);
+    background-size: auto, 38px 38px, 38px 38px, auto;
+}
+
+.system-star {
+    display: grid;
+    width: 88px;
+    height: 88px;
+    margin: 0 auto 26px;
+    color: #fff4c8;
+    border: 1px solid rgba(255, 196, 94, .32);
+    border-radius: 50%;
+    place-items: center;
+    background: radial-gradient(circle, #fffbd3 0 8%, #ffc45e 18%, #ff7b39 42%, transparent 70%);
+    box-shadow: 0 0 45px rgba(255, 151, 63, .35);
+}
+
+.system-star span {
+    position: absolute;
+    width: 130px;
+    height: 35px;
+    border: 1px solid rgba(255, 187, 91, .2);
+    border-radius: 50%;
+    transform: rotate(-12deg);
+}
+
+.system-star strong { font-size: 11px; }
+
+.system-planets {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(115px, 1fr));
+    gap: 11px;
+}
+
+.system-planet {
+    display: grid;
+    min-height: 118px;
+    padding: 13px;
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    text-align: left;
+    background: rgba(9, 22, 39, .76);
+    cursor: pointer;
+    transition: 160ms ease;
+}
+
+.system-planet:hover,
+.system-planet.selected {
+    border-color: var(--line-active);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+}
+
+.system-planet.selected { box-shadow: inset 0 0 0 1px var(--cyan); }
+
+.planet-sphere {
+    width: 33px;
+    height: 33px;
+    margin-bottom: 8px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255,255,255,.8), transparent 8%),
+        linear-gradient(145deg, hsl(calc(185 + var(--planet-index) * 19), 70%, 62%), #17243c 72%);
+    box-shadow: 0 0 18px rgba(82, 217, 255, .18);
+}
+
+.system-planet.owned .planet-sphere {
+    box-shadow: 0 0 20px rgba(69, 224, 160, .38);
+}
+
+.planet-orbit {
+    color: var(--cyan);
+    font-size: 7px;
+    letter-spacing: .08em;
+}
+
+.system-planet strong { margin-top: 4px; font-size: 10px; }
+.system-planet small { margin-top: 3px; color: var(--muted); font-size: 8px; }
+.system-planet.owned small { color: var(--green); }
+
+.colonization-console {
+    display: grid;
+    align-content: start;
+    gap: 16px;
+}
+
+.colonization-target {
+    align-items: center;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(11, 27, 46, .72);
+}
+
+.colonization-target svg { color: var(--cyan); }
+.colonization-target strong,
+.colonization-target small { display: block; }
+.colonization-target small { margin-top: 5px; color: var(--muted); line-height: 1.4; }
+
+.colonization-console label { display: grid; gap: 7px; }
+
+@media (max-width: 1100px) {
+    .galaxy-layout { grid-template-columns: 1fr; }
+    .system-planets { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 700px) {
+    .galaxy-heading { align-items: stretch; flex-direction: column; }
+    .system-selector { min-width: 0; }
+    .system-planets { grid-template-columns: repeat(2, 1fr); }
+    .system-map { padding: 16px; }
+}

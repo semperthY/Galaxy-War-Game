@@ -67,6 +67,11 @@ const staticTooltipDefinitions = [
         text: "Сборка кораблей по сохранённым проектам и управление резервом."
     },
     {
+        selector: '.nav-item[href="#galaxy"]',
+        title: "Карта галактики",
+        text: "Звёздные системы, планеты и управление колониальной экспансией."
+    },
+    {
         selector: ".nav-item.locked",
         title: "Галактика",
         text: "Карта систем, планет и будущих космических операций."
@@ -2013,7 +2018,8 @@ async function loadDashboard() {
             production,
             components,
             blueprints,
-            assembly
+            assembly,
+            galaxy
         ] = await Promise.all([
             api(
                 `/api/game/buildings/?planetId=${state.activePlanetId}`
@@ -2028,7 +2034,8 @@ async function loadDashboard() {
             api("/api/game/blueprints/"),
             api(
                 `/api/game/assembly/?planetId=${state.activePlanetId}`
-            )
+            ),
+            api("/api/galaxy")
         ]);
 
         renderBuildings(buildings);
@@ -2036,6 +2043,13 @@ async function loadDashboard() {
         renderProduction(production);
         renderShipDesigner(components, blueprints);
         AssemblyUi.render(assembly, blueprints);
+        GalaxyUi.render(
+            galaxy,
+            assembly,
+            blueprints,
+            components,
+            activePlanet
+        );
     } catch (error) {
         showMessage(error.message, true);
     }
@@ -2096,6 +2110,12 @@ AssemblyUi.init({
     reload: loadDashboard,
     componentName: getComponentName,
     planetId: () => state.activePlanetId
+});
+
+GalaxyUi.init({
+    api,
+    message: showMessage,
+    reload: loadDashboard
 });
 
 applyStaticTooltips();

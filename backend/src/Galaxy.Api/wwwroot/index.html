@@ -9,6 +9,7 @@
     <title>Galaxy War Game</title>
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="/assembly-ui.css">
+    <link rel="stylesheet" href="/galaxy-ui.css">
 </head>
 <body>
     <svg class="svg-library" aria-hidden="true">
@@ -115,11 +116,10 @@
                     <svg><use href="#icon-factory"></use></svg>
                     <span>Сборка</span>
                 </a>
-                <div class="nav-item locked">
+                <a href="#galaxy" class="nav-item">
                     <svg><use href="#icon-galaxy"></use></svg>
                     <span>Галактика</span>
-                    <small>скоро</small>
-                </div>
+                </a>
             </nav>
 
             <div class="server-status">
@@ -714,11 +714,68 @@
                         <div id="reserveGrid" class="reserve-grid"></div>
                     </div>
                 </section>
+
+                <section id="galaxy" class="content-panel galaxy-panel">
+                    <div class="galaxy-heading">
+                        <div>
+                            <span class="section-label">ЗВЁЗДНАЯ НАВИГАЦИЯ</span>
+                            <h2>Карта галактики</h2>
+                            <p>
+                                Исследуйте системы и выбирайте цели для экспансии.
+                            </p>
+                        </div>
+                        <label class="system-selector">
+                            <span>Звёздная система</span>
+                            <select id="galaxySystemSelect"></select>
+                        </label>
+                    </div>
+
+                    <div class="galaxy-layout">
+                        <section class="system-chart">
+                            <div class="system-chart-header">
+                                <span class="section-label">СИСТЕМА</span>
+                                <h3 id="galaxySystemName">Загрузка...</h3>
+                                <p id="galaxySystemCoordinates"></p>
+                            </div>
+                            <div id="systemMap" class="system-map"></div>
+                        </section>
+
+                        <aside class="colonization-console">
+                            <div class="subsection-heading">
+                                <div>
+                                    <span class="section-label">ЭКСПАНСИЯ</span>
+                                    <h3>Колонизация</h3>
+                                </div>
+                            </div>
+                            <div class="colonization-target">
+                                <svg><use href="#icon-planet"></use></svg>
+                                <div>
+                                    <strong id="colonizationTargetName">
+                                        Цель не выбрана
+                                    </strong>
+                                    <small id="colonizationTargetStatus">
+                                        Выберите нейтральную планету.
+                                    </small>
+                                </div>
+                            </div>
+                            <label>
+                                <span>Корабль из резерва</span>
+                                <select id="colonyShipSelect"></select>
+                            </label>
+                            <button id="colonizeButton"
+                                    class="save-blueprint-button" disabled>
+                                <svg><use href="#icon-galaxy"></use></svg>
+                                Основать колонию
+                            </button>
+                        </aside>
+                    </div>
+                </section>
             </main>
         </div>
     </div>
 
     <script src="/assembly-ui.js"></script>
+    <script src="/galaxy-ui.js"></script>
     <script src="/app.js"></script>
 </body>
 </html>
