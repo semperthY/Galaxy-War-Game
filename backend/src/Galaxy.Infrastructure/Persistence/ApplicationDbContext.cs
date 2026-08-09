@@ -25,6 +25,12 @@ public class ApplicationDbContext : DbContext
     public DbSet<ComponentProductionOrder> ProductionOrders =>
         Set<ComponentProductionOrder>();
 
+    public DbSet<ShipBlueprint> ShipBlueprints =>
+        Set<ShipBlueprint>();
+
+    public DbSet<ShipBlueprintModule> ShipBlueprintModules =>
+        Set<ShipBlueprintModule>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -32,5 +38,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }
+
 
 

@@ -21,5 +21,9 @@ public class Player
 
     public ICollection<PlayerTechnology> Technologies { get; set; } =
         new List<PlayerTechnology>();
+
+    public ICollection<ShipBlueprint> Blueprints { get; set; } =
+        new List<ShipBlueprint>();
 }
+
 

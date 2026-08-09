@@ -34,6 +34,7 @@ app.MapGalaxyEndpoints();
 app.MapBuildingEndpoints();
 app.MapResearchEndpoints();
 app.MapProductionEndpoints();
+app.MapShipBlueprintEndpoints();
 
 app.MapGet("/health", () => Results.Ok(new
 {
@@ -41,6 +42,7 @@ app.MapGet("/health", () => Results.Ok(new
 }));
 
 app.Run();
+
 
 
 
