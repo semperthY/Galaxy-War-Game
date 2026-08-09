@@ -103,9 +103,10 @@ public static class ResearchEndpoints
         }
 
         var planet = await dbContext.Planets
-            .SingleOrDefaultAsync(
-                x => x.PlayerId == player.Id,
-                cancellationToken);
+            .Where(x => x.PlayerId == player.Id)
+            .OrderBy(x => x.StarSystem.SystemNumber)
+            .ThenBy(x => x.Position)
+            .FirstOrDefaultAsync(cancellationToken);
 
         return planet is null
             ? null
@@ -160,3 +161,4 @@ public sealed record TechnologyOptionResponse(
     TechnologyType Technology,
     int CurrentLevel,
     ResearchCost NextLevelCost);
+

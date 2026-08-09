@@ -36,6 +36,7 @@ app.MapResearchEndpoints();
 app.MapProductionEndpoints();
 app.MapShipBlueprintEndpoints();
 app.MapShipAssemblyEndpoints();
+app.MapColonizationEndpoints();
 
 app.MapGet("/health", () => Results.Ok(new
 {
@@ -43,6 +44,7 @@ app.MapGet("/health", () => Results.Ok(new
 }));
 
 app.Run();
+
 
 
 

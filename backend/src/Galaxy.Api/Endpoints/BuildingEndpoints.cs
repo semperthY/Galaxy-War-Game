@@ -80,9 +80,10 @@ public static class BuildingEndpoints
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
-        return dbContext.Planets.SingleOrDefaultAsync(
-            x => x.PlayerId != null,
-            cancellationToken);
+        return dbContext.Planets.Where(x => x.PlayerId != null)
+            .OrderBy(x => x.StarSystem.SystemNumber)
+            .ThenBy(x => x.Position)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     private static BuildingStatusResponse CreateStatus(
@@ -143,4 +144,5 @@ public sealed record BuildingOptionResponse(
     BuildingType Building,
     int CurrentLevel,
     BuildingCost NextLevelCost);
+
 

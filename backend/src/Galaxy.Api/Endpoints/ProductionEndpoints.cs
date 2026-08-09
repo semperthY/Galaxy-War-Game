@@ -100,9 +100,10 @@ public static class ProductionEndpoints
         var planet = await dbContext.Planets
             .Include(x => x.ComponentInventory)
             .Include(x => x.ProductionOrders)
-            .SingleOrDefaultAsync(
-                x => x.PlayerId == player.Id,
-                cancellationToken);
+            .Where(x => x.PlayerId == player.Id)
+            .OrderBy(x => x.StarSystem.SystemNumber)
+            .ThenBy(x => x.Position)
+            .FirstOrDefaultAsync(cancellationToken);
 
         return planet is null
             ? null
@@ -269,5 +270,6 @@ public sealed record ProductionOrderResponse(
     int Quantity,
     DateTime? StartedAt,
     DateTime? CompletesAt);
+
 
 

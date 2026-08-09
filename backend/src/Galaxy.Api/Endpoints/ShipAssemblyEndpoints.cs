@@ -107,9 +107,10 @@ public static class ShipAssemblyEndpoints
             .ThenInclude(x => x.Modules)
             .Include(x => x.Ships)
             .ThenInclude(x => x.Blueprint)
-            .SingleOrDefaultAsync(
-                x => x.PlayerId == player.Id,
-                cancellationToken);
+            .Where(x => x.PlayerId == player.Id)
+            .OrderBy(x => x.StarSystem.SystemNumber)
+            .ThenBy(x => x.Position)
+            .FirstOrDefaultAsync(cancellationToken);
 
         return planet is null
             ? null
@@ -193,4 +194,5 @@ public sealed record ReserveShipResponse(
     string BlueprintName,
     int BlueprintVersion,
     DateTime CreatedAt);
+
 

@@ -65,9 +65,10 @@ public static class GameEndpoints
             .AsNoTracking()
             .Include(x => x.Player)
             .Include(x => x.StarSystem)
-            .SingleOrDefaultAsync(
-                x => x.PlayerId != null,
-                cancellationToken);
+            .Where(x => x.PlayerId != null)
+            .OrderBy(x => x.StarSystem.SystemNumber)
+            .ThenBy(x => x.Position)
+            .FirstOrDefaultAsync(cancellationToken);
 
         return planet is null
             ? Results.NotFound()
@@ -84,9 +85,10 @@ public static class GameEndpoints
         var planet = await dbContext.Planets
             .Include(x => x.Player)
             .Include(x => x.StarSystem)
-            .SingleOrDefaultAsync(
-                x => x.PlayerId != null,
-                cancellationToken);
+            .Where(x => x.PlayerId != null)
+            .OrderBy(x => x.StarSystem.SystemNumber)
+            .ThenBy(x => x.Position)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (planet is null)
         {
@@ -158,5 +160,6 @@ public sealed record GameResponse(
     decimal EnergyConsumption,
     decimal ProductionEfficiency,
     DateTime ResourcesUpdatedAt);
+
 
 
