@@ -89,6 +89,7 @@ public static class BuildingEndpoints
         Planet planet)
     {
         var energy = EnergyCalculator.Calculate(planet);
+        var storage = StorageCalculator.Calculate(planet);
 
         var buildings = Enum.GetValues<BuildingType>()
             .Select(building =>
@@ -109,6 +110,8 @@ public static class BuildingEndpoints
         return new BuildingStatusResponse(
             planet.Materials,
             planet.Deuterium,
+            storage.Materials,
+            storage.Deuterium,
             energy.Production,
             energy.Consumption,
             energy.Efficiency,
@@ -124,6 +127,8 @@ public static class BuildingEndpoints
 public sealed record BuildingStatusResponse(
     decimal Materials,
     decimal Deuterium,
+    decimal MaterialsCapacity,
+    decimal DeuteriumCapacity,
     decimal EnergyProduction,
     decimal EnergyConsumption,
     decimal ProductionEfficiency,
@@ -138,3 +143,4 @@ public sealed record BuildingOptionResponse(
     BuildingType Building,
     int CurrentLevel,
     BuildingCost NextLevelCost);
+

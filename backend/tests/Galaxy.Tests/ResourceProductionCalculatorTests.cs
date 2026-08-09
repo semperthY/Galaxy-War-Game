@@ -48,4 +48,29 @@ public class ResourceProductionCalculatorTests
         Assert.Equal(60m, planet.Materials);
         Assert.Equal(10m, planet.Deuterium);
     }
+    [Fact]
+    public void Update_DoesNotExceedStorageCapacity()
+    {
+        var startedAt = new DateTime(
+            2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        var planet = new Planet
+        {
+            Materials = 990m,
+            Deuterium = 495m,
+            MaterialsExtractorLevel = 1,
+            DeuteriumExtractorLevel = 1,
+            PowerPlantLevel = 1,
+            WarehouseLevel = 0,
+            ResourcesUpdatedAt = startedAt
+        };
+
+        ResourceProductionCalculator.Update(
+            planet,
+            startedAt.AddHours(1));
+
+        Assert.Equal(1000m, planet.Materials);
+        Assert.Equal(500m, planet.Deuterium);
+    }
 }
+

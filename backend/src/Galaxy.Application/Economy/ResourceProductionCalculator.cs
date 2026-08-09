@@ -19,25 +19,49 @@ public static class ResourceProductionCalculator
 
         var elapsedHours = elapsedSeconds / 3600m;
         var energy = EnergyCalculator.Calculate(planet);
+        var storage = StorageCalculator.Calculate(planet);
 
-        planet.Materials +=
+        var producedMaterials =
             MaterialsPerHourPerLevel *
             planet.MaterialsExtractorLevel *
             elapsedHours *
             energy.Efficiency;
 
-        planet.Deuterium +=
+        var producedDeuterium =
             DeuteriumPerHourPerLevel *
             planet.DeuteriumExtractorLevel *
             elapsedHours *
             energy.Efficiency;
 
-        planet.Materials = decimal.Round(
-            planet.Materials, 4, MidpointRounding.ToZero);
+        planet.Materials = AddProducedResource(
+            planet.Materials,
+            producedMaterials,
+            storage.Materials);
 
-        planet.Deuterium = decimal.Round(
-            planet.Deuterium, 4, MidpointRounding.ToZero);
+        planet.Deuterium = AddProducedResource(
+            planet.Deuterium,
+            producedDeuterium,
+            storage.Deuterium);
 
         planet.ResourcesUpdatedAt = utcNow;
+    }
+
+    private static decimal AddProducedResource(
+        decimal current,
+        decimal produced,
+        decimal capacity)
+    {
+        var availableSpace = decimal.Max(
+            0m,
+            capacity - current);
+
+        var acceptedProduction = decimal.Min(
+            produced,
+            availableSpace);
+
+        return decimal.Round(
+            current + acceptedProduction,
+            4,
+            MidpointRounding.ToZero);
     }
 }

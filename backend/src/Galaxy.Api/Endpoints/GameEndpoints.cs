@@ -111,6 +111,7 @@ public static class GameEndpoints
         Planet planet)
     {
         var energy = EnergyCalculator.Calculate(planet);
+        var storage = StorageCalculator.Calculate(planet);
 
         return new GameResponse(
             player.Id,
@@ -122,6 +123,8 @@ public static class GameEndpoints
             planet.Position,
             planet.Materials,
             planet.Deuterium,
+            storage.Materials,
+            storage.Deuterium,
             planet.MaterialsExtractorLevel,
             planet.DeuteriumExtractorLevel,
             planet.PowerPlantLevel,
@@ -144,6 +147,8 @@ public sealed record GameResponse(
     int Position,
     decimal Materials,
     decimal Deuterium,
+    decimal MaterialsCapacity,
+    decimal DeuteriumCapacity,
     int MaterialsExtractorLevel,
     int DeuteriumExtractorLevel,
     int PowerPlantLevel,
@@ -151,3 +156,4 @@ public sealed record GameResponse(
     decimal EnergyConsumption,
     decimal ProductionEfficiency,
     DateTime ResourcesUpdatedAt);
+
