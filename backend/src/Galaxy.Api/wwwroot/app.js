@@ -1,10 +1,10 @@
 const buildingLevelSummaries = {
     MaterialsExtractor:
-        "Каждый уровень добавляет 30 материалов в час и потребляет ещё 5 единиц энергии.",
+        "Добыча: 40 × уровень × 1,12^(уровень−1) материалов в час. Энергопотребление: 6 × уровень × 1,10^(уровень−1).",
     DeuteriumExtractor:
-        "Каждый уровень добавляет 10 дейтерия в час и потребляет ещё 10 единиц энергии.",
+        "Добыча: 15 × уровень × 1,12^(уровень−1) дейтерия в час. Энергопотребление: 10 × уровень × 1,10^(уровень−1).",
     PowerPlant:
-        "Каждый уровень добавляет 20 единиц производства энергии.",
+        "Производство: 25 × уровень × 1,10^(уровень−1) единиц энергии.",
     Warehouse:
         "Каждый уровень удваивает вместимость: базово 1000 материалов и 500 дейтерия.",
     ResearchLaboratory:
@@ -792,47 +792,7 @@ function updateQueueCountdown() {
         !state.queueCompletionRequested
     ) {
         state.queueCompletionRequested = true;
-        function bindDesignerEvents() {
-    if (
-        !elements.saveBlueprintButton ||
-        elements.saveBlueprintButton.dataset.bound === "true"
-    ) {
-        return;
-    }
-
-    elements.saveBlueprintButton.dataset.bound = "true";
-
-    elements.saveBlueprintButton.addEventListener(
-        "click",
-        saveBlueprint
-    );
-
-    document
-        .querySelectorAll(
-            "[data-designer-module], [data-designer-quantity]"
-        )
-        .forEach(element => {
-            element.addEventListener(
-                "input",
-                updateDesignPreview
-            );
-
-            element.addEventListener(
-                "change",
-                updateDesignPreview
-            );
-        });
-
-    elements.designerHull?.addEventListener(
-        "change",
-        updateDesignPreview
-    );
-}
-
-applyStaticTooltips();
-createTooltipSystem();
-bindDesignerEvents();
-loadDashboard();
+        loadDashboard();
     }
 }
 
@@ -1014,47 +974,7 @@ function updateResearchCountdown() {
         !state.researchCompletionRequested
     ) {
         state.researchCompletionRequested = true;
-        function bindDesignerEvents() {
-    if (
-        !elements.saveBlueprintButton ||
-        elements.saveBlueprintButton.dataset.bound === "true"
-    ) {
-        return;
-    }
-
-    elements.saveBlueprintButton.dataset.bound = "true";
-
-    elements.saveBlueprintButton.addEventListener(
-        "click",
-        saveBlueprint
-    );
-
-    document
-        .querySelectorAll(
-            "[data-designer-module], [data-designer-quantity]"
-        )
-        .forEach(element => {
-            element.addEventListener(
-                "input",
-                updateDesignPreview
-            );
-
-            element.addEventListener(
-                "change",
-                updateDesignPreview
-            );
-        });
-
-    elements.designerHull?.addEventListener(
-        "change",
-        updateDesignPreview
-    );
-}
-
-applyStaticTooltips();
-createTooltipSystem();
-bindDesignerEvents();
-loadDashboard();
+        loadDashboard();
     }
 }
 
@@ -1220,47 +1140,7 @@ async function startResearch(technology) {
         );
 
         showMessage("Исследовательская программа запущена.");
-        await function bindDesignerEvents() {
-    if (
-        !elements.saveBlueprintButton ||
-        elements.saveBlueprintButton.dataset.bound === "true"
-    ) {
-        return;
-    }
-
-    elements.saveBlueprintButton.dataset.bound = "true";
-
-    elements.saveBlueprintButton.addEventListener(
-        "click",
-        saveBlueprint
-    );
-
-    document
-        .querySelectorAll(
-            "[data-designer-module], [data-designer-quantity]"
-        )
-        .forEach(element => {
-            element.addEventListener(
-                "input",
-                updateDesignPreview
-            );
-
-            element.addEventListener(
-                "change",
-                updateDesignPreview
-            );
-        });
-
-    elements.designerHull?.addEventListener(
-        "change",
-        updateDesignPreview
-    );
-}
-
-applyStaticTooltips();
-createTooltipSystem();
-bindDesignerEvents();
-loadDashboard();
+        await loadDashboard();
     } catch (error) {
         showMessage(error.message, true);
     }
@@ -1695,47 +1575,7 @@ async function startProduction(componentCode) {
 
         showMessage("Производственный заказ добавлен.");
         renderProduction(status);
-        await function bindDesignerEvents() {
-    if (
-        !elements.saveBlueprintButton ||
-        elements.saveBlueprintButton.dataset.bound === "true"
-    ) {
-        return;
-    }
-
-    elements.saveBlueprintButton.dataset.bound = "true";
-
-    elements.saveBlueprintButton.addEventListener(
-        "click",
-        saveBlueprint
-    );
-
-    document
-        .querySelectorAll(
-            "[data-designer-module], [data-designer-quantity]"
-        )
-        .forEach(element => {
-            element.addEventListener(
-                "input",
-                updateDesignPreview
-            );
-
-            element.addEventListener(
-                "change",
-                updateDesignPreview
-            );
-        });
-
-    elements.designerHull?.addEventListener(
-        "change",
-        updateDesignPreview
-    );
-}
-
-applyStaticTooltips();
-createTooltipSystem();
-bindDesignerEvents();
-loadDashboard();
+        await loadDashboard();
     } catch (error) {
         showMessage(error.message, true);
     }
@@ -2138,47 +1978,7 @@ async function saveBlueprint() {
         );
 
         showMessage("Проект корабля сохранён.");
-        await function bindDesignerEvents() {
-    if (
-        !elements.saveBlueprintButton ||
-        elements.saveBlueprintButton.dataset.bound === "true"
-    ) {
-        return;
-    }
-
-    elements.saveBlueprintButton.dataset.bound = "true";
-
-    elements.saveBlueprintButton.addEventListener(
-        "click",
-        saveBlueprint
-    );
-
-    document
-        .querySelectorAll(
-            "[data-designer-module], [data-designer-quantity]"
-        )
-        .forEach(element => {
-            element.addEventListener(
-                "input",
-                updateDesignPreview
-            );
-
-            element.addEventListener(
-                "change",
-                updateDesignPreview
-            );
-        });
-
-    elements.designerHull?.addEventListener(
-        "change",
-        updateDesignPreview
-    );
-}
-
-applyStaticTooltips();
-createTooltipSystem();
-bindDesignerEvents();
-loadDashboard();
+        await loadDashboard();
     } catch (error) {
         showMessage(error.message, true);
     }
@@ -2242,47 +2042,7 @@ async function startBuilding(building) {
         );
 
         showMessage("Строительный проект запущен.");
-        await function bindDesignerEvents() {
-    if (
-        !elements.saveBlueprintButton ||
-        elements.saveBlueprintButton.dataset.bound === "true"
-    ) {
-        return;
-    }
-
-    elements.saveBlueprintButton.dataset.bound = "true";
-
-    elements.saveBlueprintButton.addEventListener(
-        "click",
-        saveBlueprint
-    );
-
-    document
-        .querySelectorAll(
-            "[data-designer-module], [data-designer-quantity]"
-        )
-        .forEach(element => {
-            element.addEventListener(
-                "input",
-                updateDesignPreview
-            );
-
-            element.addEventListener(
-                "change",
-                updateDesignPreview
-            );
-        });
-
-    elements.designerHull?.addEventListener(
-        "change",
-        updateDesignPreview
-    );
-}
-
-applyStaticTooltips();
-createTooltipSystem();
-bindDesignerEvents();
-loadDashboard();
+        await loadDashboard();
     } catch (error) {
         showMessage(error.message, true);
     }
@@ -2290,47 +2050,7 @@ loadDashboard();
 
 elements.planetSelect.addEventListener("change", event => {
     state.activePlanetId = event.target.value;
-    function bindDesignerEvents() {
-    if (
-        !elements.saveBlueprintButton ||
-        elements.saveBlueprintButton.dataset.bound === "true"
-    ) {
-        return;
-    }
-
-    elements.saveBlueprintButton.dataset.bound = "true";
-
-    elements.saveBlueprintButton.addEventListener(
-        "click",
-        saveBlueprint
-    );
-
-    document
-        .querySelectorAll(
-            "[data-designer-module], [data-designer-quantity]"
-        )
-        .forEach(element => {
-            element.addEventListener(
-                "input",
-                updateDesignPreview
-            );
-
-            element.addEventListener(
-                "change",
-                updateDesignPreview
-            );
-        });
-
-    elements.designerHull?.addEventListener(
-        "change",
-        updateDesignPreview
-    );
-}
-
-applyStaticTooltips();
-createTooltipSystem();
-bindDesignerEvents();
-loadDashboard();
+    loadDashboard();
 });
 
 elements.refreshButton.addEventListener("click", loadDashboard);
@@ -2355,47 +2075,15 @@ document
         );
     });
 
-function bindDesignerEvents() {
-    if (
-        !elements.saveBlueprintButton ||
-        elements.saveBlueprintButton.dataset.bound === "true"
-    ) {
-        return;
-    }
-
-    elements.saveBlueprintButton.dataset.bound = "true";
-
-    elements.saveBlueprintButton.addEventListener(
-        "click",
-        saveBlueprint
-    );
-
-    document
-        .querySelectorAll(
-            "[data-designer-module], [data-designer-quantity]"
-        )
-        .forEach(element => {
-            element.addEventListener(
-                "input",
-                updateDesignPreview
-            );
-
-            element.addEventListener(
-                "change",
-                updateDesignPreview
-            );
-        });
-
-    elements.designerHull?.addEventListener(
-        "change",
-        updateDesignPreview
-    );
-}
+elements.designerHull?.addEventListener(
+    "change",
+    updateDesignPreview
+);
 
 applyStaticTooltips();
 createTooltipSystem();
-bindDesignerEvents();
 loadDashboard();
+
 window.setInterval(loadDashboard, 5000);
 window.setInterval(updateQueueCountdown, 1000);
 window.setInterval(updateResearchCountdown, 1000);
