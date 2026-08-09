@@ -222,6 +222,19 @@ public static class ProductionEndpoints
                 control.EnergyConsumption
             },
 
+            ColonyModuleDefinition colony => new
+            {
+                colony.Code,
+                colony.Name,
+                colony.Race,
+                colony.Type,
+                colony.Volume,
+                colony.Cost,
+                colony.ProductionSeconds,
+                colony.RequiredTechnology,
+                colony.RequiredTechnologyLevel,
+                unlocked
+            },
             _ => throw new ArgumentOutOfRangeException(
                 nameof(component))
         };
@@ -256,4 +269,5 @@ public sealed record ProductionOrderResponse(
     int Quantity,
     DateTime? StartedAt,
     DateTime? CompletesAt);
+
 

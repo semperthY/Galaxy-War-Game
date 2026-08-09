@@ -7,14 +7,15 @@ namespace Galaxy.Tests;
 public class StarterComponentCatalogTests
 {
     [Fact]
-    public void EveryRace_HasAllMandatoryComponentTypes()
+    public void EveryRace_HasRequiredComponentTypes()
     {
         var requiredTypes = new[]
         {
             ComponentType.Hull,
             ComponentType.Engine,
             ComponentType.Reactor,
-            ComponentType.ControlSystem
+            ComponentType.ControlSystem,
+            ComponentType.ColonyModule
         };
 
         foreach (var race in Enum.GetValues<RaceType>())
@@ -22,7 +23,7 @@ public class StarterComponentCatalogTests
             var components =
                 StarterComponentCatalog.GetForRace(race);
 
-            Assert.Equal(4, components.Count);
+            Assert.Equal(5, components.Count);
 
             foreach (var requiredType in requiredTypes)
             {
@@ -41,5 +42,17 @@ public class StarterComponentCatalogTests
         Assert.Equal(
             components.Count,
             components.Select(x => x.Code).Distinct().Count());
+    }
+
+    [Fact]
+    public void ColonyModules_HaveRaceTradeoffs()
+    {
+        var modules = StarterComponentCatalog.GetAll()
+            .OfType<ColonyModuleDefinition>()
+            .ToList();
+
+        Assert.Equal(4, modules.Count);
+        Assert.Equal(4, modules.Select(x => x.Volume).Distinct().Count());
+        Assert.All(modules, x => Assert.True(x.Volume > 0));
     }
 }

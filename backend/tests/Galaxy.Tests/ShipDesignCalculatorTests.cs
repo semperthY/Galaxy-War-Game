@@ -27,6 +27,33 @@ public class ShipDesignCalculatorTests
     }
 
     [Fact]
+    public void Calculate_CreatesColonizationDesign()
+    {
+        var result = ShipDesignCalculator.Calculate(
+            "humans-hull-1",
+            new[]
+            {
+                new ModuleSelection(
+                    "humans-engine-1", 1),
+                new ModuleSelection(
+                    "humans-reactor-1", 1),
+                new ModuleSelection(
+                    "humans-control-1", 1),
+                new ModuleSelection(
+                    "humans-colony-1", 1)
+            });
+
+        Assert.Equal(45m, result.UsedVolume);
+        Assert.Equal(5m, result.FreeVolume);
+
+        Assert.Contains(
+            result.RequiredComponents,
+            x =>
+                x.ComponentCode == "humans-colony-1" &&
+                x.Quantity == 1);
+    }
+
+    [Fact]
     public void Calculate_RejectsMissingMandatorySystem()
     {
         var exception = Assert.Throws<InvalidOperationException>(

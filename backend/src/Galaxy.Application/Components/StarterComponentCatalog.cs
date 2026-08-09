@@ -99,9 +99,63 @@ public static class StarterComponentCatalog
             commandRating: 60m,
             controlEnergy: 8m);
 
+        AddColonyModule(
+            components,
+            RaceType.Humans,
+            "humans",
+            volume: 18m,
+            materials: 220m,
+            deuterium: 80m,
+            productionSeconds: 25);
+
+        AddColonyModule(
+            components,
+            RaceType.Synthetics,
+            "synthetics",
+            volume: 16m,
+            materials: 260m,
+            deuterium: 90m,
+            productionSeconds: 30);
+
+        AddColonyModule(
+            components,
+            RaceType.Insectoids,
+            "insectoids",
+            volume: 20m,
+            materials: 180m,
+            deuterium: 65m,
+            productionSeconds: 20);
+
+        AddColonyModule(
+            components,
+            RaceType.EnergyForms,
+            "energyforms",
+            volume: 14m,
+            materials: 320m,
+            deuterium: 130m,
+            productionSeconds: 35);
         return components;
     }
 
+    private static void AddColonyModule(
+        ICollection<IComponentDefinition> components,
+        RaceType race,
+        string prefix,
+        decimal volume,
+        decimal materials,
+        decimal deuterium,
+        int productionSeconds)
+    {
+        components.Add(new ColonyModuleDefinition(
+            $"{prefix}-colony-1",
+            $"{race} Colony Module",
+            race,
+            volume,
+            new ComponentCost(materials, deuterium),
+            productionSeconds,
+            TechnologyType.ComponentEngineering,
+            1));
+    }
     private static void AddRaceComponents(
         ICollection<IComponentDefinition> components,
         RaceType race,
@@ -166,4 +220,5 @@ public static class StarterComponentCatalog
             controlEnergy));
     }
 }
+
 

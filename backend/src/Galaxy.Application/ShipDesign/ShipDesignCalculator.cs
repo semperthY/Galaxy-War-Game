@@ -131,6 +131,7 @@ public static class ShipDesignCalculator
             EngineDefinition engine => engine.Volume,
             ReactorDefinition reactor => reactor.Volume,
             ControlSystemDefinition control => control.Volume,
+            ColonyModuleDefinition colony => colony.Volume,
 
             _ => throw new InvalidOperationException(
                 $"Component type '{component.Type}' " +
@@ -171,3 +172,4 @@ public sealed record ShipDesignResult(
     decimal InterSystemSpeed,
     decimal CommandRating,
     IReadOnlyCollection<RequiredComponent> RequiredComponents);
+
