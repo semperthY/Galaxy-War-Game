@@ -62,6 +62,11 @@ const staticTooltipDefinitions = [
         text: "Создание собственных проектов с контролем объёма и энергии."
     },
     {
+        selector: '.nav-item[href="#ship-assembly"]',
+        title: "Сборочный комплекс",
+        text: "Сборка кораблей по сохранённым проектам и управление резервом."
+    },
+    {
         selector: ".nav-item.locked",
         title: "Галактика",
         text: "Карта систем, планет и будущих космических операций."
@@ -2007,7 +2012,8 @@ async function loadDashboard() {
             research,
             production,
             components,
-            blueprints
+            blueprints,
+            assembly
         ] = await Promise.all([
             api(
                 `/api/game/buildings/?planetId=${state.activePlanetId}`
@@ -2019,13 +2025,17 @@ async function loadDashboard() {
                 `/api/game/production/?planetId=${state.activePlanetId}`
             ),
             api("/api/game/components"),
-            api("/api/game/blueprints/")
+            api("/api/game/blueprints/"),
+            api(
+                `/api/game/assembly/?planetId=${state.activePlanetId}`
+            )
         ]);
 
         renderBuildings(buildings);
         renderResearch(research);
         renderProduction(production);
         renderShipDesigner(components, blueprints);
+        AssemblyUi.render(assembly, blueprints);
     } catch (error) {
         showMessage(error.message, true);
     }
@@ -2079,6 +2089,14 @@ elements.designerHull?.addEventListener(
     "change",
     updateDesignPreview
 );
+
+AssemblyUi.init({
+    api,
+    message: showMessage,
+    reload: loadDashboard,
+    componentName: getComponentName,
+    planetId: () => state.activePlanetId
+});
 
 applyStaticTooltips();
 createTooltipSystem();

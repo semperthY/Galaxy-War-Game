@@ -1,0 +1,208 @@
+.assembly-panel {
+    position: relative;
+    overflow: hidden;
+    background:
+        linear-gradient(105deg, rgba(6, 15, 29, .97), rgba(10, 24, 43, .84)),
+        url("/assets/ship-designer-bg.png") center 38% / cover;
+}
+
+.assembly-panel > * {
+    position: relative;
+}
+
+.assembly-hero,
+.assembly-layout {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.assembly-hero {
+    align-items: center;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+}
+
+.assembly-hero h2 {
+    margin: 6px 0;
+    font-size: 25px;
+}
+
+.assembly-hero p {
+    max-width: 600px;
+    margin: 0;
+    color: var(--muted-light);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.assembly-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, .8fr) minmax(360px, 1.2fr);
+    margin-top: 24px;
+}
+
+.assembly-console,
+.assembly-queue-panel {
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(5, 13, 25, .88);
+    backdrop-filter: blur(16px);
+}
+
+.assembly-console,
+.assembly-requirements,
+.assembly-queue {
+    display: grid;
+    gap: 12px;
+}
+
+.assembly-quantity {
+    max-width: 150px;
+}
+
+.assembly-requirement {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    color: var(--muted-light);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(10, 24, 42, .78);
+    font-size: 10px;
+}
+
+.assembly-requirement.ready strong { color: var(--green); }
+.assembly-requirement.missing strong { color: var(--danger); }
+
+.assembly-order {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 13px;
+    padding: 13px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(10, 24, 42, .74);
+}
+
+.assembly-order.active {
+    border-color: rgba(82, 217, 255, .36);
+    box-shadow: inset 3px 0 var(--cyan);
+}
+
+.assembly-position {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    color: var(--cyan);
+    border: 1px solid rgba(82, 217, 255, .24);
+    border-radius: 8px;
+    place-items: center;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.assembly-order strong,
+.assembly-order small { display: block; }
+
+.assembly-order small {
+    margin-top: 4px;
+    color: var(--muted);
+}
+
+.assembly-order time {
+    color: var(--cyan);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.reserve-section {
+    margin-top: 25px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+}
+
+.reserve-section .subsection-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.reserve-count {
+    color: var(--cyan);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.reserve-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px;
+    margin-top: 17px;
+}
+
+.reserve-ship {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    align-items: center;
+    gap: 15px;
+    min-height: 105px;
+    padding: 15px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(16, 37, 62, .82), rgba(5, 13, 25, .92));
+}
+
+.reserve-ship-icon {
+    position: relative;
+    display: grid;
+    width: 68px;
+    height: 68px;
+    overflow: hidden;
+    color: var(--cyan);
+    border: 1px solid rgba(82, 217, 255, .22);
+    border-radius: 50%;
+    place-items: center;
+    background: radial-gradient(circle, rgba(82, 217, 255, .14), transparent 68%);
+}
+
+.reserve-ship-icon svg {
+    width: 34px;
+    height: 34px;
+    filter: drop-shadow(0 0 10px rgba(82, 217, 255, .5));
+}
+
+.reserve-ship-icon i {
+    position: absolute;
+    inset: 50% 6px auto;
+    height: 1px;
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+    animation: assembly-scan 2.4s ease-in-out infinite;
+}
+
+.reserve-ship small {
+    color: var(--green);
+    font-size: 7px;
+}
+
+.reserve-ship h4 { margin: 5px 0 3px; }
+.reserve-ship p { margin: 0; color: var(--muted); font-size: 9px; }
+
+@keyframes assembly-scan {
+    0%, 100% { transform: translateY(-22px); opacity: 0; }
+    50% { transform: translateY(22px); opacity: 1; }
+}
+
+@media (max-width: 900px) {
+    .assembly-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 620px) {
+    .assembly-hero { align-items: stretch; flex-direction: column; }
+    .assembly-order { grid-template-columns: 38px minmax(0, 1fr); }
+    .assembly-order time { grid-column: 2; }
+}

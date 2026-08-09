@@ -8,6 +8,7 @@
     <meta name="theme-color" content="#050912">
     <title>Galaxy War Game</title>
     <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/assembly-ui.css">
 </head>
 <body>
     <svg class="svg-library" aria-hidden="true">
@@ -109,6 +110,10 @@
                 <a href="#ship-designer" class="nav-item">
                     <svg><use href="#icon-ship"></use></svg>
                     <span>Конструктор</span>
+                </a>
+                <a href="#ship-assembly" class="nav-item">
+                    <svg><use href="#icon-factory"></use></svg>
+                    <span>Сборка</span>
                 </a>
                 <div class="nav-item locked">
                     <svg><use href="#icon-galaxy"></use></svg>
@@ -640,10 +645,80 @@
                         </div>
                     </div>
                 </section>
+                <section id="ship-assembly" class="content-panel assembly-panel">
+                    <div class="assembly-hero">
+                        <div>
+                            <span class="section-label">ОРБИТАЛЬНАЯ СБОРКА</span>
+                            <h2>Сборочный комплекс</h2>
+                            <p>
+                                Собирайте корабли по сохранённым проектам.
+                                Готовая техника поступает в резерв планеты.
+                            </p>
+                        </div>
+                        <div class="industrial-stat">
+                            <svg><use href="#icon-factory"></use></svg>
+                            <div>
+                                <small>УРОВЕНЬ КОМПЛЕКСА</small>
+                                <strong id="assemblyComplexLevel">0</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="assembly-layout">
+                        <section class="assembly-console">
+                            <div class="subsection-heading">
+                                <div>
+                                    <span class="section-label">ЗАКАЗ</span>
+                                    <h3>Новая серия кораблей</h3>
+                                </div>
+                            </div>
+                            <label class="designer-field">
+                                <span>Проект корабля</span>
+                                <select id="assemblyBlueprint"></select>
+                            </label>
+                            <label class="quantity-field assembly-quantity">
+                                <span>Количество</span>
+                                <input id="assemblyQuantity" type="number"
+                                       min="1" max="20" value="1">
+                            </label>
+                            <div id="assemblyRequirements"
+                                 class="assembly-requirements"></div>
+                            <button id="assemblyButton"
+                                    class="save-blueprint-button">
+                                <svg><use href="#icon-ship"></use></svg>
+                                Начать сборку
+                            </button>
+                        </section>
+
+                        <section class="assembly-queue-panel">
+                            <div class="subsection-heading">
+                                <div>
+                                    <span class="section-label">ОЧЕРЕДЬ</span>
+                                    <h3>Производственные заказы</h3>
+                                </div>
+                            </div>
+                            <div id="assemblyQueue" class="assembly-queue"></div>
+                        </section>
+                    </div>
+
+                    <div class="reserve-section">
+                        <div class="subsection-heading">
+                            <div>
+                                <span class="section-label">РЕЗЕРВ</span>
+                                <h3>Готовые корабли</h3>
+                            </div>
+                            <span id="reserveCount" class="reserve-count">
+                                0 кораблей
+                            </span>
+                        </div>
+                        <div id="reserveGrid" class="reserve-grid"></div>
+                    </div>
+                </section>
             </main>
         </div>
     </div>
 
+    <script src="/assembly-ui.js"></script>
     <script src="/app.js"></script>
 </body>
 </html>
