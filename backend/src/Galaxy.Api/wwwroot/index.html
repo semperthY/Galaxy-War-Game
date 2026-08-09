@@ -98,11 +98,10 @@
                     <span>Строительство</span>
                 </a>
                 <div class="nav-divider"></div>
-                <div class="nav-item locked">
+                <a href="#research" class="nav-item">
                     <svg><use href="#icon-research"></use></svg>
                     <span>Исследования</span>
-                    <small>скоро</small>
-                </div>
+                </a>
                 <div class="nav-item locked">
                     <svg><use href="#icon-factory"></use></svg>
                     <span>Производство</span>
@@ -253,6 +252,45 @@
 
                     <div id="buildingGrid" class="building-grid"></div>
                 </section>
+
+                <section id="research" class="content-panel research-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <span class="section-label">
+                                НАУЧНОЕ УПРАВЛЕНИЕ
+                            </span>
+                            <h2>Исследовательская программа</h2>
+                            <p>
+                                Развивайте технологии империи и открывайте
+                                новые инженерные возможности.
+                            </p>
+                        </div>
+
+                        <div class="research-summary">
+                            <div class="lab-status">
+                                <svg>
+                                    <use href="#icon-research"></use>
+                                </svg>
+                                <div>
+                                    <small>УРОВЕНЬ ЛАБОРАТОРИИ</small>
+                                    <strong id="laboratoryLevel">0</strong>
+                                </div>
+                            </div>
+
+                            <div
+                                id="researchQueueStatus"
+                                class="queue-status">
+                                <span class="queue-indicator"></span>
+                                <div>
+                                    <small>ОЧЕРЕДЬ ИССЛЕДОВАНИЙ</small>
+                                    <strong>Свободна</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="researchGrid" class="research-grid"></div>
+                </section>
             </main>
         </div>
     </div>
@@ -260,3 +298,4 @@
     <script src="/app.js"></script>
 </body>
 </html>
+

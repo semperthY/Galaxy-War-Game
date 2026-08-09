@@ -1,3 +1,41 @@
+const technologyInfo = {
+    MaterialsScience: {
+        name: "Материаловедение",
+        icon: "icon-materials",
+        description:
+            "Исследование конструкционных материалов, корпусов и промышленной инфраструктуры."
+    },
+    EnergySystems: {
+        name: "Энергетические системы",
+        icon: "icon-energy",
+        description:
+            "Развитие реакторов, электростанций и систем распределения энергии."
+    },
+    DeuteriumTechnology: {
+        name: "Дейтериевые технологии",
+        icon: "icon-deuterium",
+        description:
+            "Повышает эффективность добычи и применения дейтерия."
+    },
+    ControlSystems: {
+        name: "Системы управления",
+        icon: "icon-command",
+        description:
+            "Открывает вычислительные и командные комплексы кораблей."
+    },
+    Propulsion: {
+        name: "Двигательные системы",
+        icon: "icon-ship",
+        description:
+            "Развитие внутри- и межсистемных корабельных двигателей."
+    },
+    ComponentEngineering: {
+        name: "Инженерия компонентов",
+        icon: "icon-factory",
+        description:
+            "Открывает производство сложных корабельных компонентов."
+    }
+};
 const buildingInfo = {
     MaterialsExtractor: {
         name: "Экстрактор материалов",
@@ -40,7 +78,9 @@ const state = {
     planets: [],
     activePlanetId: null,
     buildingQueue: null,
-    queueCompletionRequested: false
+    queueCompletionRequested: false,
+    researchQueue: null,
+    researchCompletionRequested: false
 };
 
 const elements = {
@@ -58,7 +98,10 @@ const elements = {
     buildingGrid: document.querySelector("#buildingGrid"),
     queueStatus: document.querySelector("#queueStatus"),
     refreshButton: document.querySelector("#refreshButton"),
-    message: document.querySelector("#message")
+    message: document.querySelector("#message"),
+    researchGrid: document.querySelector("#researchGrid"),
+    researchQueueStatus: document.querySelector("#researchQueueStatus"),
+    laboratoryLevel: document.querySelector("#laboratoryLevel")
 };
 
 async function api(path, options = {}) {
@@ -322,6 +365,204 @@ function renderBuildings(status) {
         });
 }
 
+function updateResearchCountdown() {
+    const queue = state.researchQueue;
+
+    if (!queue) {
+        return;
+    }
+
+    const remainingMilliseconds =
+        new Date(queue.completesAt).getTime() - Date.now();
+
+    const seconds = Math.max(
+        0,
+        Math.ceil(remainingMilliseconds / 1000)
+    );
+
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    const formattedTime = minutes > 0
+        ? `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
+        : `${remainingSeconds} сек.`;
+
+    const title =
+        technologyInfo[queue.technology]?.name ??
+        queue.technology;
+
+    const statusText =
+        elements.researchQueueStatus.querySelector("strong");
+
+    if (statusText) {
+        statusText.textContent =
+            `${title} · ур. ${queue.level} · ${formattedTime}`;
+    }
+
+    if (
+        seconds === 0 &&
+        !state.researchCompletionRequested
+    ) {
+        state.researchCompletionRequested = true;
+        loadDashboard();
+    }
+}
+
+function updateResearchQueue(status) {
+    if (status.queuedTechnology === null) {
+        state.researchQueue = null;
+        state.researchCompletionRequested = false;
+
+        elements.researchQueueStatus.classList.remove("busy");
+        elements.researchQueueStatus.innerHTML = `
+            <span class="queue-indicator"></span>
+            <div>
+                <small>ОЧЕРЕДЬ ИССЛЕДОВАНИЙ</small>
+                <strong>Свободна</strong>
+            </div>
+        `;
+
+        return;
+    }
+
+    const queueKey =
+        `${status.queuedTechnology}:` +
+        `${status.queuedTechnologyLevel}:` +
+        `${status.researchCompletesAt}`;
+
+    if (state.researchQueue?.key !== queueKey) {
+        state.researchCompletionRequested = false;
+    }
+
+    state.researchQueue = {
+        key: queueKey,
+        technology: status.queuedTechnology,
+        level: status.queuedTechnologyLevel,
+        completesAt: status.researchCompletesAt
+    };
+
+    elements.researchQueueStatus.classList.add("busy");
+    elements.researchQueueStatus.innerHTML = `
+        <span class="queue-indicator"></span>
+        <div>
+            <small>ОЧЕРЕДЬ ИССЛЕДОВАНИЙ</small>
+            <strong></strong>
+        </div>
+    `;
+
+    updateResearchCountdown();
+}
+
+function renderResearch(status) {
+    elements.laboratoryLevel.textContent =
+        status.researchLaboratoryLevel;
+
+    updateResearchQueue(status);
+
+    const queueBusy =
+        status.queuedTechnology !== null;
+
+    elements.researchGrid.innerHTML = status.technologies
+        .map(technology => {
+            const info = technologyInfo[technology.technology] ?? {
+                name: technology.technology,
+                icon: "icon-research",
+                description: "Имперская исследовательская программа."
+            };
+
+            const targetLevel =
+                technology.currentLevel + 1;
+
+            const laboratoryTooLow =
+                targetLevel > status.researchLaboratoryLevel;
+
+            const affordable =
+                status.materials >= technology.nextLevelCost.materials &&
+                status.deuterium >= technology.nextLevelCost.deuterium;
+
+            const disabled =
+                queueBusy ||
+                laboratoryTooLow ||
+                !affordable;
+
+            const requirement = laboratoryTooLow
+                ? `Требуется лаборатория уровня ${targetLevel}`
+                : "Лаборатория соответствует требованиям";
+
+            return `
+                <article class="
+                    technology-card
+                    ${laboratoryTooLow ? "locked" : ""}
+                ">
+                    <div class="technology-heading">
+                        <div class="technology-icon">
+                            <svg>
+                                <use href="#${info.icon}"></use>
+                            </svg>
+                        </div>
+
+                        <span class="technology-level">
+                            УР. ${technology.currentLevel}
+                        </span>
+                    </div>
+
+                    <h3>${info.name}</h3>
+
+                    <p class="technology-description">
+                        ${info.description}
+                    </p>
+
+                    <div class="technology-requirement">
+                        ${requirement}
+                    </div>
+
+                    <div class="cost-row">
+                        <span class="cost-item">
+                            Материалы ·
+                            ${formatNumber(technology.nextLevelCost.materials)}
+                        </span>
+                        <span class="cost-item">
+                            Дейтерий ·
+                            ${formatNumber(technology.nextLevelCost.deuterium)}
+                        </span>
+                    </div>
+
+                    <button
+                        class="research-button"
+                        data-technology="${technology.technology}"
+                        ${disabled ? "disabled" : ""}>
+                        Исследовать уровень ${targetLevel}
+                    </button>
+                </article>
+            `;
+        })
+        .join("");
+
+    elements.researchGrid
+        .querySelectorAll("[data-technology]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                startResearch(button.dataset.technology);
+            });
+        });
+}
+
+async function startResearch(technology) {
+    try {
+        await api(
+            `/api/game/research/${technology}/start` +
+            `?planetId=${state.activePlanetId}`,
+            {
+                method: "POST"
+            }
+        );
+
+        showMessage("Исследовательская программа запущена.");
+        await loadDashboard();
+    } catch (error) {
+        showMessage(error.message, true);
+    }
+}
 async function loadDashboard() {
     try {
         state.planets = await api("/api/game/planets");
@@ -341,11 +582,17 @@ async function loadDashboard() {
 
         renderPlanet(activePlanet);
 
-        const buildings = await api(
-            `/api/game/buildings/?planetId=${state.activePlanetId}`
-        );
+        const [buildings, research] = await Promise.all([
+            api(
+                `/api/game/buildings/?planetId=${state.activePlanetId}`
+            ),
+            api(
+                `/api/game/research/?planetId=${state.activePlanetId}`
+            )
+        ]);
 
         renderBuildings(buildings);
+        renderResearch(research);
     } catch (error) {
         showMessage(error.message, true);
     }
@@ -378,4 +625,6 @@ elements.refreshButton.addEventListener("click", loadDashboard);
 loadDashboard();
 window.setInterval(loadDashboard, 5000);
 window.setInterval(updateQueueCountdown, 1000);
+window.setInterval(updateResearchCountdown, 1000);
+
 
