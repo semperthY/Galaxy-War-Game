@@ -18,7 +18,17 @@ public class Planet
 
     public int PowerPlantLevel { get; set; }
 
+    public int WarehouseLevel { get; set; }
+
+    public int BuildingSiteCapacity { get; set; }
+
     public DateTime ResourcesUpdatedAt { get; set; }
+
+    public BuildingType? QueuedBuilding { get; set; }
+
+    public int? QueuedBuildingLevel { get; set; }
+
+    public DateTime? BuildingCompletesAt { get; set; }
 
     public Guid? PlayerId { get; set; }
 

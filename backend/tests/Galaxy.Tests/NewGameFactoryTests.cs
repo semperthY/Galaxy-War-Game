@@ -20,6 +20,8 @@ public class NewGameFactoryTests
         Assert.Equal(100m, game.Homeworld.Deuterium);
         Assert.Equal(1, game.Homeworld.MaterialsExtractorLevel);
         Assert.Equal(1, game.Homeworld.PowerPlantLevel);
+        Assert.Equal(1, game.Homeworld.WarehouseLevel);
+        Assert.Equal(20, game.Homeworld.BuildingSiteCapacity);
     }
 
     [Theory]
@@ -31,3 +33,4 @@ public class NewGameFactoryTests
             () => NewGameFactory.Create(username));
     }
 }
+

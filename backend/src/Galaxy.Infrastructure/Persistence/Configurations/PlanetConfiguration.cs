@@ -34,8 +34,20 @@ public class PlanetConfiguration : IEntityTypeConfiguration<Planet>
         builder.Property(x => x.PowerPlantLevel)
             .IsRequired();
 
+        builder.Property(x => x.WarehouseLevel)
+            .IsRequired();
+
+        builder.Property(x => x.BuildingSiteCapacity)
+            .IsRequired();
+
         builder.Property(x => x.ResourcesUpdatedAt)
             .IsRequired();
+
+        builder.Property(x => x.QueuedBuilding);
+
+        builder.Property(x => x.QueuedBuildingLevel);
+
+        builder.Property(x => x.BuildingCompletesAt);
 
         builder.HasOne(x => x.Player)
             .WithMany(x => x.Planets)

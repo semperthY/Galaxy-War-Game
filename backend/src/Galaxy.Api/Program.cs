@@ -1,6 +1,7 @@
 using Galaxy.Api.Endpoints;
 using Galaxy.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddOpenApi();
 
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(
+        new JsonStringEnumConverter());
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -24,6 +31,7 @@ app.UseHttpsRedirection();
 
 app.MapGameEndpoints();
 app.MapGalaxyEndpoints();
+app.MapBuildingEndpoints();
 
 app.MapGet("/health", () => Results.Ok(new
 {
@@ -31,5 +39,6 @@ app.MapGet("/health", () => Results.Ok(new
 }));
 
 app.Run();
+
 
 
