@@ -58,6 +58,7 @@ public static class GameEndpoints
     }
 
     private static async Task<IResult> GetCurrentGameAsync(
+        Guid? planetId,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
@@ -65,9 +66,7 @@ public static class GameEndpoints
             .AsNoTracking()
             .Include(x => x.Player)
             .Include(x => x.StarSystem)
-            .Where(x => x.PlayerId != null)
-            .OrderBy(x => x.StarSystem.SystemNumber)
-            .ThenBy(x => x.Position)
+            .SelectOwnedPlanet(planetId)
             .FirstOrDefaultAsync(cancellationToken);
 
         return planet is null
@@ -79,15 +78,14 @@ public static class GameEndpoints
     }
 
     private static async Task<IResult> CollectResourcesAsync(
+        Guid? planetId,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var planet = await dbContext.Planets
             .Include(x => x.Player)
             .Include(x => x.StarSystem)
-            .Where(x => x.PlayerId != null)
-            .OrderBy(x => x.StarSystem.SystemNumber)
-            .ThenBy(x => x.Position)
+            .SelectOwnedPlanet(planetId)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (planet is null)
@@ -160,6 +158,8 @@ public sealed record GameResponse(
     decimal EnergyConsumption,
     decimal ProductionEfficiency,
     DateTime ResourcesUpdatedAt);
+
+
 
 
 

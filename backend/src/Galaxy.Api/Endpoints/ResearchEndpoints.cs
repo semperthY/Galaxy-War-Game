@@ -17,10 +17,12 @@ public static class ResearchEndpoints
     }
 
     private static async Task<IResult> GetStatusAsync(
+        Guid? planetId,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var state = await LoadStateAsync(
+            planetId,
             dbContext,
             cancellationToken);
 
@@ -47,11 +49,13 @@ public static class ResearchEndpoints
     }
 
     private static async Task<IResult> StartAsync(
+        Guid? planetId,
         TechnologyType technology,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var state = await LoadStateAsync(
+            planetId,
             dbContext,
             cancellationToken);
 
@@ -90,6 +94,7 @@ public static class ResearchEndpoints
     }
 
     private static async Task<ResearchState?> LoadStateAsync(
+        Guid? planetId,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
@@ -103,9 +108,7 @@ public static class ResearchEndpoints
         }
 
         var planet = await dbContext.Planets
-            .Where(x => x.PlayerId == player.Id)
-            .OrderBy(x => x.StarSystem.SystemNumber)
-            .ThenBy(x => x.Position)
+            .SelectOwnedPlanet(player.Id, planetId)
             .FirstOrDefaultAsync(cancellationToken);
 
         return planet is null
@@ -161,4 +164,8 @@ public sealed record TechnologyOptionResponse(
     TechnologyType Technology,
     int CurrentLevel,
     ResearchCost NextLevelCost);
+
+
+
+
 

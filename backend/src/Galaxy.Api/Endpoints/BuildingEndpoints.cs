@@ -16,11 +16,13 @@ public static class BuildingEndpoints
     }
 
     private static async Task<IResult> GetStatusAsync(
+        Guid? planetId,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var planet = await GetPlanetAsync(
             dbContext,
+            planetId,
             cancellationToken);
 
         if (planet is null)
@@ -39,12 +41,14 @@ public static class BuildingEndpoints
     }
 
     private static async Task<IResult> StartAsync(
+        Guid? planetId,
         BuildingType building,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var planet = await GetPlanetAsync(
             dbContext,
+            planetId,
             cancellationToken);
 
         if (planet is null)
@@ -78,11 +82,11 @@ public static class BuildingEndpoints
 
     private static Task<Planet?> GetPlanetAsync(
         ApplicationDbContext dbContext,
+        Guid? planetId,
         CancellationToken cancellationToken)
     {
-        return dbContext.Planets.Where(x => x.PlayerId != null)
-            .OrderBy(x => x.StarSystem.SystemNumber)
-            .ThenBy(x => x.Position)
+        return dbContext.Planets
+            .SelectOwnedPlanet(planetId)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -144,5 +148,8 @@ public sealed record BuildingOptionResponse(
     BuildingType Building,
     int CurrentLevel,
     BuildingCost NextLevelCost);
+
+
+
 
 

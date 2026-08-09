@@ -17,10 +17,12 @@ public static class ShipAssemblyEndpoints
     }
 
     private static async Task<IResult> GetStatusAsync(
+        Guid? planetId,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var state = await LoadStateAsync(
+            planetId,
             dbContext,
             cancellationToken);
 
@@ -39,11 +41,13 @@ public static class ShipAssemblyEndpoints
     }
 
     private static async Task<IResult> EnqueueAsync(
+        Guid? planetId,
         CreateShipAssemblyOrderRequest request,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var state = await LoadStateAsync(
+            planetId,
             dbContext,
             cancellationToken);
 
@@ -86,6 +90,7 @@ public static class ShipAssemblyEndpoints
     }
 
     private static async Task<AssemblyState?> LoadStateAsync(
+        Guid? planetId,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
@@ -107,9 +112,7 @@ public static class ShipAssemblyEndpoints
             .ThenInclude(x => x.Modules)
             .Include(x => x.Ships)
             .ThenInclude(x => x.Blueprint)
-            .Where(x => x.PlayerId == player.Id)
-            .OrderBy(x => x.StarSystem.SystemNumber)
-            .ThenBy(x => x.Position)
+            .SelectOwnedPlanet(player.Id, planetId)
             .FirstOrDefaultAsync(cancellationToken);
 
         return planet is null
@@ -194,5 +197,9 @@ public sealed record ReserveShipResponse(
     string BlueprintName,
     int BlueprintVersion,
     DateTime CreatedAt);
+
+
+
+
 
 

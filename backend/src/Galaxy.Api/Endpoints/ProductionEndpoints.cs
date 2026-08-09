@@ -21,10 +21,12 @@ public static class ProductionEndpoints
     }
 
     private static async Task<IResult> GetStatusAsync(
+        Guid? planetId,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var state = await LoadStateAsync(
+            planetId,
             dbContext,
             cancellationToken);
 
@@ -45,12 +47,14 @@ public static class ProductionEndpoints
     }
 
     private static async Task<IResult> EnqueueAsync(
+        Guid? planetId,
         int lineNumber,
         CreateProductionOrderRequest request,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var state = await LoadStateAsync(
+            planetId,
             dbContext,
             cancellationToken);
 
@@ -85,6 +89,7 @@ public static class ProductionEndpoints
     }
 
     private static async Task<ProductionState?> LoadStateAsync(
+        Guid? planetId,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
@@ -100,9 +105,7 @@ public static class ProductionEndpoints
         var planet = await dbContext.Planets
             .Include(x => x.ComponentInventory)
             .Include(x => x.ProductionOrders)
-            .Where(x => x.PlayerId == player.Id)
-            .OrderBy(x => x.StarSystem.SystemNumber)
-            .ThenBy(x => x.Position)
+            .SelectOwnedPlanet(player.Id, planetId)
             .FirstOrDefaultAsync(cancellationToken);
 
         return planet is null
@@ -270,6 +273,10 @@ public sealed record ProductionOrderResponse(
     int Quantity,
     DateTime? StartedAt,
     DateTime? CompletesAt);
+
+
+
+
 
 
 
