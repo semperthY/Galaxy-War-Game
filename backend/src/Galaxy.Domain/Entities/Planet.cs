@@ -41,6 +41,13 @@ public class Planet
     public Guid StarSystemId { get; set; }
 
     public StarSystem StarSystem { get; set; } = null!;
+
+    public ICollection<ComponentInventoryItem> ComponentInventory { get; set; } =
+        new List<ComponentInventoryItem>();
+
+    public ICollection<ComponentProductionOrder> ProductionOrders { get; set; } =
+        new List<ComponentProductionOrder>();
 }
+
 
 

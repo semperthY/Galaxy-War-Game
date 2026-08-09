@@ -6,7 +6,6 @@ public sealed record HullDefinition(
     string Code,
     string Name,
     RaceType Race,
-    decimal Volume,
     ComponentCost Cost,
     int ProductionSeconds,
     TechnologyType RequiredTechnology,

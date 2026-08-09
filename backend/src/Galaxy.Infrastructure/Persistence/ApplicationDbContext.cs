@@ -19,6 +19,12 @@ public class ApplicationDbContext : DbContext
     public DbSet<PlayerTechnology> PlayerTechnologies =>
         Set<PlayerTechnology>();
 
+    public DbSet<ComponentInventoryItem> ComponentInventory =>
+        Set<ComponentInventoryItem>();
+
+    public DbSet<ComponentProductionOrder> ProductionOrders =>
+        Set<ComponentProductionOrder>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -26,4 +32,5 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }
+
 

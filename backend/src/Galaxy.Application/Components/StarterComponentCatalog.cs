@@ -122,7 +122,6 @@ public static class StarterComponentCatalog
             $"{prefix}-hull-1",
             $"{race} Light Hull",
             race,
-            0m,
             new ComponentCost(180m, 10m),
             20,
             TechnologyType.MaterialsScience,
@@ -167,3 +166,4 @@ public static class StarterComponentCatalog
             controlEnergy));
     }
 }
+

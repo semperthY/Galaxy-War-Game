@@ -12,8 +12,6 @@ public interface IComponentDefinition
 
     ComponentType Type { get; }
 
-    decimal Volume { get; }
-
     ComponentCost Cost { get; }
 
     int ProductionSeconds { get; }
