@@ -118,8 +118,8 @@ public static class DevelopmentEndpoints
 
         return Results.Ok(new
         {
-            operation.Id,
-            planet.Id,
+            OperationId = operation.Id,
+            PlanetId = planet.Id,
             operation.CompletedAt
         });
     }
