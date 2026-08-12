@@ -92,32 +92,36 @@
             </div>
 
             <nav class="navigation">
-                <a href="#overview" class="nav-item active">
+                <a href="#overview" class="nav-item active" data-page="overview">
                     <svg><use href="#icon-planet"></use></svg>
-                    <span>Планета</span>
+                    <span>Обзор</span>
                 </a>
-                <a href="#buildings" class="nav-item">
+                <a href="#buildings" class="nav-item" data-page="buildings">
                     <svg><use href="#icon-buildings"></use></svg>
                     <span>Строительство</span>
                 </a>
                 <div class="nav-divider"></div>
-                <a href="#research" class="nav-item">
+                <a href="#research" class="nav-item" data-page="research">
                     <svg><use href="#icon-research"></use></svg>
                     <span>Исследования</span>
                 </a>
-                <a href="#production" class="nav-item">
+                <a href="#production" class="nav-item" data-page="production">
                     <svg><use href="#icon-factory"></use></svg>
                     <span>Производство</span>
                 </a>
-                <a href="#ship-designer" class="nav-item">
+                <a href="#ship-designer" class="nav-item" data-page="ship-designer">
                     <svg><use href="#icon-ship"></use></svg>
                     <span>Конструктор</span>
                 </a>
-                <a href="#ship-assembly" class="nav-item">
+                <a href="#ship-assembly" class="nav-item" data-page="ship-assembly">
                     <svg><use href="#icon-factory"></use></svg>
                     <span>Сборка</span>
                 </a>
-                <a href="#galaxy" class="nav-item">
+                <a href="#fleet" class="nav-item" data-page="fleet">
+                    <svg><use href="#icon-ship"></use></svg>
+                    <span>Флот</span>
+                </a>
+                <a href="#galaxy" class="nav-item" data-page="galaxy">
                     <svg><use href="#icon-galaxy"></use></svg>
                     <span>Галактика</span>
                 </a>
@@ -140,6 +144,7 @@
         </aside>
 
         <div class="workspace">
+            <div class="workspace-header">
             <header class="topbar">
                 <div>
                     <span class="breadcrumb">ИМПЕРИЯ / КОМАНДНЫЙ ЦЕНТР</span>
@@ -193,10 +198,19 @@
                 </div>
             </header>
 
+            <section id="activeProcesses" class="active-processes" hidden>
+                <div class="active-processes-heading">
+                    <span class="status-light"></span>
+                    <strong>АКТИВНЫЕ ПРОЦЕССЫ</strong>
+                </div>
+                <div id="activeProcessList" class="active-process-list"></div>
+            </section>
+            </div>
+
             <main>
                 <section id="message" class="message hidden"></section>
 
-                <section id="overview" class="command-hero">
+                <section id="overview" class="command-hero game-page" data-game-page="overview">
                     <div class="hero-content">
                         <span class="sector-label">ПЛАНЕТАРНЫЙ УЗЕЛ</span>
                         <h2 id="planetName">Загрузка системы...</h2>
@@ -220,7 +234,7 @@
                     </div>
                 </section>
 
-                <section class="resource-grid">
+                <section class="resource-grid game-page" data-game-page="overview">
                     <article class="resource-card materials-card">
                         <div class="resource-icon">
                             <svg><use href="#icon-materials"></use></svg>
@@ -274,7 +288,7 @@
                     </article>
                 </section>
 
-                <section id="buildings" class="content-panel">
+                <section id="buildings" class="content-panel game-page" data-game-page="buildings">
                     <div class="panel-heading">
                         <div>
                             <span class="section-label">ИНФРАСТРУКТУРА</span>
@@ -296,7 +310,7 @@
                     <div id="buildingGrid" class="building-grid"></div>
                 </section>
 
-                <section id="research" class="content-panel research-panel">
+                <section id="research" class="content-panel research-panel game-page" data-game-page="research">
                     <div class="panel-heading">
                         <div>
                             <span class="section-label">
@@ -337,7 +351,8 @@
 
                 <section
                     id="production"
-                    class="content-panel production-panel">
+                    class="content-panel production-panel game-page"
+                    data-game-page="production">
 
                     <div class="panel-heading">
                         <div>
@@ -433,7 +448,8 @@
 
                 <section
                     id="ship-designer"
-                    class="content-panel designer-panel">
+                    class="content-panel designer-panel game-page"
+                    data-game-page="ship-designer">
 
                     <div class="designer-hero">
                         <div>
@@ -653,7 +669,7 @@
                         </div>
                     </div>
                 </section>
-                <section id="ship-assembly" class="content-panel assembly-panel">
+                <section id="ship-assembly" class="content-panel assembly-panel game-page" data-game-page="ship-assembly">
                     <div class="assembly-hero">
                         <div>
                             <span class="section-label">ОРБИТАЛЬНАЯ СБОРКА</span>
@@ -709,7 +725,9 @@
                         </section>
                     </div>
 
-                    <div class="reserve-section">
+                </section>
+
+                <section id="fleet" class="content-panel reserve-section game-page" data-game-page="fleet">
                         <div class="subsection-heading">
                             <div>
                                 <span class="section-label">РЕЗЕРВ</span>
@@ -720,10 +738,9 @@
                             </span>
                         </div>
                         <div id="reserveGrid" class="reserve-grid"></div>
-                    </div>
                 </section>
 
-                <section id="galaxy" class="content-panel galaxy-panel">
+                <section id="galaxy" class="content-panel galaxy-panel game-page" data-game-page="galaxy">
                     <div class="galaxy-heading">
                         <div>
                             <span class="section-label">ЗВЁЗДНАЯ НАВИГАЦИЯ</span>
@@ -773,7 +790,7 @@
                             <button id="colonizeButton"
                                     class="save-blueprint-button" disabled>
                                 <svg><use href="#icon-galaxy"></use></svg>
-                                Основать колонию
+                                Начать колонизацию
                             </button>
                         </aside>
                     </div>

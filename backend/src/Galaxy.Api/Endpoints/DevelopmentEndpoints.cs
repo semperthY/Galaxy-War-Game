@@ -1,4 +1,5 @@
 using Galaxy.Application.Components;
+using Galaxy.Application.Colonization;
 using Galaxy.Domain.Entities;
 using Galaxy.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,9 @@ public static class DevelopmentEndpoints
         }));
 
         group.MapPost("/supply", GrantSupplyAsync);
+        group.MapPost(
+            "/colonization/{operationId:guid}/complete",
+            CompleteColonizationAsync);
     }
 
     private static async Task<IResult> GrantSupplyAsync(
@@ -83,6 +87,41 @@ public static class DevelopmentEndpoints
             planet.Deuterium,
             planet.ComponentInventory.Count,
             MinimumComponentQuantity));
+    }
+
+    private static async Task<IResult> CompleteColonizationAsync(
+        Guid operationId,
+        ApplicationDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        var operation = await dbContext.ColonizationOperations
+            .Include(x => x.Player)
+            .ThenInclude(x => x.Planets)
+            .Include(x => x.TargetPlanet)
+            .ThenInclude(x => x.StarSystem)
+            .SingleOrDefaultAsync(
+                x => x.Id == operationId,
+                cancellationToken);
+
+        if (operation is null)
+        {
+            return Results.NotFound();
+        }
+
+        var completedAt = DateTime.UtcNow;
+        operation.CompletesAt = completedAt;
+        var planet = ColonizationService.Complete(
+            operation,
+            completedAt);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return Results.Ok(new
+        {
+            operation.Id,
+            planet.Id,
+            operation.CompletedAt
+        });
     }
 }
 

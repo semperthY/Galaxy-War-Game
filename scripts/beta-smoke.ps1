@@ -333,17 +333,49 @@ try {
         Fail('No neutral planet was found in the same system for colonization')
     }
 
-    Write-Step "Colonizing the target planet"
-    $colonized = Invoke-Api -Path "/api/game/colonization/$($targetPlanet.id)" -Method POST -Body @{ shipId = $reserveShip.id }
-    if ($colonized.consumedShipId -ne $reserveShip.id) {
+    Write-Step "Starting timed colonization deployment"
+    $colonization = Invoke-Api -Path "/api/game/colonization/$($targetPlanet.id)" -Method POST -Body @{ shipId = $reserveShip.id }
+    if ($colonization.consumedShipId -ne $reserveShip.id) {
         Fail('Colonization response did not reference the consumed ship')
     }
+
+    $planetsBeforeCompletion = Invoke-Api -Path '/api/game/planets' -Method GET
+    if (@($planetsBeforeCompletion).Count -ne 1) {
+        Fail('Colonization claimed the target planet before deployment completed')
+    }
+
+    $activeColonization = Invoke-Api -Path '/api/game/colonization/' -Method GET
+    if (-not ($activeColonization | Where-Object { $_.id -eq $colonization.id })) {
+        Fail('Colonization operation did not persist')
+    }
+
+    Write-Step "Completing colonization through protected development tools"
+    Invoke-Api -Path "/api/dev/colonization/$($colonization.id)/complete" -Method POST | Out-Null
 
     Write-Step "Verifying that the player now has two planets"
     $planets = Invoke-Api -Path '/api/game/planets' -Method GET
     $ownedPlanetCount = @($planets | Where-Object { $_.id -ne $null }).Count
     if ($ownedPlanetCount -lt 2) {
         Fail("Expected at least two owned planets after colonization, got $ownedPlanetCount")
+    }
+
+    $newColonyBuildings = Invoke-Api -Path "/api/game/buildings/?planetId=$($targetPlanet.id)" -Method GET
+    $newMaterialsExtractor = $newColonyBuildings.buildings | Where-Object { $_.building -eq 'MaterialsExtractor' } | Select-Object -First 1
+    $newResearchLaboratory = $newColonyBuildings.buildings | Where-Object { $_.building -eq 'ResearchLaboratory' } | Select-Object -First 1
+    if ($newMaterialsExtractor.currentLevel -ne 1 -or $newResearchLaboratory.currentLevel -ne 0) {
+        Fail('New colony did not receive an independent starting building state')
+    }
+
+    Write-Step "Verifying independent colony construction state"
+    Invoke-Api -Path "/api/dev/supply?planetId=$($targetPlanet.id)" -Method POST | Out-Null
+    Invoke-Api -Path "/api/game/buildings/MaterialsExtractor/start?planetId=$($targetPlanet.id)" -Method POST | Out-Null
+    $homeworldBuildingsAfter = Invoke-Api -Path "/api/game/buildings/?planetId=$homeworldId" -Method GET
+    $newColonyBuildingsAfter = Invoke-Api -Path "/api/game/buildings/?planetId=$($targetPlanet.id)" -Method GET
+    if ($homeworldBuildingsAfter.queuedBuilding -ne $null) {
+        Fail('New colony construction leaked into the homeworld queue')
+    }
+    if ($newColonyBuildingsAfter.queuedBuilding -ne 'MaterialsExtractor') {
+        Fail('New colony did not keep its own construction queue')
     }
 
     Write-Host ''
@@ -390,4 +422,3 @@ finally {
     $PSNativeCommandUseErrorActionPreference = $previousPSNativeCommandUseErrorActionPreference
     Set-Location $previousLocation
 }
-

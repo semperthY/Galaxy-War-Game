@@ -37,6 +37,9 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Ship> Ships => Set<Ship>();
 
+    public DbSet<ColonizationOperation> ColonizationOperations =>
+        Set<ColonizationOperation>();
+
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
     {

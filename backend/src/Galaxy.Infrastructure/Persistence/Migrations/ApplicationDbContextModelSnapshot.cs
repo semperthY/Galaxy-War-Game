@@ -22,6 +22,59 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Galaxy.Domain.Entities.ColonizationOperation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BlueprintName")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("BlueprintVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CompletesAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ConsumedShipId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ShipName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("SourcePlanetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("TargetPlanetId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConsumedShipId")
+                        .IsUnique();
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("TargetPlanetId")
+                        .IsUnique();
+
+                    b.ToTable("ColonizationOperations");
+                });
+
             modelBuilder.Entity("Galaxy.Domain.Entities.ComponentInventoryItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -45,6 +98,25 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("ComponentInventory");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.ColonizationOperation", b =>
+                {
+                    b.HasOne("Galaxy.Domain.Entities.Player", "Player")
+                        .WithMany("ColonizationOperations")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Galaxy.Domain.Entities.Planet", "TargetPlanet")
+                        .WithMany()
+                        .HasForeignKey("TargetPlanetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Player");
+
+                    b.Navigation("TargetPlanet");
                 });
 
             modelBuilder.Entity("Galaxy.Domain.Entities.ComponentProductionOrder", b =>
@@ -174,9 +246,7 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("Race")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(1);
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("ResearchCompletesAt")
                         .HasColumnType("timestamp with time zone");
@@ -501,6 +571,8 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Galaxy.Domain.Entities.Player", b =>
                 {
                     b.Navigation("Blueprints");
+
+                    b.Navigation("ColonizationOperations");
 
                     b.Navigation("Planets");
 

@@ -6,19 +6,48 @@ namespace Galaxy.Tests;
 public class ColonizationServiceTests
 {
     [Fact]
-    public void Colonize_ClaimsPlanetAndConsumesShip()
+    public void Begin_CreatesTimedOperationAndConsumesShip()
     {
         var utcNow = new DateTime(
             2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         var state = CreateState(includeColonyModule: true);
 
-        var result = ColonizationService.Colonize(
+        var operation = ColonizationService.Begin(
             state.Player,
             state.Ship,
             state.Target,
             utcNow);
 
+        Assert.Null(state.Target.PlayerId);
+        Assert.Equal(state.Target.Id, operation.TargetPlanetId);
+        Assert.Equal(state.Ship.Id, operation.ConsumedShipId);
+        Assert.Equal(
+            utcNow.Add(ColonizationService.DeploymentDuration),
+            operation.CompletesAt);
+        Assert.Contains(operation, state.Player.ColonizationOperations);
+        Assert.DoesNotContain(state.Ship, state.Origin.Ships);
+        Assert.DoesNotContain(state.Ship, state.Player.Ships);
+    }
+
+    [Fact]
+    public void Complete_ClaimsPlanetWithIndependentStartingState()
+    {
+        var utcNow = new DateTime(
+            2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        var state = CreateState(includeColonyModule: true);
+        var operation = ColonizationService.Begin(
+            state.Player,
+            state.Ship,
+            state.Target,
+            utcNow);
+
+        var result = ColonizationService.Complete(
+            operation,
+            operation.CompletesAt);
+
+        Assert.Same(state.Target, result);
         Assert.Equal(state.Player.Id, state.Target.PlayerId);
         Assert.Equal("Colony 1:2", state.Target.Name);
         Assert.Equal(250m, state.Target.Materials);
@@ -27,8 +56,29 @@ public class ColonizationServiceTests
         Assert.Equal(1, state.Target.PowerPlantLevel);
         Assert.Equal(1, state.Target.WarehouseLevel);
         Assert.Contains(state.Target, state.Player.Planets);
-        Assert.DoesNotContain(state.Ship, state.Origin.Ships);
-        Assert.Same(state.Ship, result.ConsumedShip);
+        Assert.Equal(operation.CompletesAt, operation.CompletedAt);
+    }
+
+    [Fact]
+    public void Complete_RejectsOperationBeforeDeadline()
+    {
+        var utcNow = DateTime.UtcNow;
+        var state = CreateState(includeColonyModule: true);
+        var operation = ColonizationService.Begin(
+            state.Player,
+            state.Ship,
+            state.Target,
+            utcNow);
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => ColonizationService.Complete(
+                operation,
+                operation.CompletesAt.AddSeconds(-1)));
+
+        Assert.Equal(
+            "Colonization deployment is not complete yet.",
+            exception.Message);
+        Assert.Null(state.Target.PlayerId);
     }
 
     [Fact]
@@ -37,7 +87,7 @@ public class ColonizationServiceTests
         var state = CreateState(includeColonyModule: false);
 
         var exception = Assert.Throws<InvalidOperationException>(
-            () => ColonizationService.Colonize(
+            () => ColonizationService.Begin(
                 state.Player,
                 state.Ship,
                 state.Target,
@@ -56,7 +106,7 @@ public class ColonizationServiceTests
         state.Target.StarSystemId = Guid.NewGuid();
 
         var exception = Assert.Throws<InvalidOperationException>(
-            () => ColonizationService.Colonize(
+            () => ColonizationService.Begin(
                 state.Player,
                 state.Ship,
                 state.Target,

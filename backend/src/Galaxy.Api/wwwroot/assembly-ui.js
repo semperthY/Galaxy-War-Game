@@ -165,21 +165,41 @@ window.AssemblyUi = (() => {
     }
 
     function renderReserve() {
+        const groups = Array.from(
+            state.status.reserve.reduce((result, ship) => {
+                const key = ship.blueprintId;
+                const group = result.get(key) ?? {
+                    blueprintId: ship.blueprintId,
+                    blueprintName: ship.blueprintName,
+                    blueprintVersion: ship.blueprintVersion,
+                    ships: []
+                };
+
+                group.ships.push(ship);
+                result.set(key, group);
+                return result;
+            }, new Map()).values()
+        ).sort((left, right) =>
+            left.blueprintName.localeCompare(right.blueprintName, "ru")
+        );
+
         elements.reserveCount.textContent =
             `${state.status.reserve.length} кораблей`;
 
-        elements.reserveGrid.innerHTML = state.status.reserve.length > 0
-            ? state.status.reserve.map(ship => `
+        elements.reserveGrid.innerHTML = groups.length > 0
+            ? groups.map(group => `
                 <article class="reserve-ship">
                     <div class="reserve-ship-icon">
                         <svg><use href="#icon-ship"></use></svg>
                         <i></i>
                     </div>
                     <div>
-                        <small>РЕЗЕРВ · ГОТОВ К НАЗНАЧЕНИЮ</small>
-                        <h4>${ship.name}</h4>
+                        <small>ПРОЕКТ · ГОТОВЫ К НАЗНАЧЕНИЮ</small>
+                        <h4>
+                            ${group.blueprintName} Mk.${group.blueprintVersion}
+                        </h4>
                         <p>
-                            ${ship.blueprintName} Mk.${ship.blueprintVersion}
+                            В резерве: <strong>${group.ships.length}</strong>
                         </p>
                     </div>
                 </article>

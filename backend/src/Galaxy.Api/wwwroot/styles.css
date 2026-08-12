@@ -268,10 +268,14 @@ svg {
     min-width: 0;
 }
 
-.topbar {
+.workspace-header {
     position: sticky;
     top: 0;
     z-index: 15;
+}
+
+.topbar {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -280,6 +284,93 @@ svg {
     border-bottom: 1px solid var(--line);
     background: rgba(4, 9, 18, 0.76);
     backdrop-filter: blur(24px);
+}
+
+.active-processes {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 58px;
+    padding: 8px 34px;
+    border-bottom: 1px solid rgba(82, 217, 255, 0.18);
+    background: rgba(5, 13, 24, 0.94);
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(24px);
+}
+
+.active-processes[hidden],
+.game-page[hidden] {
+    display: none;
+}
+
+.active-processes-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    color: var(--green);
+    font-size: 8px;
+    letter-spacing: 0.12em;
+}
+
+.active-process-list {
+    display: flex;
+    gap: 8px;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.active-process {
+    display: grid;
+    grid-template-columns: 24px minmax(115px, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    min-width: 245px;
+    padding: 7px 10px;
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    background: rgba(15, 31, 52, 0.78);
+}
+
+.active-process:hover {
+    border-color: var(--line-active);
+}
+
+.active-process svg,
+.active-process time {
+    color: var(--cyan);
+}
+
+.active-process span,
+.active-process small,
+.active-process strong {
+    display: block;
+    min-width: 0;
+}
+
+.active-process small {
+    color: var(--muted);
+    font-size: 7px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.active-process strong {
+    margin-top: 2px;
+    overflow: hidden;
+    font-size: 9px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.active-process time {
+    font-size: 10px;
+    font-weight: 800;
 }
 
 .breadcrumb,
@@ -809,24 +900,48 @@ main {
         position: static;
         width: 100%;
         min-height: auto;
-        padding: 15px;
+        padding: 0;
+        border: 0;
     }
 
     .brand {
-        padding-bottom: 14px;
+        display: none;
     }
 
     .navigation {
+        position: fixed;
+        inset: auto 0 0 0;
+        z-index: 100;
         display: flex;
+        gap: 2px;
+        padding: 7px max(8px, env(safe-area-inset-right))
+            calc(7px + env(safe-area-inset-bottom))
+            max(8px, env(safe-area-inset-left));
         overflow-x: auto;
+        border-top: 1px solid var(--line);
+        background: rgba(4, 9, 18, 0.97);
+        box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.38);
+        backdrop-filter: blur(22px);
     }
 
     .nav-item {
-        min-width: max-content;
+        flex: 0 0 74px;
+        align-items: center;
+        justify-content: center;
+        min-width: 74px;
+        min-height: 52px;
+        gap: 3px;
+        padding: 5px;
+        flex-direction: column;
+    }
+
+    .nav-item span {
+        font-size: 8px;
     }
 
     .nav-divider,
-    .server-status {
+    .server-status,
+    .dev-supply-button {
         display: none;
     }
 
@@ -840,6 +955,14 @@ main {
         flex-direction: column;
         gap: 14px;
         padding: 20px;
+    }
+
+    .active-processes {
+        padding: 8px 15px;
+    }
+
+    .active-processes-heading {
+        display: none;
     }
 
     .topbar-actions {
@@ -858,6 +981,7 @@ main {
     main {
         width: calc(100% - 30px);
         margin-top: 15px;
+        margin-bottom: 105px;
     }
 }
 

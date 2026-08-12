@@ -255,7 +255,8 @@ const buildingInfo = {
 
 const state = {
     planets: [],
-    activePlanetId: null,
+    activePlanetId: window.localStorage.getItem("activePlanetId"),
+    activePage: "overview",
     buildingQueue: null,
     queueCompletionRequested: false,
     researchQueue: null,
@@ -295,7 +296,11 @@ const elements = {
     componentInventory:
         document.querySelector("#componentInventory"),
     productionLines:
-        document.querySelector("#productionLines")
+        document.querySelector("#productionLines"),
+    activeProcesses:
+        document.querySelector("#activeProcesses"),
+    activeProcessList:
+        document.querySelector("#activeProcessList")
 };
 
 const designerElements = {
@@ -691,6 +696,141 @@ function formatNumber(value) {
     return new Intl.NumberFormat("ru-RU", {
         maximumFractionDigits: 2
     }).format(value);
+}
+
+function formatDuration(completesAt) {
+    const totalSeconds = Math.max(
+        0,
+        Math.ceil((new Date(completesAt).getTime() - Date.now()) / 1000)
+    );
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+        return `${hours}:${minutes.toString().padStart(2, "0")}:` +
+            seconds.toString().padStart(2, "0");
+    }
+
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+function openPage(page, updateHash = true) {
+    const knownPages = new Set(
+        Array.from(document.querySelectorAll("[data-game-page]"))
+            .map(element => element.dataset.gamePage)
+    );
+    const nextPage = knownPages.has(page) ? page : "overview";
+
+    state.activePage = nextPage;
+
+    document.querySelectorAll("[data-game-page]").forEach(element => {
+        element.hidden = element.dataset.gamePage !== nextPage;
+    });
+
+    document.querySelectorAll("[data-page]").forEach(link => {
+        link.classList.toggle("active", link.dataset.page === nextPage);
+    });
+
+    if (updateHash && window.location.hash !== `#${nextPage}`) {
+        window.history.replaceState(null, "", `#${nextPage}`);
+    }
+
+    window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+function updateActiveProcessCountdowns() {
+    let expired = false;
+
+    document
+        .querySelectorAll("[data-active-process-completes]")
+        .forEach(element => {
+            const completesAt = element.dataset.activeProcessCompletes;
+            element.textContent = formatDuration(completesAt);
+            expired ||= new Date(completesAt).getTime() <= Date.now();
+        });
+
+    if (expired) {
+        loadDashboard();
+    }
+}
+
+function renderActiveProcesses(
+    buildings,
+    research,
+    production,
+    assembly,
+    colonization)
+{
+    const processes = [];
+
+    if (buildings.queuedBuilding && buildings.buildingCompletesAt) {
+        processes.push({
+            page: "buildings",
+            icon: "icon-buildings",
+            type: "Строительство",
+            title: `${buildingInfo[buildings.queuedBuilding]?.name ?? buildings.queuedBuilding} · ур. ${buildings.queuedBuildingLevel}`,
+            completesAt: buildings.buildingCompletesAt
+        });
+    }
+
+    if (research.queuedTechnology && research.researchCompletesAt) {
+        processes.push({
+            page: "research",
+            icon: "icon-research",
+            type: "Исследование",
+            title: `${technologyInfo[research.queuedTechnology]?.name ?? research.queuedTechnology} · ур. ${research.queuedTechnologyLevel}`,
+            completesAt: research.researchCompletesAt
+        });
+    }
+
+    production.orders
+        .filter(order => order.completesAt)
+        .forEach(order => processes.push({
+            page: "production",
+            icon: "icon-factory",
+            type: `Производство · линия ${order.lineNumber}`,
+            title: `${getComponentName(order.componentCode)} × ${order.quantity}`,
+            completesAt: order.completesAt
+        }));
+
+    assembly.orders
+        .filter(order => order.completesAt)
+        .forEach(order => processes.push({
+            page: "ship-assembly",
+            icon: "icon-ship",
+            type: "Сборка",
+            title: `${order.blueprintName} Mk.${order.blueprintVersion} × ${order.quantity}`,
+            completesAt: order.completesAt
+        }));
+
+    colonization.forEach(operation => processes.push({
+        page: "galaxy",
+        icon: "icon-galaxy",
+        type: "Колонизация",
+        title: `${operation.targetPlanetName} · ${operation.galaxy}:${operation.system}:${operation.position}`,
+        completesAt: operation.completesAt
+    }));
+
+    elements.activeProcesses.hidden = processes.length === 0;
+    elements.activeProcessList.innerHTML = processes.map(process => `
+        <button class="active-process" data-process-page="${process.page}">
+            <svg><use href="#${process.icon}"></use></svg>
+            <span>
+                <small>${process.type}</small>
+                <strong>${process.title}</strong>
+            </span>
+            <time data-active-process-completes="${process.completesAt}">
+                ${formatDuration(process.completesAt)}
+            </time>
+        </button>
+    `).join("");
+
+    elements.activeProcessList
+        .querySelectorAll("[data-process-page]")
+        .forEach(button => button.addEventListener("click", () => {
+            openPage(button.dataset.processPage);
+        }));
 }
 
 function showMessage(text, isError = false) {
@@ -2001,8 +2141,14 @@ async function loadDashboard() {
             !state.activePlanetId ||
             !state.planets.some(x => x.id === state.activePlanetId)
         ) {
-            state.activePlanetId = state.planets[0].id;
+            state.activePlanetId = state.planets[0]?.id ?? null;
         }
+
+        if (!state.activePlanetId) {
+            throw new Error("У игрока пока нет доступных колоний.");
+        }
+
+        window.localStorage.setItem("activePlanetId", state.activePlanetId);
 
         renderPlanetSelector();
 
@@ -2019,7 +2165,8 @@ async function loadDashboard() {
             components,
             blueprints,
             assembly,
-            galaxy
+            galaxy,
+            colonization
         ] = await Promise.all([
             api(
                 `/api/game/buildings/?planetId=${state.activePlanetId}`
@@ -2035,7 +2182,8 @@ async function loadDashboard() {
             api(
                 `/api/game/assembly/?planetId=${state.activePlanetId}`
             ),
-            api("/api/galaxy")
+            api("/api/galaxy"),
+            api("/api/game/colonization/")
         ]);
 
         renderBuildings(buildings);
@@ -2043,12 +2191,20 @@ async function loadDashboard() {
         renderProduction(production);
         renderShipDesigner(components, blueprints);
         AssemblyUi.render(assembly, blueprints);
+        renderActiveProcesses(
+            buildings,
+            research,
+            production,
+            assembly,
+            colonization
+        );
         GalaxyUi.render(
             galaxy,
             assembly,
             blueprints,
             components,
-            activePlanet
+            activePlanet,
+            colonization
         );
     } catch (error) {
         showMessage(error.message, true);
@@ -2074,7 +2230,20 @@ async function startBuilding(building) {
 
 elements.planetSelect.addEventListener("change", event => {
     state.activePlanetId = event.target.value;
+    state.productionDrafts = {};
+    window.localStorage.setItem("activePlanetId", state.activePlanetId);
     loadDashboard();
+});
+
+document.querySelectorAll("[data-page]").forEach(link => {
+    link.addEventListener("click", event => {
+        event.preventDefault();
+        openPage(link.dataset.page);
+    });
+});
+
+window.addEventListener("hashchange", () => {
+    openPage(window.location.hash.slice(1), false);
 });
 
 elements.refreshButton.addEventListener("click", loadDashboard);
@@ -2127,9 +2296,11 @@ DevToolsUi.init({
 
 applyStaticTooltips();
 createTooltipSystem();
+openPage(window.location.hash.slice(1) || "overview", false);
 loadDashboard();
 
 window.setInterval(loadDashboard, 5000);
 window.setInterval(updateQueueCountdown, 1000);
 window.setInterval(updateResearchCountdown, 1000);
 window.setInterval(updateProductionCountdowns, 1000);
+window.setInterval(updateActiveProcessCountdowns, 1000);

@@ -4,6 +4,7 @@ window.GalaxyUi = (() => {
         assembly: null,
         blueprints: [],
         components: [],
+        colonization: [],
         activePlanet: null,
         selectedSystemId: null,
         selectedPlanetId: null,
@@ -115,10 +116,14 @@ window.GalaxyUi = (() => {
                 ${system.planets.map(planet => {
                     const owned = planet.playerId !== null;
                     const selected = planet.id === state.selectedPlanetId;
+                    const deploying = state.colonization.some(
+                        operation =>
+                            operation.targetPlanetId === planet.id
+                    );
 
                     return `
                         <button
-                            class="system-planet ${owned ? "owned" : "neutral"} ${selected ? "selected" : ""}"
+                            class="system-planet ${owned ? "owned" : "neutral"} ${deploying ? "deploying" : ""} ${selected ? "selected" : ""}"
                             data-galaxy-planet="${planet.id}"
                             style="--planet-index:${planet.position}">
                             <span class="planet-sphere"></span>
@@ -127,7 +132,9 @@ window.GalaxyUi = (() => {
                             <small>
                                 ${owned
                                     ? `Колония · ${planet.playerName}`
-                                    : "Нейтральная планета"}
+                                    : deploying
+                                        ? "Развёртывание колонии"
+                                        : "Нейтральная планета"}
                             </small>
                         </button>
                     `;
@@ -152,11 +159,15 @@ window.GalaxyUi = (() => {
         const system = selectedSystem();
         const currentSystem = activeSystem();
         const ships = colonyShips();
+        const pendingOperation = state.colonization.find(
+            operation => operation.targetPlanetId === planet?.id
+        );
         const sameSystem = system?.id === currentSystem?.id;
         const canColonize =
             planet &&
             planet.playerId === null &&
             sameSystem &&
+            !pendingOperation &&
             ships.length > 0;
 
         elements.targetName.textContent =
@@ -168,6 +179,9 @@ window.GalaxyUi = (() => {
         } else if (planet.playerId !== null) {
             elements.targetStatus.textContent =
                 "Планета уже принадлежит игроку.";
+        } else if (pendingOperation) {
+            elements.targetStatus.textContent =
+                "Развёртывание колонии уже выполняется.";
         } else if (!sameSystem) {
             elements.targetStatus.textContent =
                 "Колонизация пока доступна только в активной системе.";
@@ -176,7 +190,7 @@ window.GalaxyUi = (() => {
                 "В резерве активной планеты нет колонизатора.";
         } else {
             elements.targetStatus.textContent =
-                "Цель доступна. Колонизатор будет израсходован.";
+                "Развёртывание займёт 30 минут. Колонизатор будет израсходован.";
         }
 
         if (!ships.some(ship => ship.id === state.selectedShipId)) {
@@ -203,13 +217,15 @@ window.GalaxyUi = (() => {
         assembly,
         blueprints,
         components,
-        activePlanet)
+        activePlanet,
+        colonization)
     {
         state.galaxy = galaxy;
         state.assembly = assembly;
         state.blueprints = blueprints;
         state.components = components;
         state.activePlanet = activePlanet;
+        state.colonization = colonization;
 
         const currentSystem = activeSystem();
 
@@ -247,7 +263,9 @@ window.GalaxyUi = (() => {
 
             state.selectedPlanetId = null;
             state.selectedShipId = null;
-            context.message("Новая колония основана.");
+            context.message(
+                "Колонизатор отправлен. Развёртывание займёт 30 минут."
+            );
             await context.reload();
         } catch (error) {
             context.message(error.message, true);

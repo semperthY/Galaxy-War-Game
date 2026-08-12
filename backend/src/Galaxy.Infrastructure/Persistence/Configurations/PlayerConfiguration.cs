@@ -18,7 +18,6 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
             .IsRequired();
 
         builder.Property(x => x.Race)
-            .HasDefaultValue(RaceType.Humans)
             .IsRequired();
 
         builder.Property(x => x.QueuedTechnology);
@@ -31,5 +30,4 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
             .IsUnique();
     }
 }
-
 
