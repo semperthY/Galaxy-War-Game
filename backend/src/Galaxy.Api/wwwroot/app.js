@@ -37,37 +37,37 @@ const staticTooltipDefinitions = [
         text: "Главный центр управления вашей космической империей."
     },
     {
-        selector: '.nav-item[href="#overview"]',
+        selector: '.nav-item[data-page="overview"]',
         title: "Планета",
         text: "Сводка ресурсов, энергетики и состояния активной колонии."
     },
     {
-        selector: '.nav-item[href="#buildings"]',
+        selector: '.nav-item[data-page="buildings"]',
         title: "Строительство",
         text: "Развитие инфраструктуры и специализация планеты."
     },
     {
-        selector: '.nav-item[href="#research"]',
+        selector: '.nav-item[data-page="research"]',
         title: "Исследования",
         text: "Имперские технологии, открывающие здания и компоненты."
     },
     {
-        selector: '.nav-item[href="#production"]',
+        selector: '.nav-item[data-page="production"]',
         title: "Производство",
         text: "Создание корабельных комплектующих на независимых линиях."
     },
     {
-        selector: '.nav-item[href="#ship-designer"]',
+        selector: '.nav-item[data-page="ship-designer"]',
         title: "Конструктор кораблей",
         text: "Создание собственных проектов с контролем объёма и энергии."
     },
     {
-        selector: '.nav-item[href="#ship-assembly"]',
+        selector: '.nav-item[data-page="ship-assembly"]',
         title: "Сборочный комплекс",
         text: "Сборка кораблей по сохранённым проектам и управление резервом."
     },
     {
-        selector: '.nav-item[href="#galaxy"]',
+        selector: '.nav-item[data-page="galaxy"]',
         title: "Карта галактики",
         text: "Звёздные системы, планеты и управление колониальной экспансией."
     },
@@ -264,9 +264,52 @@ const state = {
     productionStatus: null,
     components: [],
     blueprints: [],
+    designerInitialized: false,
     designIsValid: false,
     productionDrafts: {}
 };
+
+const pageDefinitions = {
+    overview: {
+        title: "Планетарное управление",
+        breadcrumb: "ИМПЕРИЯ / КОМАНДНЫЙ ЦЕНТР"
+    },
+    buildings: {
+        title: "Строительство",
+        breadcrumb: "ИМПЕРИЯ / ИНФРАСТРУКТУРА"
+    },
+    research: {
+        title: "Исследования",
+        breadcrumb: "ИМПЕРИЯ / НАУЧНЫЙ КОМПЛЕКС"
+    },
+    production: {
+        title: "Производство комплектующих",
+        breadcrumb: "ИМПЕРИЯ / ПРОМЫШЛЕННОСТЬ"
+    },
+    "ship-designer": {
+        title: "Конструктор кораблей",
+        breadcrumb: "ФЛОТ / ПРОЕКТИРОВАНИЕ"
+    },
+    "ship-assembly": {
+        title: "Сборка кораблей",
+        breadcrumb: "ФЛОТ / ВЕРФЬ"
+    },
+    fleet: {
+        title: "Резерв флота",
+        breadcrumb: "ФЛОТ / РЕЗЕРВ"
+    },
+    galaxy: {
+        title: "Карта галактики",
+        breadcrumb: "НАВИГАЦИЯ / ГАЛАКТИКА"
+    }
+};
+
+function getPageFromLocation() {
+    const page = window.location.pathname
+        .replace(/^\/game\/?/, "")
+        .split("/")[0];
+    return pageDefinitions[page] ? page : "overview";
+}
 
 const elements = {
     planetSelect: document.querySelector("#planetSelect"),
@@ -300,7 +343,9 @@ const elements = {
     activeProcesses:
         document.querySelector("#activeProcesses"),
     activeProcessList:
-        document.querySelector("#activeProcessList")
+        document.querySelector("#activeProcessList"),
+    pageTitle: document.querySelector("#pageTitle"),
+    pageBreadcrumb: document.querySelector("#pageBreadcrumb")
 };
 
 const designerElements = {
@@ -720,14 +765,14 @@ function formatDuration(completesAt) {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
-function openPage(page, updateHash = true) {
-    const knownPages = new Set(
-        Array.from(document.querySelectorAll("[data-game-page]"))
-            .map(element => element.dataset.gamePage)
-    );
-    const nextPage = knownPages.has(page) ? page : "overview";
+function openPage(page, updateHistory = true) {
+    const nextPage = pageDefinitions[page] ? page : "overview";
+    const definition = pageDefinitions[nextPage];
 
     state.activePage = nextPage;
+    elements.pageTitle.textContent = definition.title;
+    elements.pageBreadcrumb.textContent = definition.breadcrumb;
+    document.title = `${definition.title} · Galaxy War`;
 
     document.querySelectorAll("[data-game-page]").forEach(element => {
         element.hidden = element.dataset.gamePage !== nextPage;
@@ -737,8 +782,12 @@ function openPage(page, updateHash = true) {
         link.classList.toggle("active", link.dataset.page === nextPage);
     });
 
-    if (updateHash && window.location.hash !== `#${nextPage}`) {
-        window.history.replaceState(null, "", `#${nextPage}`);
+    const route = `/game/${nextPage}`;
+    if (updateHistory && window.location.pathname !== route) {
+        window.history.pushState({ page: nextPage }, "", route);
+        loadDashboard();
+    } else if (!updateHistory && window.location.pathname !== route) {
+        window.history.replaceState({ page: nextPage }, "", route);
     }
 
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -2077,14 +2126,12 @@ function renderShipDesigner(
     components,
     blueprints)
 {
-    const firstLoad =
-        state.components.length === 0;
-
     state.components = components;
     state.blueprints = blueprints;
 
-    if (firstLoad) {
+    if (!state.designerInitialized) {
         renderDesignerOptions();
+        state.designerInitialized = true;
     }
 
     updateDesignPreview();
@@ -2167,10 +2214,7 @@ async function loadDashboard() {
             buildings,
             research,
             production,
-            components,
-            blueprints,
             assembly,
-            galaxy,
             colonization
         ] = await Promise.all([
             api(
@@ -2182,20 +2226,14 @@ async function loadDashboard() {
             api(
                 `/api/game/production/?planetId=${state.activePlanetId}`
             ),
-            api("/api/game/components"),
-            api("/api/game/blueprints/"),
             api(
                 `/api/game/assembly/?planetId=${state.activePlanetId}`
             ),
-            api("/api/galaxy"),
             api("/api/game/colonization/")
         ]);
 
-        renderBuildings(buildings);
-        renderResearch(research);
-        renderProduction(production);
-        renderShipDesigner(components, blueprints);
-        AssemblyUi.render(assembly, blueprints);
+        state.productionStatus = production;
+
         renderActiveProcesses(
             buildings,
             research,
@@ -2203,14 +2241,51 @@ async function loadDashboard() {
             assembly,
             colonization
         );
-        GalaxyUi.render(
-            galaxy,
-            assembly,
-            blueprints,
-            components,
-            activePlanet,
-            colonization
-        );
+
+        switch (state.activePage) {
+            case "buildings":
+                renderBuildings(buildings);
+                break;
+            case "research":
+                renderResearch(research);
+                break;
+            case "production":
+                renderProduction(production);
+                break;
+            case "ship-designer": {
+                const [components, blueprints] = await Promise.all([
+                    api("/api/game/components"),
+                    api("/api/game/blueprints/")
+                ]);
+                renderShipDesigner(components, blueprints);
+                break;
+            }
+            case "ship-assembly":
+            case "fleet": {
+                const blueprints = await api("/api/game/blueprints/");
+                state.blueprints = blueprints;
+                AssemblyUi.render(assembly, blueprints);
+                break;
+            }
+            case "galaxy": {
+                const [galaxy, blueprints, components] = await Promise.all([
+                    api("/api/galaxy"),
+                    api("/api/game/blueprints/"),
+                    api("/api/game/components")
+                ]);
+                state.blueprints = blueprints;
+                state.components = components;
+                GalaxyUi.render(
+                    galaxy,
+                    assembly,
+                    blueprints,
+                    components,
+                    activePlanet,
+                    colonization
+                );
+                break;
+            }
+        }
     } catch (error) {
         showMessage(error.message, true);
     }
@@ -2247,8 +2322,9 @@ document.querySelectorAll("[data-page]").forEach(link => {
     });
 });
 
-window.addEventListener("hashchange", () => {
-    openPage(window.location.hash.slice(1), false);
+window.addEventListener("popstate", () => {
+    openPage(getPageFromLocation(), false);
+    loadDashboard();
 });
 
 elements.refreshButton.addEventListener("click", loadDashboard);
@@ -2305,7 +2381,7 @@ DevToolsUi.init({
 
 applyStaticTooltips();
 createTooltipSystem();
-openPage(window.location.hash.slice(1) || "overview", false);
+openPage(getPageFromLocation(), false);
 loadDashboard();
 
 window.setInterval(loadDashboard, 5000);
