@@ -77,7 +77,7 @@ public class ComponentProductionServiceTests
         {
             PlayerId = player.Id,
             Player = player,
-            Technology = TechnologyType.Propulsion,
+            Technology = TechnologyType.EngineSystems,
             Level = 1
         });
 

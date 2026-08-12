@@ -280,17 +280,8 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("QueuedTechnology")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("QueuedTechnologyLevel")
-                        .HasColumnType("integer");
-
                     b.Property<int>("Race")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ResearchCompletesAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -326,6 +317,44 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("PlayerTechnologies");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.ResearchOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CompletesAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PlanetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StreamNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TargetLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Technology")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlanetId", "StreamNumber")
+                        .IsUnique();
+
+                    b.HasIndex("PlayerId", "Technology")
+                        .IsUnique();
+
+                    b.ToTable("ResearchOrders");
                 });
 
             modelBuilder.Entity("Galaxy.Domain.Entities.Ship", b =>
@@ -530,6 +559,25 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                     b.Navigation("Player");
                 });
 
+            modelBuilder.Entity("Galaxy.Domain.Entities.ResearchOrder", b =>
+                {
+                    b.HasOne("Galaxy.Domain.Entities.Planet", "Planet")
+                        .WithMany("ResearchOrders")
+                        .HasForeignKey("PlanetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Galaxy.Domain.Entities.Player", "Player")
+                        .WithMany("ResearchOrders")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Planet");
+
+                    b.Navigation("Player");
+                });
+
             modelBuilder.Entity("Galaxy.Domain.Entities.Ship", b =>
                 {
                     b.HasOne("Galaxy.Domain.Entities.Planet", "Planet")
@@ -616,6 +664,8 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
 
                     b.Navigation("ProductionOrders");
 
+                    b.Navigation("ResearchOrders");
+
                     b.Navigation("Ships");
                 });
 
@@ -626,6 +676,8 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                     b.Navigation("ColonizationOperations");
 
                     b.Navigation("Planets");
+
+                    b.Navigation("ResearchOrders");
 
                     b.Navigation("Ships");
 

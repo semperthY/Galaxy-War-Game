@@ -22,6 +22,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<PlayerTechnology> PlayerTechnologies =>
         Set<PlayerTechnology>();
 
+    public DbSet<ResearchOrder> ResearchOrders => Set<ResearchOrder>();
+
     public DbSet<ComponentInventoryItem> ComponentInventory =>
         Set<ComponentInventoryItem>();
 
