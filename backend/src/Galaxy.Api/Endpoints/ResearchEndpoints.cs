@@ -1,4 +1,5 @@
 using Galaxy.Application.Economy;
+using Galaxy.Api.Security;
 using Galaxy.Application.Research;
 using Galaxy.Domain.Entities;
 using Galaxy.Infrastructure.Persistence;
@@ -10,7 +11,8 @@ public static class ResearchEndpoints
 {
     public static void MapResearchEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/api/game/research");
+        var group = app.MapGroup("/api/game/research")
+            .RequireAuthorization();
 
         group.MapGet("/", GetStatusAsync);
         group.MapPost("/{technology}/start", StartAsync);
@@ -18,11 +20,13 @@ public static class ResearchEndpoints
 
     private static async Task<IResult> GetStatusAsync(
         Guid? planetId,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var state = await LoadStateAsync(
             planetId,
+            httpContext,
             dbContext,
             cancellationToken);
 
@@ -51,11 +55,13 @@ public static class ResearchEndpoints
     private static async Task<IResult> StartAsync(
         Guid? planetId,
         TechnologyType technology,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var state = await LoadStateAsync(
             planetId,
+            httpContext,
             dbContext,
             cancellationToken);
 
@@ -95,12 +101,22 @@ public static class ResearchEndpoints
 
     private static async Task<ResearchState?> LoadStateAsync(
         Guid? planetId,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return null;
+        }
+
         var player = await dbContext.Players
             .Include(x => x.Technologies)
-            .SingleOrDefaultAsync(cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == playerId, cancellationToken);
 
         if (player is null)
         {
@@ -164,7 +180,6 @@ public sealed record TechnologyOptionResponse(
     TechnologyType Technology,
     int CurrentLevel,
     ResearchCost NextLevelCost);
-
 
 
 

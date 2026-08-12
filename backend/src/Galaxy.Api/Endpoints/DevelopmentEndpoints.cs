@@ -1,5 +1,6 @@
 using Galaxy.Application.Components;
 using Galaxy.Application.Colonization;
+using Galaxy.Api.Security;
 using Galaxy.Domain.Entities;
 using Galaxy.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,8 @@ public static class DevelopmentEndpoints
     public static void MapDevelopmentEndpoints(
         this WebApplication app)
     {
-        var group = app.MapGroup("/api/dev");
+        var group = app.MapGroup("/api/dev")
+            .RequireAuthorization();
 
         group.MapGet("/status", () => Results.Ok(new
         {
@@ -30,12 +32,22 @@ public static class DevelopmentEndpoints
 
     private static async Task<IResult> GrantSupplyAsync(
         Guid? planetId,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return Results.NotFound();
+        }
+
         var planet = await dbContext.Planets
             .Include(x => x.ComponentInventory)
-            .SelectOwnedPlanet(planetId)
+            .SelectOwnedPlanet(playerId.Value, planetId)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (planet is null)
@@ -91,14 +103,24 @@ public static class DevelopmentEndpoints
 
     private static async Task<IResult> CompleteColonizationAsync(
         Guid operationId,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return Results.NotFound();
+        }
+
         var operation = await dbContext.ColonizationOperations
             .Include(x => x.TargetPlanet)
             .ThenInclude(x => x.StarSystem)
             .SingleOrDefaultAsync(
-                x => x.Id == operationId,
+                x => x.Id == operationId && x.PlayerId == playerId,
                 cancellationToken);
 
         if (operation is null)

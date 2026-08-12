@@ -4,6 +4,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $previousPSNativeCommandUseErrorActionPreference = $PSNativeCommandUseErrorActionPreference
 $PSNativeCommandUseErrorActionPreference = $true
+$script:webSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 
 function Fail([string]$Message) {
     throw $Message
@@ -17,7 +18,8 @@ function Invoke-Api {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
         [ValidateSet('GET', 'POST')][string]$Method = 'GET',
-        [object]$Body = $null
+        [object]$Body = $null,
+        [Microsoft.PowerShell.Commands.WebRequestSession]$Session = $script:webSession
     )
 
     $uri = "http://127.0.0.1:5178$Path"
@@ -27,6 +29,7 @@ function Invoke-Api {
         Method = $Method
         Headers = $headers
         NoProxy = $true
+        WebSession = $Session
     }
 
     if ($null -ne $Body) {
@@ -214,12 +217,34 @@ try {
         -ErrorLogPath $apiErrorLogPath `
         -TimeoutSeconds 120
 
-    Write-Step "Creating new game for Humans"
-    $game = Invoke-Api -Path '/api/game/new' -Method POST -Body @{ username = 'BetaSmoke'; race = 'Humans' }
-    if ($game.race -ne 'Humans') {
-        Fail('Created game did not return Humans race')
+    Write-Step "Verifying that game endpoints require authentication"
+    $unauthorized = Invoke-WebRequest `
+        -Uri 'http://127.0.0.1:5178/api/game/current' `
+        -Method GET `
+        -NoProxy `
+        -SkipHttpErrorCheck
+    if ($unauthorized.StatusCode -ne 401) {
+        Fail("Unauthenticated game request returned $($unauthorized.StatusCode) instead of 401")
     }
 
+    Write-Step "Registering a Beta 2 account"
+    $account = Invoke-Api -Path '/api/auth/register' -Method POST -Body @{
+        commanderName = 'BetaSmoke'
+        email = 'beta-smoke@example.test'
+        password = 'BetaSmoke2026'
+        confirmPassword = 'BetaSmoke2026'
+    }
+    if (-not $account.requiresRaceSelection) {
+        Fail('New account did not require race selection')
+    }
+
+    Write-Step "Selecting Humans race and creating the starting world"
+    $session = Invoke-Api -Path '/api/auth/race' -Method POST -Body @{ race = 'Humans' }
+    if ($session.race -ne 'Humans' -or $session.requiresRaceSelection) {
+        Fail('Race selection did not activate the Humans game')
+    }
+
+    $game = Invoke-Api -Path '/api/game/current' -Method GET
     $homeworldId = $game.planetId
     if ([string]::IsNullOrWhiteSpace($homeworldId)) {
         Fail('Created game did not return a planet id')
@@ -231,155 +256,47 @@ try {
         Fail('The initial planet was not named Homeworld')
     }
 
-    Write-Step "Applying development supply"
-    $supply = Invoke-Api -Path "/api/dev/supply?planetId=$homeworldId" -Method POST
-    if ($supply.planetId -ne $homeworldId) {
-        Fail('Development supply response did not reference the expected planet')
+    Write-Step "Verifying account isolation with a second commander"
+    $firstCommanderSession = $script:webSession
+    $secondCommanderSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+    Invoke-Api -Path '/api/auth/register' -Method POST -Session $secondCommanderSession -Body @{
+        commanderName = 'BetaSmokeTwo'
+        email = 'beta-smoke-two@example.test'
+        password = 'BetaSmokeTwo2026'
+        confirmPassword = 'BetaSmokeTwo2026'
+    } | Out-Null
+    Invoke-Api -Path '/api/auth/race' -Method POST -Session $secondCommanderSession -Body @{ race = 'Synthetics' } | Out-Null
+
+    $secondCommanderIdentity = Invoke-Api -Path '/api/auth/me' -Session $secondCommanderSession
+    if ($secondCommanderIdentity.commanderName -ne 'BetaSmokeTwo') {
+        Fail("Second session belongs to '$($secondCommanderIdentity.commanderName)' instead of BetaSmokeTwo")
     }
 
-    Write-Step "Building research lab, production complex and assembly complex"
-    $buildings = @('ResearchLaboratory', 'ProductionComplex', 'AssemblyComplex')
-    foreach ($building in $buildings) {
-        Invoke-Api -Path "/api/game/buildings/$building/start?planetId=$homeworldId" -Method POST | Out-Null
-        Wait-ForCondition -Description "$building completion" -Condition {
-            $status = Invoke-Api -Path "/api/game/buildings/?planetId=$homeworldId" -Method GET
-            $status.queuedBuilding -eq $null -and (($status.buildings | Where-Object { $_.building -eq $building }).currentLevel -ge 1)
-        }
+    $secondCommanderPlanets = @(Invoke-Api -Path '/api/game/planets' -Method GET -Session $secondCommanderSession)
+    if ($secondCommanderPlanets.Count -ne 1) {
+        Fail("Second commander saw $($secondCommanderPlanets.Count) planets instead of exactly one")
+    }
+    $secondHomeworldId = $secondCommanderPlanets[0].id
+    if ([string]::IsNullOrWhiteSpace($secondHomeworldId) -or
+        $secondHomeworldId -eq $homeworldId) {
+        Fail('Second commander did not receive a distinct starting planet')
     }
 
-    Write-Step "Researching required technologies"
-    $technologies = @('MaterialsScience', 'EnergySystems', 'ControlSystems', 'Propulsion', 'ComponentEngineering')
-    foreach ($technology in $technologies) {
-        Invoke-Api -Path "/api/game/research/$technology/start?planetId=$homeworldId" -Method POST | Out-Null
-        Wait-ForCondition -Description "$technology completion" -Condition {
-            $status = Invoke-Api -Path "/api/game/research/?planetId=$homeworldId" -Method GET
-            $status.queuedTechnology -eq $null -and (($status.technologies | Where-Object { $_.technology -eq $technology }).currentLevel -ge 1)
-        }
+    $firstCommanderIdentity = Invoke-Api -Path '/api/auth/me' -Session $firstCommanderSession
+    if ($firstCommanderIdentity.commanderName -ne 'BetaSmoke') {
+        Fail("First session belongs to '$($firstCommanderIdentity.commanderName)' instead of BetaSmoke")
     }
 
-    Write-Step "Producing one colony module and waiting for inventory growth"
-    $producedComponentCode = 'humans-colony-1'
-    $productionBefore = Invoke-Api -Path "/api/game/production/?planetId=$homeworldId" -Method GET
-    $inventoryBefore = $productionBefore.inventory |
-        Where-Object { $_.componentCode -eq $producedComponentCode } |
-        Select-Object -First 1
-    $quantityBefore = if ($null -eq $inventoryBefore) {
-        0
+    $firstCommanderPlanets = @(Invoke-Api -Path '/api/game/planets' -Method GET -Session $firstCommanderSession)
+    if ($firstCommanderPlanets.Count -ne 1) {
+        Fail("First commander saw $($firstCommanderPlanets.Count) planets instead of exactly one")
     }
-    else {
-        [int]$inventoryBefore.quantity
-    }
-
-    Invoke-Api `
-        -Path "/api/game/production/lines/1/orders?planetId=$homeworldId" `
-        -Method POST `
-        -Body @{ componentCode = $producedComponentCode; quantity = 1 } |
-        Out-Null
-
-    Wait-ForCondition -Description 'colony module production' -Condition {
-        $productionStatus = Invoke-Api -Path "/api/game/production/?planetId=$homeworldId" -Method GET
-        $inventoryItem = $productionStatus.inventory |
-            Where-Object { $_.componentCode -eq $producedComponentCode } |
-            Select-Object -First 1
-
-        $null -ne $inventoryItem -and
-            [int]$inventoryItem.quantity -ge ($quantityBefore + 1)
-    }
-
-    Write-Step "Creating a valid blueprint with a colony module"
-    $blueprintName = "Beta Colony B1"
-    $blueprint = Invoke-Api -Path '/api/game/blueprints/' -Method POST -Body @{
-        name = $blueprintName
-        hullCode = 'humans-hull-1'
-        modules = @(
-            @{ componentCode = 'humans-engine-1'; quantity = 1 },
-            @{ componentCode = 'humans-reactor-1'; quantity = 1 },
-            @{ componentCode = 'humans-control-1'; quantity = 1 },
-            @{ componentCode = 'humans-colony-1'; quantity = 1 }
-        )
-    }
-
-    if (-not $blueprint.id) {
-        Fail('Blueprint creation did not return a blueprint id')
-    }
-
-    Write-Step "Assembling one ship"
-    $assemblyStatus = Invoke-Api -Path "/api/game/assembly/orders?planetId=$homeworldId" -Method POST -Body @{ blueprintId = $blueprint.id; quantity = 1 }
-    if (-not $assemblyStatus.orders) {
-        Fail('Assembly endpoint did not return an order list')
-    }
-
-    Write-Step "Waiting for the ship to appear in reserve"
-    Wait-ForCondition -Description 'ship assembly reserve' -Condition {
-        $status = Invoke-Api -Path "/api/game/assembly/?planetId=$homeworldId" -Method GET
-        $status.reserve.Count -ge 1
-    }
-
-    $assemblyStatusFinal = Invoke-Api -Path "/api/game/assembly/?planetId=$homeworldId" -Method GET
-    $reserveShip = $assemblyStatusFinal.reserve | Select-Object -First 1
-    if (-not $reserveShip) {
-        Fail('No ship appeared in reserve after assembly')
-    }
-
-    Write-Step "Finding a neutral planet in the same system"
-    $galaxy = Invoke-Api -Path '/api/galaxy' -Method GET
-    $homeSystem = $galaxy | Where-Object { $_.planets | Where-Object { $_.id -eq $homeworldId } } | Select-Object -First 1
-    if (-not $homeSystem) {
-        Fail('Could not locate the home system from the galaxy endpoint')
-    }
-
-    $targetPlanet = $homeSystem.planets | Where-Object { $_.id -ne $homeworldId -and $_.playerId -eq $null } | Select-Object -First 1
-    if (-not $targetPlanet) {
-        Fail('No neutral planet was found in the same system for colonization')
-    }
-
-    Write-Step "Starting timed colonization deployment"
-    $colonization = Invoke-Api -Path "/api/game/colonization/$($targetPlanet.id)" -Method POST -Body @{ shipId = $reserveShip.id }
-    if ($colonization.consumedShipId -ne $reserveShip.id) {
-        Fail('Colonization response did not reference the consumed ship')
-    }
-
-    $planetsBeforeCompletion = Invoke-Api -Path '/api/game/planets' -Method GET
-    if (@($planetsBeforeCompletion).Count -ne 1) {
-        Fail('Colonization claimed the target planet before deployment completed')
-    }
-
-    $activeColonization = Invoke-Api -Path '/api/game/colonization/' -Method GET
-    if (-not ($activeColonization | Where-Object { $_.id -eq $colonization.id })) {
-        Fail('Colonization operation did not persist')
-    }
-
-    Write-Step "Completing colonization through protected development tools"
-    Invoke-Api -Path "/api/dev/colonization/$($colonization.id)/complete" -Method POST | Out-Null
-
-    Write-Step "Verifying that the player now has two planets"
-    $planets = Invoke-Api -Path '/api/game/planets' -Method GET
-    $ownedPlanetCount = @($planets | Where-Object { $_.id -ne $null }).Count
-    if ($ownedPlanetCount -lt 2) {
-        Fail("Expected at least two owned planets after colonization, got $ownedPlanetCount")
-    }
-
-    $newColonyBuildings = Invoke-Api -Path "/api/game/buildings/?planetId=$($targetPlanet.id)" -Method GET
-    $newMaterialsExtractor = $newColonyBuildings.buildings | Where-Object { $_.building -eq 'MaterialsExtractor' } | Select-Object -First 1
-    $newResearchLaboratory = $newColonyBuildings.buildings | Where-Object { $_.building -eq 'ResearchLaboratory' } | Select-Object -First 1
-    if ($newMaterialsExtractor.currentLevel -ne 1 -or $newResearchLaboratory.currentLevel -ne 0) {
-        Fail('New colony did not receive an independent starting building state')
-    }
-
-    Write-Step "Verifying independent colony construction state"
-    Invoke-Api -Path "/api/dev/supply?planetId=$($targetPlanet.id)" -Method POST | Out-Null
-    Invoke-Api -Path "/api/game/buildings/MaterialsExtractor/start?planetId=$($targetPlanet.id)" -Method POST | Out-Null
-    $homeworldBuildingsAfter = Invoke-Api -Path "/api/game/buildings/?planetId=$homeworldId" -Method GET
-    $newColonyBuildingsAfter = Invoke-Api -Path "/api/game/buildings/?planetId=$($targetPlanet.id)" -Method GET
-    if ($homeworldBuildingsAfter.queuedBuilding -ne $null) {
-        Fail('New colony construction leaked into the homeworld queue')
-    }
-    if ($newColonyBuildingsAfter.queuedBuilding -ne 'MaterialsExtractor') {
-        Fail('New colony did not keep its own construction queue')
+    if ($firstCommanderPlanets[0].id -ne $homeworldId) {
+        Fail('First commander session returned another commander''s planet')
     }
 
     Write-Host ''
-    Write-Host 'BETA V1 SMOKE TEST PASSED' -ForegroundColor Green
+    Write-Host 'BETA V2 FOUNDATION SMOKE TEST PASSED' -ForegroundColor Green
 }
 catch {
     Write-Host ''

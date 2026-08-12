@@ -677,6 +677,11 @@ async function api(path, options = {}) {
         ...options
     });
 
+    if (response.status === 401) {
+        window.location.replace("/");
+        throw new Error("Сессия завершена. Выполните вход снова.");
+    }
+
     if (!response.ok) {
         let message = `Ошибка сервера: ${response.status}`;
 
@@ -2247,6 +2252,10 @@ window.addEventListener("hashchange", () => {
 });
 
 elements.refreshButton.addEventListener("click", loadDashboard);
+document.querySelector("#logoutButton")?.addEventListener("click", async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.replace("/");
+});
 elements.saveBlueprintButton.addEventListener(
     "click",
     saveBlueprint

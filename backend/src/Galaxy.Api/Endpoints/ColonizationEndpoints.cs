@@ -1,4 +1,5 @@
 using Galaxy.Application.Colonization;
+using Galaxy.Api.Security;
 using Galaxy.Domain.Entities;
 using Galaxy.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -10,18 +11,29 @@ public static class ColonizationEndpoints
     public static void MapColonizationEndpoints(
         this WebApplication app)
     {
-        var group = app.MapGroup("/api/game/colonization");
+        var group = app.MapGroup("/api/game/colonization")
+            .RequireAuthorization();
 
         group.MapGet("/", GetStatusAsync);
         group.MapPost("/{targetPlanetId:guid}", BeginAsync);
     }
 
     private static async Task<IResult> GetStatusAsync(
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return Results.NotFound();
+        }
+
         var player = await dbContext.Players
-            .SingleOrDefaultAsync(cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == playerId, cancellationToken);
 
         if (player is null)
         {
@@ -55,11 +67,21 @@ public static class ColonizationEndpoints
     private static async Task<IResult> BeginAsync(
         Guid targetPlanetId,
         ColonizePlanetRequest request,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return Results.NotFound();
+        }
+
         var player = await dbContext.Players
-            .SingleOrDefaultAsync(cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == playerId, cancellationToken);
 
         if (player is null)
         {

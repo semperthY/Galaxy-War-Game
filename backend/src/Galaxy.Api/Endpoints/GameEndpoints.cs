@@ -1,5 +1,5 @@
 using Galaxy.Application.Economy;
-using Galaxy.Application.Games;
+using Galaxy.Api.Security;
 using Galaxy.Domain.Entities;
 using Galaxy.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -10,63 +10,33 @@ public static class GameEndpoints
 {
     public static void MapGameEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/api/game");
+        var group = app.MapGroup("/api/game")
+            .RequireAuthorization();
 
-        group.MapPost("/new", CreateGameAsync);
         group.MapGet("/current", GetCurrentGameAsync);
         group.MapPost("/resources/collect", CollectResourcesAsync);
     }
 
-    private static async Task<IResult> CreateGameAsync(
-        CreateGameRequest request,
-        ApplicationDbContext dbContext,
-        CancellationToken cancellationToken)
-    {
-        if (await dbContext.Players.AnyAsync(cancellationToken))
-        {
-            return Results.Conflict(new
-            {
-                error = "A local game already exists."
-            });
-        }
-
-        NewGame game;
-
-        try
-        {
-            game = NewGameFactory.Create(request.Username, request.Race);
-        }
-        catch (ArgumentException exception)
-        {
-            return Results.BadRequest(new
-            {
-                error = exception.Message
-            });
-        }
-
-        dbContext.Players.Add(game.Player);
-        dbContext.StarSystems.AddRange(game.StarSystems);
-
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        return Results.Created(
-            "/api/game/current",
-            CreateResponse(
-                game.Player,
-                game.Homeworld.StarSystem,
-                game.Homeworld));
-    }
-
     private static async Task<IResult> GetCurrentGameAsync(
         Guid? planetId,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return Results.NotFound();
+        }
+
         var planet = await dbContext.Planets
             .AsNoTracking()
             .Include(x => x.Player)
             .Include(x => x.StarSystem)
-            .SelectOwnedPlanet(planetId)
+            .SelectOwnedPlanet(playerId.Value, planetId)
             .FirstOrDefaultAsync(cancellationToken);
 
         return planet is null
@@ -79,13 +49,23 @@ public static class GameEndpoints
 
     private static async Task<IResult> CollectResourcesAsync(
         Guid? planetId,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return Results.NotFound();
+        }
+
         var planet = await dbContext.Planets
             .Include(x => x.Player)
             .Include(x => x.StarSystem)
-            .SelectOwnedPlanet(planetId)
+            .SelectOwnedPlanet(playerId.Value, planetId)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (planet is null)
@@ -136,8 +116,6 @@ public static class GameEndpoints
     }
 }
 
-public sealed record CreateGameRequest(string Username, RaceType Race);
-
 public sealed record GameResponse(
     Guid PlayerId,
     string Username,
@@ -158,7 +136,6 @@ public sealed record GameResponse(
     decimal EnergyConsumption,
     decimal ProductionEfficiency,
     DateTime ResourcesUpdatedAt);
-
 
 
 

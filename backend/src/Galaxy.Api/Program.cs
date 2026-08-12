@@ -1,6 +1,8 @@
 using Galaxy.Api.Endpoints;
 using Galaxy.Api.Hosting;
+using Galaxy.Api.Security;
 using Galaxy.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -17,6 +19,24 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             npgsqlOptions.EnableRetryOnFailure()));
 
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton<PasswordHashingService>();
+builder.Services.AddAuthentication(
+        CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "galaxy_session";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.ExpireTimeSpan = TimeSpan.FromDays(14);
+        options.SlidingExpiration = true;
+        options.Events.OnRedirectToLogin = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        };
+    });
+builder.Services.AddAuthorization();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -44,9 +64,16 @@ if (app.Environment.IsDevelopment() ||
 
 app.UseHttpsRedirection();
 
-app.UseDefaultFiles();
+app.UseAuthentication();
+app.UseAuthorization();
+
+var defaultFiles = new DefaultFilesOptions();
+defaultFiles.DefaultFileNames.Clear();
+defaultFiles.DefaultFileNames.Add("start.html");
+app.UseDefaultFiles(defaultFiles);
 app.UseStaticFiles();
 
+app.MapAuthEndpoints();
 app.MapGameEndpoints();
 app.MapPlanetEndpoints();
 app.MapGalaxyEndpoints();

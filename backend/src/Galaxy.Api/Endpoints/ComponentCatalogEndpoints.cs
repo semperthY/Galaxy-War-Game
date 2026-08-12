@@ -1,4 +1,5 @@
 using Galaxy.Application.Components;
+using Galaxy.Api.Security;
 using Galaxy.Application.Research;
 using Galaxy.Domain.ShipDesign;
 using Galaxy.Infrastructure.Persistence;
@@ -13,16 +14,27 @@ public static class ComponentCatalogEndpoints
     {
         app.MapGet(
             "/api/game/components",
-            GetAllAsync);
+            GetAllAsync)
+            .RequireAuthorization();
     }
 
     private static async Task<IResult> GetAllAsync(
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return Results.NotFound();
+        }
+
         var player = await dbContext.Players
             .Include(x => x.Technologies)
-            .SingleOrDefaultAsync(cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == playerId, cancellationToken);
 
         if (player is null)
         {

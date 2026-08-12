@@ -7,7 +7,8 @@ public static class GalaxyEndpoints
 {
     public static void MapGalaxyEndpoints(this WebApplication app)
     {
-        app.MapGet("/api/galaxy", GetGalaxyAsync);
+        app.MapGet("/api/galaxy", GetGalaxyAsync)
+            .RequireAuthorization();
     }
 
     private static async Task<IResult> GetGalaxyAsync(

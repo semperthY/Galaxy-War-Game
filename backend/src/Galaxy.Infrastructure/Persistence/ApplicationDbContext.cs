@@ -13,6 +13,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Player> Players => Set<Player>();
 
+    public DbSet<UserAccount> UserAccounts => Set<UserAccount>();
+
     public DbSet<Planet> Planets => Set<Planet>();
 
     public DbSet<StarSystem> StarSystems => Set<StarSystem>();

@@ -1,4 +1,5 @@
 using Galaxy.Application.Assembly;
+using Galaxy.Api.Security;
 using Galaxy.Domain.Entities;
 using Galaxy.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,8 @@ public static class ShipAssemblyEndpoints
     public static void MapShipAssemblyEndpoints(
         this WebApplication app)
     {
-        var group = app.MapGroup("/api/game/assembly");
+        var group = app.MapGroup("/api/game/assembly")
+            .RequireAuthorization();
 
         group.MapGet("/", GetStatusAsync);
         group.MapPost("/orders", EnqueueAsync);
@@ -18,11 +20,13 @@ public static class ShipAssemblyEndpoints
 
     private static async Task<IResult> GetStatusAsync(
         Guid? planetId,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var state = await LoadStateAsync(
             planetId,
+            httpContext,
             dbContext,
             cancellationToken);
 
@@ -43,11 +47,13 @@ public static class ShipAssemblyEndpoints
     private static async Task<IResult> EnqueueAsync(
         Guid? planetId,
         CreateShipAssemblyOrderRequest request,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var state = await LoadStateAsync(
             planetId,
+            httpContext,
             dbContext,
             cancellationToken);
 
@@ -91,13 +97,23 @@ public static class ShipAssemblyEndpoints
 
     private static async Task<AssemblyState?> LoadStateAsync(
         Guid? planetId,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return null;
+        }
+
         var player = await dbContext.Players
             .Include(x => x.Blueprints)
             .ThenInclude(x => x.Modules)
-            .SingleOrDefaultAsync(cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == playerId, cancellationToken);
 
         if (player is null)
         {
@@ -197,7 +213,6 @@ public sealed record ReserveShipResponse(
     string BlueprintName,
     int BlueprintVersion,
     DateTime CreatedAt);
-
 
 
 

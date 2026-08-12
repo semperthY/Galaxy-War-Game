@@ -42,5 +42,40 @@ public class NewGameFactoryTests
 
         Assert.Equal("race", exception.ParamName);
     }
-}
 
+    [Fact]
+    public void ClaimHomeworld_CreatesIndependentStartingState()
+    {
+        var starSystem = new StarSystem
+        {
+            Id = Guid.NewGuid(),
+            GalaxyNumber = 1,
+            SystemNumber = 2,
+            Name = "System 2"
+        };
+        var planet = new Planet
+        {
+            Id = Guid.NewGuid(),
+            Name = "Planet 2:4",
+            Position = 4,
+            BuildingSiteCapacity = 17,
+            StarSystemId = starSystem.Id,
+            StarSystem = starSystem
+        };
+
+        var player = NewGameFactory.ClaimHomeworld(
+            "SecondCommander",
+            RaceType.Synthetics,
+            planet,
+            DateTime.UtcNow);
+
+        Assert.Same(player, planet.Player);
+        Assert.Equal(player.Id, planet.PlayerId);
+        Assert.Single(player.Planets);
+        Assert.Equal(500m, planet.Materials);
+        Assert.Equal(100m, planet.Deuterium);
+        Assert.Equal(1, planet.MaterialsExtractorLevel);
+        Assert.Equal(0, planet.ResearchLaboratoryLevel);
+        Assert.Equal(20, planet.BuildingSiteCapacity);
+    }
+}
