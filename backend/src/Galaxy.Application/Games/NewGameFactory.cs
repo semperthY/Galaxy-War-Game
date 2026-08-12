@@ -27,13 +27,7 @@ public static class NewGameFactory
 
         var createdAt = DateTime.UtcNow;
 
-        var player = new Player
-        {
-            Id = Guid.NewGuid(),
-            Username = username,
-            CreatedAt = createdAt,
-            Race = race
-        };
+        var player = CreatePlayer(username, race, createdAt);
 
         var systems = new List<StarSystem>();
         Planet? homeworld = null;
@@ -102,13 +96,72 @@ public static class NewGameFactory
             homeworld ?? throw new InvalidOperationException(
                 "Homeworld was not generated."));
     }
+
+    public static Player ClaimHomeworld(
+        string username,
+        RaceType race,
+        Planet planet,
+        DateTime createdAt)
+    {
+        var player = CreatePlayer(username, race, createdAt);
+
+        planet.Name = $"{username}'s Homeworld";
+        planet.Materials = 500m;
+        planet.Deuterium = 100m;
+        planet.MaterialsExtractorLevel = 1;
+        planet.DeuteriumExtractorLevel = 0;
+        planet.PowerPlantLevel = 1;
+        planet.WarehouseLevel = 1;
+        planet.ResearchLaboratoryLevel = 0;
+        planet.ProductionComplexLevel = 0;
+        planet.AssemblyComplexLevel = 0;
+        planet.BuildingSiteCapacity = Math.Max(planet.BuildingSiteCapacity, 20);
+        planet.ResourcesUpdatedAt = createdAt;
+        planet.QueuedBuilding = null;
+        planet.QueuedBuildingLevel = null;
+        planet.BuildingCompletesAt = null;
+        planet.PlayerId = player.Id;
+        planet.Player = player;
+        player.Planets.Add(planet);
+
+        return player;
+    }
+
+    private static Player CreatePlayer(
+        string username,
+        RaceType race,
+        DateTime createdAt)
+    {
+        username = username.Trim();
+
+        if (username.Length is < 3 or > 32)
+        {
+            throw new ArgumentException(
+                "Username must contain from 3 to 32 characters.",
+                nameof(username));
+        }
+
+        if (!Enum.IsDefined(race))
+        {
+            throw new ArgumentException(
+                "Race must be selected.",
+                nameof(race));
+        }
+
+        return new Player
+        {
+            Id = Guid.NewGuid(),
+            Username = username,
+            CreatedAt = createdAt,
+            Race = race
+        };
+    }
 }
 
 public sealed record NewGame(
     Player Player,
     IReadOnlyCollection<StarSystem> StarSystems,
     Planet Homeworld);
-
 
 
 

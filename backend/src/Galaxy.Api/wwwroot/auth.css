@@ -1,0 +1,42 @@
+:root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #050914; color: #edf7ff; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 18% 15%, #123457 0, transparent 32%), radial-gradient(circle at 85% 80%, #112c48 0, transparent 28%), #050914; }
+body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .22; background-image: radial-gradient(#a8eaff 1px, transparent 1px); background-size: 42px 42px; mask-image: linear-gradient(to bottom, black, transparent); }
+button, input { font: inherit; }
+button { color: inherit; }
+.start-shell { position: relative; min-height: 100vh; max-width: 1180px; margin: auto; padding: clamp(32px, 6vw, 88px) 28px; display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(40px, 8vw, 110px); align-items: center; }
+.intro h1 { max-width: 680px; margin: 12px 0 20px; font-size: clamp(44px, 6vw, 82px); line-height: .98; letter-spacing: -.05em; }
+.eyebrow { margin: 0; color: #55d9ff; font-size: 13px; font-weight: 800; letter-spacing: .18em; }
+.lead { max-width: 620px; color: #aabbd0; font-size: clamp(17px, 2vw, 21px); line-height: 1.65; }
+.features { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 30px; }
+.features span { padding: 9px 13px; border: 1px solid #24465f; border-radius: 999px; background: #091626aa; color: #bcecff; font-size: 13px; }
+.access-card, .race-step { border: 1px solid #1c3b53; border-radius: 24px; background: #081321e8; box-shadow: 0 28px 90px #0009, inset 0 1px #9ee8ff12; backdrop-filter: blur(18px); }
+.access-card { padding: 24px; }
+.tabs { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 12px; background: #040b14; }
+.tab { padding: 11px; border: 0; border-radius: 9px; background: transparent; color: #7890a5; cursor: pointer; }
+.tab.active { background: #12283a; color: #e7f8ff; }
+form { display: grid; gap: 17px; padding: 18px 4px 2px; }
+form h2 { margin: 5px 0 4px; font-size: 24px; }
+label { display: grid; gap: 7px; color: #b8c9d8; font-size: 13px; font-weight: 650; }
+input { width: 100%; padding: 13px 14px; border: 1px solid #244057; border-radius: 10px; outline: none; background: #050d17; color: #f4fbff; }
+input:focus { border-color: #44cffa; box-shadow: 0 0 0 3px #44cffa1c; }
+small { color: #738a9f; font-weight: 400; }
+.primary { padding: 14px 20px; border: 0; border-radius: 11px; background: linear-gradient(135deg, #36cbf4, #2495e7); color: #00121e; font-weight: 850; cursor: pointer; box-shadow: 0 10px 30px #1ca9e32e; }
+.primary:disabled { opacity: .4; cursor: not-allowed; }
+.message { min-height: 20px; margin: 14px 4px 0; color: #ff9d9d; font-size: 13px; }
+.race-step { grid-column: 1 / -1; padding: clamp(24px, 5vw, 52px); }
+.race-heading { max-width: 650px; }
+.race-heading h2 { margin: 10px 0; font-size: clamp(32px, 5vw, 52px); }
+.race-heading p:last-child { color: #9db1c4; line-height: 1.6; }
+.race-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 30px; }
+.race-card { min-height: 220px; padding: 22px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; text-align: left; border: 1px solid #1c3b53; border-radius: 16px; background: #07111d; cursor: pointer; transition: .18s ease; }
+.race-card:hover { transform: translateY(-3px); border-color: #3a7b9d; }
+.race-card.selected { border-color: #42d7ff; background: #0b2132; box-shadow: 0 0 0 2px #42d7ff2e; }
+.race-icon { width: 48px; height: 48px; display: grid; place-items: center; border: 1px solid #2f7797; border-radius: 50%; color: #5ae0ff; font-weight: 900; }
+.race-card strong { margin-top: 9px; font-size: 20px; }
+.race-card small { line-height: 1.5; }
+.race-actions { margin-top: 24px; display: flex; align-items: center; justify-content: flex-end; gap: 20px; }
+.race-actions .message { margin: 0 auto 0 0; }
+[hidden] { display: none !important; }
+@media (max-width: 850px) { .start-shell { grid-template-columns: 1fr; } .intro h1 { font-size: clamp(42px, 13vw, 68px); } .race-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .start-shell { padding: 32px 16px; } .race-grid { grid-template-columns: 1fr; } .race-card { min-height: 170px; } .race-actions { align-items: stretch; flex-direction: column; } }

@@ -1,4 +1,5 @@
 using Galaxy.Application.Components;
+using Galaxy.Api.Security;
 using Galaxy.Application.Production;
 using Galaxy.Application.Research;
 using Galaxy.Domain.Entities;
@@ -12,7 +13,8 @@ public static class ProductionEndpoints
 {
     public static void MapProductionEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/api/game/production");
+        var group = app.MapGroup("/api/game/production")
+            .RequireAuthorization();
 
         group.MapGet("/", GetStatusAsync);
         group.MapPost(
@@ -22,11 +24,13 @@ public static class ProductionEndpoints
 
     private static async Task<IResult> GetStatusAsync(
         Guid? planetId,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var state = await LoadStateAsync(
             planetId,
+            httpContext,
             dbContext,
             cancellationToken);
 
@@ -50,11 +54,13 @@ public static class ProductionEndpoints
         Guid? planetId,
         int lineNumber,
         CreateProductionOrderRequest request,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var state = await LoadStateAsync(
             planetId,
+            httpContext,
             dbContext,
             cancellationToken);
 
@@ -90,12 +96,22 @@ public static class ProductionEndpoints
 
     private static async Task<ProductionState?> LoadStateAsync(
         Guid? planetId,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return null;
+        }
+
         var player = await dbContext.Players
             .Include(x => x.Technologies)
-            .SingleOrDefaultAsync(cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == playerId, cancellationToken);
 
         if (player is null)
         {
@@ -273,7 +289,6 @@ public sealed record ProductionOrderResponse(
     int Quantity,
     DateTime? StartedAt,
     DateTime? CompletesAt);
-
 
 
 

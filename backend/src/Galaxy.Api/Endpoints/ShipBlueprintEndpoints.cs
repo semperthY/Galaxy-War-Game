@@ -1,4 +1,5 @@
 using Galaxy.Application.ShipDesign;
+using Galaxy.Api.Security;
 using Galaxy.Domain.Entities;
 using Galaxy.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -10,21 +11,32 @@ public static class ShipBlueprintEndpoints
     public static void MapShipBlueprintEndpoints(
         this WebApplication app)
     {
-        var group = app.MapGroup("/api/game/blueprints");
+        var group = app.MapGroup("/api/game/blueprints")
+            .RequireAuthorization();
 
         group.MapGet("/", GetAllAsync);
         group.MapPost("/", CreateAsync);
     }
 
     private static async Task<IResult> GetAllAsync(
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return Results.NotFound();
+        }
+
         var player = await dbContext.Players
             .AsNoTracking()
             .Include(x => x.Blueprints)
             .ThenInclude(x => x.Modules)
-            .SingleOrDefaultAsync(cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == playerId, cancellationToken);
 
         if (player is null)
         {
@@ -42,13 +54,23 @@ public static class ShipBlueprintEndpoints
 
     private static async Task<IResult> CreateAsync(
         CreateShipBlueprintRequest request,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return Results.NotFound();
+        }
+
         var player = await dbContext.Players
             .Include(x => x.Blueprints)
             .ThenInclude(x => x.Modules)
-            .SingleOrDefaultAsync(cancellationToken);
+            .SingleOrDefaultAsync(x => x.Id == playerId, cancellationToken);
 
         if (player is null)
         {

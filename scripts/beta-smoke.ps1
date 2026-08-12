@@ -4,6 +4,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $previousPSNativeCommandUseErrorActionPreference = $PSNativeCommandUseErrorActionPreference
 $PSNativeCommandUseErrorActionPreference = $true
+$webSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 
 function Fail([string]$Message) {
     throw $Message
@@ -27,6 +28,7 @@ function Invoke-Api {
         Method = $Method
         Headers = $headers
         NoProxy = $true
+        WebSession = $webSession
     }
 
     if ($null -ne $Body) {
@@ -214,12 +216,34 @@ try {
         -ErrorLogPath $apiErrorLogPath `
         -TimeoutSeconds 120
 
-    Write-Step "Creating new game for Humans"
-    $game = Invoke-Api -Path '/api/game/new' -Method POST -Body @{ username = 'BetaSmoke'; race = 'Humans' }
-    if ($game.race -ne 'Humans') {
-        Fail('Created game did not return Humans race')
+    Write-Step "Verifying that game endpoints require authentication"
+    $unauthorized = Invoke-WebRequest `
+        -Uri 'http://127.0.0.1:5178/api/game/current' `
+        -Method GET `
+        -NoProxy `
+        -SkipHttpErrorCheck
+    if ($unauthorized.StatusCode -ne 401) {
+        Fail("Unauthenticated game request returned $($unauthorized.StatusCode) instead of 401")
     }
 
+    Write-Step "Registering a Beta 2 account"
+    $account = Invoke-Api -Path '/api/auth/register' -Method POST -Body @{
+        commanderName = 'BetaSmoke'
+        email = 'beta-smoke@example.test'
+        password = 'BetaSmoke2026'
+        confirmPassword = 'BetaSmoke2026'
+    }
+    if (-not $account.requiresRaceSelection) {
+        Fail('New account did not require race selection')
+    }
+
+    Write-Step "Selecting Humans race and creating the starting world"
+    $session = Invoke-Api -Path '/api/auth/race' -Method POST -Body @{ race = 'Humans' }
+    if ($session.race -ne 'Humans' -or $session.requiresRaceSelection) {
+        Fail('Race selection did not activate the Humans game')
+    }
+
+    $game = Invoke-Api -Path '/api/game/current' -Method GET
     $homeworldId = $game.planetId
     if ([string]::IsNullOrWhiteSpace($homeworldId)) {
         Fail('Created game did not return a planet id')
@@ -378,8 +402,30 @@ try {
         Fail('New colony did not keep its own construction queue')
     }
 
+    Write-Step "Verifying account isolation with a second commander"
+    $firstCommanderSession = $webSession
+    $webSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+    Invoke-Api -Path '/api/auth/register' -Method POST -Body @{
+        commanderName = 'BetaSmokeTwo'
+        email = 'beta-smoke-two@example.test'
+        password = 'BetaSmokeTwo2026'
+        confirmPassword = 'BetaSmokeTwo2026'
+    } | Out-Null
+    Invoke-Api -Path '/api/auth/race' -Method POST -Body @{ race = 'Synthetics' } | Out-Null
+
+    $secondCommanderPlanets = @(Invoke-Api -Path '/api/game/planets' -Method GET)
+    if ($secondCommanderPlanets.Count -ne 1) {
+        Fail("Second commander saw $($secondCommanderPlanets.Count) planets instead of exactly one")
+    }
+
+    $webSession = $firstCommanderSession
+    $firstCommanderPlanets = @(Invoke-Api -Path '/api/game/planets' -Method GET)
+    if ($firstCommanderPlanets.Count -lt 2) {
+        Fail('First commander lost access to their independent colonies')
+    }
+
     Write-Host ''
-    Write-Host 'BETA V1 SMOKE TEST PASSED' -ForegroundColor Green
+    Write-Host 'BETA V2 FOUNDATION SMOKE TEST PASSED' -ForegroundColor Green
 }
 catch {
     Write-Host ''

@@ -1,4 +1,5 @@
 using Galaxy.Application.Economy;
+using Galaxy.Api.Security;
 using Galaxy.Domain.Entities;
 using Galaxy.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,8 @@ public static class BuildingEndpoints
 {
     public static void MapBuildingEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/api/game/buildings");
+        var group = app.MapGroup("/api/game/buildings")
+            .RequireAuthorization();
 
         group.MapGet("/", GetStatusAsync);
         group.MapPost("/{building}/start", StartAsync);
@@ -17,11 +19,13 @@ public static class BuildingEndpoints
 
     private static async Task<IResult> GetStatusAsync(
         Guid? planetId,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var planet = await GetPlanetAsync(
             dbContext,
+            httpContext,
             planetId,
             cancellationToken);
 
@@ -43,11 +47,13 @@ public static class BuildingEndpoints
     private static async Task<IResult> StartAsync(
         Guid? planetId,
         BuildingType building,
+        HttpContext httpContext,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var planet = await GetPlanetAsync(
             dbContext,
+            httpContext,
             planetId,
             cancellationToken);
 
@@ -80,13 +86,23 @@ public static class BuildingEndpoints
         return Results.Ok(CreateStatus(planet));
     }
 
-    private static Task<Planet?> GetPlanetAsync(
+    private static async Task<Planet?> GetPlanetAsync(
         ApplicationDbContext dbContext,
+        HttpContext httpContext,
         Guid? planetId,
         CancellationToken cancellationToken)
     {
-        return dbContext.Planets
-            .SelectOwnedPlanet(planetId)
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return null;
+        }
+
+        return await dbContext.Planets
+            .SelectOwnedPlanet(playerId.Value, planetId)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -148,7 +164,6 @@ public sealed record BuildingOptionResponse(
     BuildingType Building,
     int CurrentLevel,
     BuildingCost NextLevelCost);
-
 
 
 

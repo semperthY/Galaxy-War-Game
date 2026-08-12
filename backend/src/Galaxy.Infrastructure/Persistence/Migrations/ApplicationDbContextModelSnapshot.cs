@@ -100,6 +100,47 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                     b.ToTable("ComponentInventory");
                 });
 
+            modelBuilder.Entity("Galaxy.Domain.Entities.UserAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CommanderName")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid?>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommanderName")
+                        .IsUnique();
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("PlayerId")
+                        .IsUnique();
+
+                    b.ToTable("UserAccounts");
+                });
+
             modelBuilder.Entity("Galaxy.Domain.Entities.ColonizationOperation", b =>
                 {
                     b.HasOne("Galaxy.Domain.Entities.Player", "Player")
@@ -555,6 +596,16 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("ShipBlueprint");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.UserAccount", b =>
+                {
+                    b.HasOne("Galaxy.Domain.Entities.Player", "Player")
+                        .WithOne()
+                        .HasForeignKey("Galaxy.Domain.Entities.UserAccount", "PlayerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Player");
                 });
 
             modelBuilder.Entity("Galaxy.Domain.Entities.Planet", b =>

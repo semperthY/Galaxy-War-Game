@@ -449,6 +449,12 @@ select:focus {
     transition: transform 250ms ease;
 }
 
+.logout-button span {
+    font-size: 22px;
+    line-height: 1;
+    transform: rotate(180deg);
+}
+
 main {
     display: grid;
     gap: 18px;
