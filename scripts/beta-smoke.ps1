@@ -4,7 +4,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $previousPSNativeCommandUseErrorActionPreference = $PSNativeCommandUseErrorActionPreference
 $PSNativeCommandUseErrorActionPreference = $true
-$webSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+$script:webSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 
 function Fail([string]$Message) {
     throw $Message
@@ -18,7 +18,8 @@ function Invoke-Api {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
         [ValidateSet('GET', 'POST')][string]$Method = 'GET',
-        [object]$Body = $null
+        [object]$Body = $null,
+        [Microsoft.PowerShell.Commands.WebRequestSession]$Session = $script:webSession
     )
 
     $uri = "http://127.0.0.1:5178$Path"
@@ -28,7 +29,7 @@ function Invoke-Api {
         Method = $Method
         Headers = $headers
         NoProxy = $true
-        WebSession = $webSession
+        WebSession = $Session
     }
 
     if ($null -ne $Body) {
@@ -403,25 +404,42 @@ try {
     }
 
     Write-Step "Verifying account isolation with a second commander"
-    $firstCommanderSession = $webSession
-    $webSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
-    Invoke-Api -Path '/api/auth/register' -Method POST -Body @{
+    $firstCommanderSession = $script:webSession
+    $secondCommanderSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+    Invoke-Api -Path '/api/auth/register' -Method POST -Session $secondCommanderSession -Body @{
         commanderName = 'BetaSmokeTwo'
         email = 'beta-smoke-two@example.test'
         password = 'BetaSmokeTwo2026'
         confirmPassword = 'BetaSmokeTwo2026'
     } | Out-Null
-    Invoke-Api -Path '/api/auth/race' -Method POST -Body @{ race = 'Synthetics' } | Out-Null
+    Invoke-Api -Path '/api/auth/race' -Method POST -Session $secondCommanderSession -Body @{ race = 'Synthetics' } | Out-Null
 
-    $secondCommanderPlanets = @(Invoke-Api -Path '/api/game/planets' -Method GET)
+    $secondCommanderIdentity = Invoke-Api -Path '/api/auth/me' -Session $secondCommanderSession
+    if ($secondCommanderIdentity.commanderName -ne 'BetaSmokeTwo') {
+        Fail("Second session belongs to '$($secondCommanderIdentity.commanderName)' instead of BetaSmokeTwo")
+    }
+
+    $secondCommanderPlanets = @(Invoke-Api -Path '/api/game/planets' -Method GET -Session $secondCommanderSession)
     if ($secondCommanderPlanets.Count -ne 1) {
         Fail("Second commander saw $($secondCommanderPlanets.Count) planets instead of exactly one")
     }
+    if ($secondCommanderPlanets.id -contains $homeworldId -or
+        $secondCommanderPlanets.id -contains $targetPlanet.id) {
+        Fail('Second commander received a planet owned by the first commander')
+    }
 
-    $webSession = $firstCommanderSession
-    $firstCommanderPlanets = @(Invoke-Api -Path '/api/game/planets' -Method GET)
+    $firstCommanderIdentity = Invoke-Api -Path '/api/auth/me' -Session $firstCommanderSession
+    if ($firstCommanderIdentity.commanderName -ne 'BetaSmoke') {
+        Fail("First session belongs to '$($firstCommanderIdentity.commanderName)' instead of BetaSmoke")
+    }
+
+    $firstCommanderPlanets = @(Invoke-Api -Path '/api/game/planets' -Method GET -Session $firstCommanderSession)
     if ($firstCommanderPlanets.Count -lt 2) {
-        Fail('First commander lost access to their independent colonies')
+        Fail("First commander saw $($firstCommanderPlanets.Count) planets after session switch instead of at least two")
+    }
+    if ($firstCommanderPlanets.id -notcontains $homeworldId -or
+        $firstCommanderPlanets.id -notcontains $targetPlanet.id) {
+        Fail('First commander session did not return both expected colony ids')
     }
 
     Write-Host ''
