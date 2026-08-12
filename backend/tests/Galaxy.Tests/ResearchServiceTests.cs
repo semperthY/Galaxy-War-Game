@@ -21,7 +21,7 @@ public class ResearchServiceTests
 
         Assert.Equal(1, research.TargetLevel);
         Assert.Equal(1, research.StreamNumber);
-        Assert.Equal(700m, planet.Materials);
+        Assert.Equal(99_700m, planet.Materials);
         Assert.Single(player.ResearchOrders);
 
         Assert.Empty(ResearchService.Complete(
