@@ -21,7 +21,6 @@ public static class ColonizationService
         {
             Id = Guid.NewGuid(),
             PlayerId = player.Id,
-            Player = player,
             SourcePlanetId = ship.PlanetId,
             TargetPlanetId = targetPlanet.Id,
             TargetPlanet = targetPlanet,
@@ -32,10 +31,6 @@ public static class ColonizationService
             StartedAt = utcNow,
             CompletesAt = utcNow.Add(DeploymentDuration)
         };
-
-        player.ColonizationOperations.Add(operation);
-        ship.Planet.Ships.Remove(ship);
-        player.Ships.Remove(ship);
 
         return operation;
     }
@@ -67,7 +62,6 @@ public static class ColonizationService
         if (targetPlanet.PlayerId is null)
         {
             targetPlanet.PlayerId = operation.PlayerId;
-            targetPlanet.Player = operation.Player;
             targetPlanet.Name =
                 $"Colony {targetPlanet.StarSystem.SystemNumber}:" +
                 $"{targetPlanet.Position}";
@@ -85,11 +79,6 @@ public static class ColonizationService
             targetPlanet.QueuedBuildingLevel = null;
             targetPlanet.BuildingCompletesAt = null;
             targetPlanet.ResourcesUpdatedAt = utcNow;
-
-            if (!operation.Player.Planets.Contains(targetPlanet))
-            {
-                operation.Player.Planets.Add(targetPlanet);
-            }
         }
 
         operation.CompletedAt = utcNow;

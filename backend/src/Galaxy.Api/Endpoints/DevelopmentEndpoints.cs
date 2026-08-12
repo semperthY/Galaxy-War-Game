@@ -95,8 +95,6 @@ public static class DevelopmentEndpoints
         CancellationToken cancellationToken)
     {
         var operation = await dbContext.ColonizationOperations
-            .Include(x => x.Player)
-            .ThenInclude(x => x.Planets)
             .Include(x => x.TargetPlanet)
             .ThenInclude(x => x.StarSystem)
             .SingleOrDefaultAsync(

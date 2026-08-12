@@ -21,7 +21,6 @@ public static class ColonizationEndpoints
         CancellationToken cancellationToken)
     {
         var player = await dbContext.Players
-            .Include(x => x.Planets)
             .SingleOrDefaultAsync(cancellationToken);
 
         if (player is null)
@@ -60,9 +59,6 @@ public static class ColonizationEndpoints
         CancellationToken cancellationToken)
     {
         var player = await dbContext.Players
-            .Include(x => x.Planets)
-            .Include(x => x.Ships)
-            .Include(x => x.ColonizationOperations)
             .SingleOrDefaultAsync(cancellationToken);
 
         if (player is null)
@@ -70,8 +66,9 @@ public static class ColonizationEndpoints
             return Results.NotFound();
         }
 
-        if (player.ColonizationOperations.Any(x =>
-            x.TargetPlanetId == targetPlanetId))
+        if (await dbContext.ColonizationOperations.AnyAsync(
+            x => x.TargetPlanetId == targetPlanetId,
+            cancellationToken))
         {
             return Results.BadRequest(new
             {
@@ -125,6 +122,9 @@ public static class ColonizationEndpoints
                 error = exception.Message
             });
         }
+
+        dbContext.ColonizationOperations.Add(operation);
+        dbContext.Ships.Remove(ship);
 
         await dbContext.SaveChangesAsync(cancellationToken);
 

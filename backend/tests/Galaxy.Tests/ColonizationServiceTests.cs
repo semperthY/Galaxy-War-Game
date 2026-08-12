@@ -6,7 +6,7 @@ namespace Galaxy.Tests;
 public class ColonizationServiceTests
 {
     [Fact]
-    public void Begin_CreatesTimedOperationAndConsumesShip()
+    public void Begin_CreatesTimedOperationWithoutMutatingTrackedCollections()
     {
         var utcNow = new DateTime(
             2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -25,9 +25,9 @@ public class ColonizationServiceTests
         Assert.Equal(
             utcNow.Add(ColonizationService.DeploymentDuration),
             operation.CompletesAt);
-        Assert.Contains(operation, state.Player.ColonizationOperations);
-        Assert.DoesNotContain(state.Ship, state.Origin.Ships);
-        Assert.DoesNotContain(state.Ship, state.Player.Ships);
+        Assert.Empty(state.Player.ColonizationOperations);
+        Assert.Contains(state.Ship, state.Origin.Ships);
+        Assert.Contains(state.Ship, state.Player.Ships);
     }
 
     [Fact]
