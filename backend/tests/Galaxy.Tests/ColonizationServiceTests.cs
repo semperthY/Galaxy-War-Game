@@ -55,7 +55,7 @@ public class ColonizationServiceTests
         Assert.Equal(1, state.Target.MaterialsExtractorLevel);
         Assert.Equal(1, state.Target.PowerPlantLevel);
         Assert.Equal(1, state.Target.WarehouseLevel);
-        Assert.Contains(state.Target, state.Player.Planets);
+        Assert.DoesNotContain(state.Target, state.Player.Planets);
         Assert.Equal(operation.CompletesAt, operation.CompletedAt);
     }
 
