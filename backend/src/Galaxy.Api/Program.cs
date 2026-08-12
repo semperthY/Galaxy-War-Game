@@ -73,6 +73,13 @@ defaultFiles.DefaultFileNames.Add("start.html");
 app.UseDefaultFiles(defaultFiles);
 app.UseStaticFiles();
 
+app.MapGet("/game/{page?}", async context =>
+{
+    context.Response.ContentType = "text/html; charset=utf-8";
+    await context.Response.SendFileAsync(
+        Path.Combine(app.Environment.WebRootPath, "index.html"));
+});
+
 app.MapAuthEndpoints();
 app.MapGameEndpoints();
 app.MapPlanetEndpoints();

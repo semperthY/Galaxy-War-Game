@@ -23,7 +23,7 @@ function showRaceStep(session) {
     document.title = `${session.commanderName} — выбор расы`;
 }
 
-function enterGame() { window.location.replace("/index.html"); }
+function enterGame() { window.location.replace("/game/overview"); }
 
 function handleSession(session) {
     if (!session?.authenticated) return;

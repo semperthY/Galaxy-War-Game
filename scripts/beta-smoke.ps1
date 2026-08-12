@@ -227,6 +227,16 @@ try {
         Fail("Unauthenticated game request returned $($unauthorized.StatusCode) instead of 401")
     }
 
+    Write-Step "Verifying direct game page routing"
+    $researchPage = Invoke-WebRequest `
+        -Uri 'http://127.0.0.1:5178/game/research' `
+        -Method GET `
+        -NoProxy
+    if ($researchPage.StatusCode -ne 200 -or
+        $researchPage.Content -notmatch 'data-game-page="research"') {
+        Fail('Direct research page route did not return the game interface')
+    }
+
     Write-Step "Registering a Beta 2 account"
     $account = Invoke-Api -Path '/api/auth/register' -Method POST -Body @{
         commanderName = 'BetaSmoke'
