@@ -11,243 +11,180 @@ public static class ResearchService
         TechnologyType technology,
         DateTime utcNow)
     {
+        Complete(player, utcNow);
         ResourceProductionCalculator.Update(planet, utcNow);
 
-        if (planet.ResearchLaboratoryLevel < 1)
+        var definition = TechnologyCatalog.Get(technology);
+        var targetLevel = GetLevel(player, technology) + 1;
+
+        if (!definition.Levels.TryGetValue(targetLevel, out var level))
         {
             throw new InvalidOperationException(
-                "A research laboratory is required.");
+                "The maximum level available in Beta 2 has been reached.");
         }
 
-        if (player.QueuedTechnology is not null)
+        if (player.ResearchOrders.Any(x => x.Technology == technology))
         {
             throw new InvalidOperationException(
-                "Research is already in progress.");
+                "This technology is already being researched.");
         }
 
-        var targetLevel =
-            GetLevel(player, technology) + 1;
-
-        if (targetLevel > planet.ResearchLaboratoryLevel)
+        if (planet.ResearchLaboratoryLevel < level.RequiredLaboratoryLevel)
         {
             throw new InvalidOperationException(
-                "Research laboratory level is too low.");
+                $"Research laboratory level {level.RequiredLaboratoryLevel} is required.");
         }
 
-        ValidatePrerequisites(player, technology);
+        ValidatePrerequisites(player, level.Requirements);
 
-        var cost = CalculateCost(
-            technology,
-            targetLevel);
+        var availableStreams = GetAvailableStreamCount(player, planet);
+        var occupiedStreams = planet.ResearchOrders
+            .Select(x => x.StreamNumber)
+            .ToHashSet();
+        var streamNumber = Enumerable.Range(1, availableStreams)
+            .FirstOrDefault(x => !occupiedStreams.Contains(x));
 
-        if (planet.Materials < cost.Materials ||
-            planet.Deuterium < cost.Deuterium)
+        if (streamNumber == 0)
         {
             throw new InvalidOperationException(
-                "Not enough resources.");
+                "All available research streams on this planet are occupied.");
         }
 
-        planet.Materials -= cost.Materials;
-        planet.Deuterium -= cost.Deuterium;
+        if (planet.Materials < level.Cost.Materials ||
+            planet.Deuterium < level.Cost.Deuterium)
+        {
+            throw new InvalidOperationException("Not enough resources.");
+        }
 
-        var durationSeconds = Math.Max(
-            5,
-            targetLevel * 15 /
-            planet.ResearchLaboratoryLevel);
+        planet.Materials -= level.Cost.Materials;
+        planet.Deuterium -= level.Cost.Deuterium;
 
-        player.QueuedTechnology = technology;
-        player.QueuedTechnologyLevel = targetLevel;
-        player.ResearchCompletesAt =
-            utcNow.AddSeconds(durationSeconds);
+        var order = new ResearchOrder
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = player.Id,
+            Player = player,
+            PlanetId = planet.Id,
+            Planet = planet,
+            StreamNumber = streamNumber,
+            Technology = technology,
+            TargetLevel = targetLevel,
+            StartedAt = utcNow,
+            CompletesAt = utcNow.Add(level.Duration)
+        };
+
+        player.ResearchOrders.Add(order);
+        if (!planet.ResearchOrders.Contains(order))
+        {
+            planet.ResearchOrders.Add(order);
+        }
 
         return new ResearchResult(
             technology,
             targetLevel,
-            cost,
-            player.ResearchCompletesAt.Value);
+            streamNumber,
+            level.Cost,
+            order.CompletesAt);
     }
 
-    public static bool Complete(
+    public static IReadOnlyCollection<ResearchOrder> Complete(
         Player player,
         DateTime utcNow)
     {
-        if (player.QueuedTechnology is null ||
-            player.QueuedTechnologyLevel is null ||
-            player.ResearchCompletesAt is null ||
-            utcNow < player.ResearchCompletesAt.Value)
+        var completed = player.ResearchOrders
+            .Where(x => x.CompletesAt <= utcNow)
+            .ToList();
+
+        foreach (var order in completed)
         {
-            return false;
-        }
+            var technology = player.Technologies
+                .SingleOrDefault(x => x.Technology == order.Technology);
 
-        var technologyType =
-            player.QueuedTechnology.Value;
-
-        var technology = player.Technologies
-            .SingleOrDefault(x =>
-                x.Technology == technologyType);
-
-        if (technology is null)
-        {
-            technology = new PlayerTechnology
+            if (technology is null)
             {
-                PlayerId = player.Id,
-                Player = player,
-                Technology = technologyType
-            };
+                technology = new PlayerTechnology
+                {
+                    Id = Guid.NewGuid(),
+                    PlayerId = player.Id,
+                    Player = player,
+                    Technology = order.Technology
+                };
+                player.Technologies.Add(technology);
+            }
 
-            player.Technologies.Add(technology);
+            technology.Level = Math.Max(technology.Level, order.TargetLevel);
+            player.ResearchOrders.Remove(order);
+            order.Planet.ResearchOrders.Remove(order);
         }
 
-        technology.Level =
-            player.QueuedTechnologyLevel.Value;
-
-        player.QueuedTechnology = null;
-        player.QueuedTechnologyLevel = null;
-        player.ResearchCompletesAt = null;
-
-        return true;
+        return completed;
     }
 
-    public static int GetLevel(
-        Player player,
-        TechnologyType technology)
-    {
-        return player.Technologies
-            .SingleOrDefault(x =>
-                x.Technology == technology)
+    public static int GetLevel(Player player, TechnologyType technology) =>
+        player.Technologies
+            .SingleOrDefault(x => x.Technology == technology)
             ?.Level ?? 0;
+
+    public static int GetAvailableStreamCount(Player player, Planet planet)
+    {
+        var coordinationLevel = GetLevel(
+            player,
+            TechnologyType.ResearchCoordination);
+
+        if (coordinationLevel >= 2 && planet.ResearchLaboratoryLevel >= 9)
+        {
+            return 3;
+        }
+
+        if (coordinationLevel >= 1 && planet.ResearchLaboratoryLevel >= 5)
+        {
+            return 2;
+        }
+
+        return planet.ResearchLaboratoryLevel >= 1 ? 1 : 0;
     }
 
     public static ResearchCost CalculateCost(
         TechnologyType technology,
-        int targetLevel)
-    {
-        if (targetLevel < 1)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(targetLevel));
-        }
-
-        var multiplier = Pow(
-            1.6m,
-            targetLevel - 1);
-
-        var baseCost = technology switch
-        {
-            TechnologyType.MaterialsScience =>
-                new ResearchCost(100m, 0m),
-
-            TechnologyType.EnergySystems =>
-                new ResearchCost(100m, 25m),
-
-            TechnologyType.DeuteriumTechnology =>
-                new ResearchCost(120m, 40m),
-
-            TechnologyType.ControlSystems =>
-                new ResearchCost(140m, 40m),
-
-            TechnologyType.Propulsion =>
-                new ResearchCost(180m, 60m),
-
-            TechnologyType.ComponentEngineering =>
-                new ResearchCost(200m, 75m),
-
-            _ => throw new ArgumentOutOfRangeException(
-                nameof(technology))
-        };
-
-        return new ResearchCost(
-            decimal.Ceiling(
-                baseCost.Materials * multiplier),
-            decimal.Ceiling(
-                baseCost.Deuterium * multiplier));
-    }
+        int targetLevel) =>
+        TechnologyCatalog.Get(technology).Levels.TryGetValue(
+            targetLevel,
+            out var level)
+            ? level.Cost
+            : throw new ArgumentOutOfRangeException(nameof(targetLevel));
 
     private static void ValidatePrerequisites(
         Player player,
-        TechnologyType technology)
+        IReadOnlyCollection<TechnologyRequirement> requirements)
     {
-        var prerequisites = technology switch
-        {
-            TechnologyType.DeuteriumTechnology =>
-                new[]
-                {
-                    new TechnologyRequirement(
-                        TechnologyType.EnergySystems, 1)
-                },
-
-            TechnologyType.ControlSystems =>
-                new[]
-                {
-                    new TechnologyRequirement(
-                        TechnologyType.EnergySystems, 1)
-                },
-
-            TechnologyType.Propulsion =>
-                new[]
-                {
-                    new TechnologyRequirement(
-                        TechnologyType.MaterialsScience, 1),
-                    new TechnologyRequirement(
-                        TechnologyType.EnergySystems, 1)
-                },
-
-            TechnologyType.ComponentEngineering =>
-                new[]
-                {
-                    new TechnologyRequirement(
-                        TechnologyType.MaterialsScience, 1),
-                    new TechnologyRequirement(
-                        TechnologyType.ControlSystems, 1)
-                },
-
-            _ => Array.Empty<TechnologyRequirement>()
-        };
-
-        var missing = prerequisites
-            .Where(requirement =>
-                GetLevel(player, requirement.Technology) <
-                requirement.Level)
+        var missing = requirements
+            .Where(x => GetLevel(player, x.Technology) < x.Level)
             .ToList();
 
-        if (missing.Count > 0)
+        if (missing.Count == 0)
         {
-            var required = string.Join(
-                ", ",
-                missing.Select(x =>
-                    $"{x.Technology} level {x.Level}"));
-
-            throw new InvalidOperationException(
-                $"Missing prerequisites: {required}.");
-        }
-    }
-
-    private static decimal Pow(
-        decimal value,
-        int exponent)
-    {
-        var result = 1m;
-
-        for (var index = 0; index < exponent; index++)
-        {
-            result *= value;
+            return;
         }
 
-        return result;
+        var required = string.Join(
+            ", ",
+            missing.Select(x =>
+                $"{TechnologyCatalog.Get(x.Technology).Name} level {x.Level}"));
+
+        throw new InvalidOperationException(
+            $"Missing prerequisites: {required}.");
     }
 }
 
-public sealed record ResearchCost(
-    decimal Materials,
-    decimal Deuterium);
+public sealed record ResearchCost(decimal Materials, decimal Deuterium);
 
 public sealed record ResearchResult(
     TechnologyType Technology,
     int TargetLevel,
+    int StreamNumber,
     ResearchCost Cost,
     DateTime CompletesAt);
 
 public sealed record TechnologyRequirement(
     TechnologyType Technology,
     int Level);
-

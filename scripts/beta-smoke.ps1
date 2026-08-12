@@ -266,6 +266,15 @@ try {
         Fail('The initial planet was not named Homeworld')
     }
 
+    Write-Step "Validating the Beta 2 technology catalog"
+    $research = Invoke-Api -Path "/api/game/research/?planetId=$homeworldId" -Method GET
+    if (@($research.technologies).Count -ne 15) {
+        Fail("Expected 15 technology branches, got $(@($research.technologies).Count)")
+    }
+    if ($research.availableStreams -ne 0 -or @($research.activeResearch).Count -ne 0) {
+        Fail('A starting planet without a research center exposed an active stream')
+    }
+
     Write-Step "Verifying account isolation with a second commander"
     $firstCommanderSession = $script:webSession
     $secondCommanderSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession

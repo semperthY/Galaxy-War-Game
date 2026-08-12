@@ -8,7 +8,7 @@ const buildingLevelSummaries = {
     Warehouse:
         "Каждый уровень удваивает вместимость: базово 1000 материалов и 500 дейтерия.",
     ResearchLaboratory:
-        "Уровень лаборатории ограничивает максимальный уровень исследования и сокращает его продолжительность.",
+        "Уровень центра открывает исследования и дополнительные планетарные потоки.",
     ProductionComplex:
         "Каждый уровень открывает дополнительную независимую линию. После первого уровня скорость растёт на 10% за уровень.",
     AssemblyComplex:
@@ -16,18 +16,21 @@ const buildingLevelSummaries = {
 };
 
 const technologyLevelSummaries = {
-    MaterialsScience:
-        "Повышает уровень материаловедения и выполняет требования новых корпусов, компонентов и технологий.",
-    EnergySystems:
-        "Повышает уровень энергетических систем и открывает более сложные реакторы и энергетические технологии.",
-    DeuteriumTechnology:
-        "Повышает уровень дейтериевых технологий для топлива, двигателей и высокотехнологичных компонентов.",
-    ControlSystems:
-        "Повышает уровень систем управления и открывает более сложные командные комплексы.",
-    Propulsion:
-        "Повышает уровень двигательных технологий и выполняет требования новых двигателей.",
-    ComponentEngineering:
-        "Повышает уровень инженерии компонентов и открывает специализированные корабельные системы."
+    MaterialsScience: "Основа конструкций, промышленности и корабельных материалов.",
+    EnergySystems: "Основа реакторов, двигателей, полей и энергетического оружия.",
+    ComputingSystems: "Основа электроники, автоматизации и параллельных исследований.",
+    SpatialPhysics: "Связывает энергетику, электронику, защиту и дальнюю навигацию.",
+    ShipEngineering: "Открывает корпуса и броню.",
+    EngineSystems: "Открывает корабельные двигатели.",
+    ReactorSystems: "Открывает корабельные реакторы.",
+    Electronics: "Открывает управление и сенсоры.",
+    IndustrialSystems: "Открывает промышленные и грузовые модули.",
+    FieldDefense: "Открывает щиты.",
+    LaserSystems: "Открывает лазерное вооружение.",
+    MissileSystems: "Открывает ракетное вооружение.",
+    SpecialSystems: "Открывает специальные корабельные системы.",
+    Colonization: "Открывает колонизационное ядро.",
+    ResearchCoordination: "Открывает второй и третий потоки при достаточном уровне центра."
 };
 
 const staticTooltipDefinitions = [
@@ -119,7 +122,7 @@ const staticTooltipDefinitions = [
     {
         selector: ".lab-status",
         title: "Исследовательская лаборатория",
-        text: "Определяет максимальный уровень исследований и влияет на их скорость."
+        text: "Открывает уровни технологий; на 5-м и 9-м уровнях позволяет использовать дополнительные потоки после изучения научной координации."
     }
 ];
 const raceNames = {
@@ -185,35 +188,52 @@ const technologyInfo = {
             "Исследование конструкционных материалов, корпусов и промышленной инфраструктуры."
     },
     EnergySystems: {
-        name: "Энергетические системы",
+        name: "Энергетика",
         icon: "icon-energy",
         description:
             "Развитие реакторов, электростанций и систем распределения энергии."
     },
-    DeuteriumTechnology: {
-        name: "Дейтериевые технологии",
-        icon: "icon-deuterium",
-        description:
-            "Повышает эффективность добычи и применения дейтерия."
-    },
-    ControlSystems: {
-        name: "Системы управления",
+    ComputingSystems: {
+        name: "Вычислительные системы",
         icon: "icon-command",
-        description:
-            "Открывает вычислительные и командные комплексы кораблей."
+        description: "Автоматика, управление и научная координация."
     },
-    Propulsion: {
+    SpatialPhysics: {
+        name: "Пространственная физика",
+        icon: "icon-galaxy",
+        description: "Полевые системы, навигация и колонизация."
+    },
+    ShipEngineering: {
+        name: "Корабельная инженерия",
+        icon: "icon-ship",
+        description: "Корпуса, броня и тяжёлые конструкции."
+    },
+    EngineSystems: {
         name: "Двигательные системы",
         icon: "icon-ship",
-        description:
-            "Развитие внутри- и межсистемных корабельных двигателей."
+        description: "Внутри- и межсистемные корабельные двигатели."
     },
-    ComponentEngineering: {
-        name: "Инженерия компонентов",
+    ReactorSystems: {
+        name: "Реакторные системы",
+        icon: "icon-power",
+        description: "Источники энергии для корабельных систем."
+    },
+    Electronics: {
+        name: "Корабельная электроника",
+        icon: "icon-command",
+        description: "Управление, сенсоры и электронные комплексы."
+    },
+    IndustrialSystems: {
+        name: "Промышленные системы",
         icon: "icon-factory",
-        description:
-            "Открывает производство сложных корабельных компонентов."
-    }
+        description: "Добывающие, грузовые и колониальные модули."
+    },
+    FieldDefense: { name: "Полевая защита", icon: "icon-energy", description: "Щиты и защитные полевые системы." },
+    LaserSystems: { name: "Лазерные системы", icon: "icon-energy", description: "Энергетическое корабельное вооружение." },
+    MissileSystems: { name: "Ракетные системы", icon: "icon-ship", description: "Управляемое ракетное вооружение." },
+    SpecialSystems: { name: "Специальные системы", icon: "icon-command", description: "РЭБ и специализированные модули." },
+    Colonization: { name: "Колонизационные технологии", icon: "icon-planet", description: "Открывает создание колонизационного ядра." },
+    ResearchCoordination: { name: "Научная координация", icon: "icon-research", description: "Открывает второй и третий исследовательские потоки." }
 };
 const buildingInfo = {
     MaterialsExtractor: {
@@ -765,6 +785,16 @@ function formatDuration(completesAt) {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
+function formatDurationSeconds(totalSeconds) {
+    if (totalSeconds >= 3600) {
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        return `${hours} ч ${minutes > 0 ? `${minutes} мин` : ""}`.trim();
+    }
+
+    return `${Math.ceil(totalSeconds / 60)} мин`;
+}
+
 function openPage(page, updateHistory = true) {
     const nextPage = pageDefinitions[page] ? page : "overview";
     const definition = pageDefinitions[nextPage];
@@ -828,15 +858,13 @@ function renderActiveProcesses(
         });
     }
 
-    if (research.queuedTechnology && research.researchCompletesAt) {
-        processes.push({
+    research.empireActiveResearch.forEach(order => processes.push({
             page: "research",
             icon: "icon-research",
-            type: "Исследование",
-            title: `${technologyInfo[research.queuedTechnology]?.name ?? research.queuedTechnology} · ур. ${research.queuedTechnologyLevel}`,
-            completesAt: research.researchCompletesAt
-        });
-    }
+            type: `Исследование · ${order.planetName} · поток ${order.streamNumber}`,
+            title: `${order.name} · ур. ${order.targetLevel}`,
+            completesAt: order.completesAt
+        }));
 
     production.orders
         .filter(order => order.completesAt)
@@ -1140,90 +1168,39 @@ function renderBuildings(status) {
 }
 
 function updateResearchCountdown() {
-    const queue = state.researchQueue;
+    let expired = false;
+    document.querySelectorAll("[data-research-completes]")
+        .forEach(element => {
+            const completesAt = element.dataset.researchCompletes;
+            element.textContent = formatDuration(completesAt);
+            expired ||= new Date(completesAt).getTime() <= Date.now();
+        });
 
-    if (!queue) {
-        return;
-    }
-
-    const remainingMilliseconds =
-        new Date(queue.completesAt).getTime() - Date.now();
-
-    const seconds = Math.max(
-        0,
-        Math.ceil(remainingMilliseconds / 1000)
-    );
-
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-
-    const formattedTime = minutes > 0
-        ? `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
-        : `${remainingSeconds} сек.`;
-
-    const title =
-        technologyInfo[queue.technology]?.name ??
-        queue.technology;
-
-    const statusText =
-        elements.researchQueueStatus.querySelector("strong");
-
-    if (statusText) {
-        statusText.textContent =
-            `${title} · ур. ${queue.level} · ${formattedTime}`;
-    }
-
-    if (
-        seconds === 0 &&
-        !state.researchCompletionRequested
-    ) {
+    if (expired && !state.researchCompletionRequested) {
         state.researchCompletionRequested = true;
         loadDashboard();
     }
 }
 
 function updateResearchQueue(status) {
-    if (status.queuedTechnology === null) {
-        state.researchQueue = null;
-        state.researchCompletionRequested = false;
-
-        elements.researchQueueStatus.classList.remove("busy");
-        elements.researchQueueStatus.innerHTML = `
-            <span class="queue-indicator"></span>
-            <div>
-                <small>ОЧЕРЕДЬ ИССЛЕДОВАНИЙ</small>
-                <strong>Свободна</strong>
-            </div>
-        `;
-
-        return;
-    }
-
-    const queueKey =
-        `${status.queuedTechnology}:` +
-        `${status.queuedTechnologyLevel}:` +
-        `${status.researchCompletesAt}`;
-
-    if (state.researchQueue?.key !== queueKey) {
-        state.researchCompletionRequested = false;
-    }
-
-    state.researchQueue = {
-        key: queueKey,
-        technology: status.queuedTechnology,
-        level: status.queuedTechnologyLevel,
-        completesAt: status.researchCompletesAt
-    };
-
-    elements.researchQueueStatus.classList.add("busy");
+    state.researchQueue = status.activeResearch;
+    state.researchCompletionRequested = false;
+    elements.researchQueueStatus.classList.toggle(
+        "busy",
+        status.activeResearch.length > 0
+    );
     elements.researchQueueStatus.innerHTML = `
-        <span class="queue-indicator"></span>
         <div>
-            <small>ОЧЕРЕДЬ ИССЛЕДОВАНИЙ</small>
-            <strong></strong>
+            <small>ИССЛЕДОВАТЕЛЬСКИЕ ПОТОКИ</small>
+            <strong>${status.activeResearch.length} / ${status.availableStreams} занято</strong>
+            ${status.activeResearch.map(order => `
+                <span class="research-stream-line">
+                    №${order.streamNumber} · ${order.name} ур. ${order.targetLevel}
+                    · <time data-research-completes="${order.completesAt}"></time>
+                </span>
+            `).join("")}
         </div>
     `;
-
     updateResearchCountdown();
 }
 
@@ -1233,37 +1210,58 @@ function renderResearch(status) {
 
     updateResearchQueue(status);
 
-    const queueBusy =
-        status.queuedTechnology !== null;
+    const streamsBusy =
+        status.activeResearch.length >= status.availableStreams;
+    let currentCategory = null;
 
     elements.researchGrid.innerHTML = status.technologies
         .map(technology => {
+            const categoryHeading = technology.category === currentCategory
+                ? ""
+                : `<div class="research-category-heading">
+                    <span>${technology.category}</span>
+                </div>`;
+            currentCategory = technology.category;
             const info = technologyInfo[technology.technology] ?? {
                 name: technology.technology,
                 icon: "icon-research",
                 description: "Имперская исследовательская программа."
             };
 
-            const targetLevel =
-                technology.currentLevel + 1;
+            const targetLevel = technology.currentLevel + 1;
+            const maximumReached =
+                technology.currentLevel >= technology.maxLevel;
 
             const laboratoryTooLow =
-                targetLevel > status.researchLaboratoryLevel;
+                !maximumReached &&
+                technology.requiredLaboratoryLevel >
+                    status.researchLaboratoryLevel;
+
+            const missingRequirements = technology.requirements
+                .filter(requirement => !requirement.met);
 
             const affordable =
+                !maximumReached &&
                 status.materials >= technology.nextLevelCost.materials &&
                 status.deuterium >= technology.nextLevelCost.deuterium;
 
             const disabled =
-                queueBusy ||
+                maximumReached ||
+                streamsBusy ||
                 laboratoryTooLow ||
-                !affordable;
+                !affordable ||
+                technology.isBeingResearched ||
+                missingRequirements.length > 0;
 
-            const requirement = laboratoryTooLow
-                ? `Требуется лаборатория уровня ${targetLevel}`
-                : "Лаборатория соответствует требованиям";
+            const requirement = maximumReached
+                ? "Достигнут максимум Beta 2"
+                : [
+                    `Центр ${technology.requiredLaboratoryLevel}`,
+                    ...technology.requirements.map(item =>
+                        `${item.met ? "✓" : "✕"} ${item.name} ${item.level}`)
+                ].join(" · ");
 
-            return `
+            return `${categoryHeading}
                 <article class="
                     technology-card
                     ${laboratoryTooLow ? "locked" : ""}
@@ -1292,7 +1290,9 @@ function renderResearch(status) {
                         </span>
                     </div>
 
-                    <h3>${info.name}</h3>
+                    <h3>${technology.name}</h3>
+
+                    <span class="technology-code">${technology.code} · ${technology.category}</span>
 
                     <p class="technology-description">
                         ${info.description}
@@ -1302,7 +1302,7 @@ function renderResearch(status) {
                         ${requirement}
                     </div>
 
-                    <div class="cost-row">
+                    ${maximumReached ? "" : `<div class="cost-row">
                         <span class="cost-item">
                             Материалы ·
                             ${formatNumber(technology.nextLevelCost.materials)}
@@ -1311,13 +1311,20 @@ function renderResearch(status) {
                             Дейтерий ·
                             ${formatNumber(technology.nextLevelCost.deuterium)}
                         </span>
-                    </div>
+                        <span class="cost-item">
+                            Время · ${formatDurationSeconds(technology.durationSeconds)}
+                        </span>
+                    </div>`}
 
                     <button
                         class="research-button"
                         data-technology="${technology.technology}"
                         ${disabled ? "disabled" : ""}>
-                        Исследовать уровень ${targetLevel}
+                        ${maximumReached
+                            ? "Изучено полностью"
+                            : technology.isBeingResearched
+                                ? "Исследуется"
+                                : `Исследовать уровень ${targetLevel}`}
                     </button>
                 </article>
             `;

@@ -1099,6 +1099,18 @@ main {
         border-color 160ms ease;
 }
 
+.research-category-heading {
+    grid-column: 1 / -1;
+    margin-top: 10px;
+    padding-bottom: 8px;
+    color: #bca8f4;
+    border-bottom: 1px solid rgba(154, 108, 255, 0.18);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
 .technology-card:hover {
     border-color: rgba(154, 108, 255, 0.38);
     transform: translateY(-2px);
@@ -1142,6 +1154,15 @@ main {
     font-weight: 600;
 }
 
+.technology-code {
+    display: block;
+    margin: -2px 0 9px;
+    color: #8f7fbd;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
 .technology-description {
     min-height: 46px;
     margin: 0 0 15px;
@@ -1155,6 +1176,19 @@ main {
     margin-bottom: 10px;
     color: var(--orange);
     font-size: 9px;
+}
+
+.research-stream-line {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 8px;
+    white-space: nowrap;
+}
+
+.research-stream-line time {
+    color: var(--violet);
+    font-weight: 800;
 }
 
 .research-button {

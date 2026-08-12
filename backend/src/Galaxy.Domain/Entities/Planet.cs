@@ -50,6 +50,9 @@ public class Planet
     public ICollection<ComponentProductionOrder> ProductionOrders { get; set; } =
         new List<ComponentProductionOrder>();
 
+    public ICollection<ResearchOrder> ResearchOrders { get; set; } =
+        new List<ResearchOrder>();
+
     public ICollection<ShipAssemblyOrder> AssemblyOrders { get; set; } =
         new List<ShipAssemblyOrder>();
 

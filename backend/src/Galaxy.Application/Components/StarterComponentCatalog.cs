@@ -153,7 +153,7 @@ public static class StarterComponentCatalog
             volume,
             new ComponentCost(materials, deuterium),
             productionSeconds,
-            TechnologyType.ComponentEngineering,
+            TechnologyType.Colonization,
             1));
     }
     private static void AddRaceComponents(
@@ -178,7 +178,7 @@ public static class StarterComponentCatalog
             race,
             new ComponentCost(180m, 10m),
             20,
-            TechnologyType.MaterialsScience,
+            TechnologyType.ShipEngineering,
             1,
             hullCapacity,
             hullIntegrity));
@@ -190,7 +190,7 @@ public static class StarterComponentCatalog
             engineVolume,
             new ComponentCost(100m, 35m),
             15,
-            TechnologyType.Propulsion,
+            TechnologyType.EngineSystems,
             1,
             inSystemSpeed,
             interSystemSpeed,
@@ -203,7 +203,7 @@ public static class StarterComponentCatalog
             reactorVolume,
             new ComponentCost(110m, 40m),
             15,
-            TechnologyType.EnergySystems,
+            TechnologyType.ReactorSystems,
             1,
             reactorOutput));
 
@@ -214,11 +214,10 @@ public static class StarterComponentCatalog
             controlVolume,
             new ComponentCost(80m, 20m),
             10,
-            TechnologyType.ControlSystems,
+            TechnologyType.Electronics,
             1,
             commandRating,
             controlEnergy));
     }
 }
-
 
