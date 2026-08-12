@@ -27,4 +27,7 @@ public class Player
 
     public ICollection<Ship> Ships { get; set; } =
         new List<Ship>();
+
+    public ICollection<ColonizationOperation> ColonizationOperations { get; set; } =
+        new List<ColonizationOperation>();
 }

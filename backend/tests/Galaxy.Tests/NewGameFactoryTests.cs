@@ -33,6 +33,14 @@ public class NewGameFactoryTests
         Assert.Throws<ArgumentException>(
             () => NewGameFactory.Create(username, RaceType.Humans));
     }
-}
 
+    [Fact]
+    public void Create_RejectsMissingRace()
+    {
+        var exception = Assert.Throws<ArgumentException>(
+            () => NewGameFactory.Create("Commander", (RaceType)0));
+
+        Assert.Equal("race", exception.ParamName);
+    }
+}
 

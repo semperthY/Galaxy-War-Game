@@ -149,6 +149,17 @@
     box-shadow: 0 0 20px rgba(69, 224, 160, .38);
 }
 
+.system-planet.deploying {
+    border-color: rgba(154, 108, 255, .34);
+}
+
+.system-planet.deploying .planet-sphere {
+    box-shadow:
+        0 0 0 3px rgba(154, 108, 255, .12),
+        0 0 24px rgba(154, 108, 255, .46);
+    animation: colonization-pulse 2s ease-in-out infinite;
+}
+
 .planet-orbit {
     color: var(--cyan);
     font-size: 7px;
@@ -158,6 +169,11 @@
 .system-planet strong { margin-top: 4px; font-size: 10px; }
 .system-planet small { margin-top: 3px; color: var(--muted); font-size: 8px; }
 .system-planet.owned small { color: var(--green); }
+.system-planet.deploying small { color: var(--violet); }
+
+@keyframes colonization-pulse {
+    50% { transform: scale(.9); opacity: .72; }
+}
 
 .colonization-console {
     display: grid;

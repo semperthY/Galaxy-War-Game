@@ -125,6 +125,12 @@
     border-top: 1px solid var(--line);
 }
 
+.content-panel.reserve-section {
+    margin-top: 0;
+    padding-top: 26px;
+    border-top: 1px solid var(--line);
+}
+
 .reserve-section .subsection-heading {
     display: flex;
     align-items: center;
@@ -191,6 +197,11 @@
 
 .reserve-ship h4 { margin: 5px 0 3px; }
 .reserve-ship p { margin: 0; color: var(--muted); font-size: 9px; }
+
+.reserve-ship p strong {
+    color: var(--cyan);
+    font-size: 16px;
+}
 
 @keyframes assembly-scan {
     0%, 100% { transform: translateY(-22px); opacity: 0; }

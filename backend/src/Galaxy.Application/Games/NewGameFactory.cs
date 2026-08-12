@@ -18,6 +18,13 @@ public static class NewGameFactory
                 nameof(username));
         }
 
+        if (!Enum.IsDefined(race))
+        {
+            throw new ArgumentException(
+                "Race must be selected.",
+                nameof(race));
+        }
+
         var createdAt = DateTime.UtcNow;
 
         var player = new Player
@@ -101,7 +108,6 @@ public sealed record NewGame(
     Player Player,
     IReadOnlyCollection<StarSystem> StarSystems,
     Planet Homeworld);
-
 
 
 
