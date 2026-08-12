@@ -126,7 +126,6 @@ public static class ColonizationEndpoints
             });
         }
 
-        dbContext.Ships.Remove(ship);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return Results.Ok(CreateResponse(operation));
