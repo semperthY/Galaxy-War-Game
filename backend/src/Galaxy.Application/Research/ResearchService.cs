@@ -84,7 +84,8 @@ public static class ResearchService
             targetLevel,
             streamNumber,
             level.Cost,
-            order.CompletesAt);
+            order.CompletesAt,
+            order);
     }
 
     public static IReadOnlyCollection<ResearchOrder> Complete(
@@ -183,7 +184,8 @@ public sealed record ResearchResult(
     int TargetLevel,
     int StreamNumber,
     ResearchCost Cost,
-    DateTime CompletesAt);
+    DateTime CompletesAt,
+    ResearchOrder Order);
 
 public sealed record TechnologyRequirement(
     TechnologyType Technology,
