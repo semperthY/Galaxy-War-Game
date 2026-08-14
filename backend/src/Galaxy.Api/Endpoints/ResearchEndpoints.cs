@@ -80,11 +80,13 @@ public static class ResearchEndpoints
 
         try
         {
-            ResearchService.Start(
+            var research = ResearchService.Start(
                 state.Player,
                 state.Planet,
                 technology,
                 utcNow);
+
+            dbContext.ResearchOrders.Add(research.Order);
         }
         catch (InvalidOperationException exception)
         {
