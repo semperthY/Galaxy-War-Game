@@ -137,16 +137,29 @@ const componentNames = {
     Engine: "Базовый двигатель",
     Reactor: "Базовый реактор",
     ControlSystem: "Система управления",
-    ColonyModule: "Колонизационный модуль"
+    ColonyModule: "Колонизационный модуль",
+    Armor: "Броня",
+    Shield: "Щит",
+    Scanner: "Сканер",
+    CargoHold: "Грузовой отсек",
+    LaserWeapon: "Лазер",
+    MissileWeapon: "Ракетная установка",
+    MiningModule: "Гравитационный захват"
 };
 
 function localizeRace(race) {
-    return raceNames[race] ?? race;
+    return race === null
+        ? "Универсальная технология"
+        : raceNames[race] ?? race;
 }
 
 function localizeComponentName(component) {
     if (!component) {
         return "Неизвестный компонент";
+    }
+
+    if (component.race === null) {
+        return component.name;
     }
 
     const race =
@@ -178,6 +191,34 @@ const componentTypeInfo = {
     ColonyModule: {
         name: "Колонизационный модуль",
         icon: "icon-planet"
+    },
+    Armor: {
+        name: "Броня",
+        icon: "icon-ship"
+    },
+    Shield: {
+        name: "Щит",
+        icon: "icon-power"
+    },
+    Scanner: {
+        name: "Сканер",
+        icon: "icon-command"
+    },
+    CargoHold: {
+        name: "Грузовой отсек",
+        icon: "icon-factory"
+    },
+    LaserWeapon: {
+        name: "Лазер",
+        icon: "icon-energy"
+    },
+    MissileWeapon: {
+        name: "Ракетная установка",
+        icon: "icon-factory"
+    },
+    MiningModule: {
+        name: "Гравитационный захват",
+        icon: "icon-materials"
     }
 };
 const technologyInfo = {
@@ -1424,6 +1465,46 @@ function getComponentStats(component) {
         stats.push(
             `Управление ${formatNumber(component.commandRating)}`
         );
+    }
+
+    if (component.bonusStructuralIntegrity !== undefined) {
+        stats.push(
+            `Прочность +${formatNumber(
+                component.bonusStructuralIntegrity
+            )}`
+        );
+    }
+
+    if (component.shieldCapacity !== undefined) {
+        stats.push(`Щит ${formatNumber(component.shieldCapacity)}`);
+    }
+
+    if (component.scanRange !== undefined) {
+        stats.push(`Радиус ${formatNumber(component.scanRange)}`);
+    }
+
+    if (component.cargoCapacity !== undefined) {
+        stats.push(`Груз ${formatNumber(component.cargoCapacity)}`);
+    }
+
+    if (component.miningRatePerMinute !== undefined) {
+        stats.push(
+            `Добыча ${formatNumber(
+                component.miningRatePerMinute
+            )}/мин.`
+        );
+    }
+
+    if (component.shieldDamage !== undefined) {
+        stats.push(`Урон щиту ${formatNumber(component.shieldDamage)}`);
+    }
+
+    if (component.hullDamage !== undefined) {
+        stats.push(`Урон корпусу ${formatNumber(component.hullDamage)}`);
+    }
+
+    if (component.commandLoad !== undefined) {
+        stats.push(`Команда ${formatNumber(component.commandLoad)}`);
     }
 
     return stats;

@@ -5,7 +5,7 @@ namespace Galaxy.Domain.ShipDesign;
 public sealed record ReactorDefinition(
     string Code,
     string Name,
-    RaceType Race,
+    RaceType? Race,
     decimal Volume,
     ComponentCost Cost,
     int ProductionSeconds,

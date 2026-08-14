@@ -68,19 +68,20 @@ public class ShipDesignCalculatorTests
                 new ModuleSelection("test-armor", 1),
                 new ModuleSelection("test-shield", 1),
                 new ModuleSelection("test-scanner", 1),
+                new ModuleSelection("test-mining", 1),
                 new ModuleSelection("test-cargo", 1),
                 new ModuleSelection("test-laser", 1),
                 new ModuleSelection("test-missile", 1)
             },
             CreateBeta2Catalog());
 
-        Assert.Equal(57m, result.UsedVolume);
-        Assert.Equal(63m, result.FreeVolume);
+        Assert.Equal(65m, result.UsedVolume);
+        Assert.Equal(55m, result.FreeVolume);
         Assert.Equal(160m, result.StructuralIntegrity);
         Assert.Equal(50m, result.ShieldCapacity);
         Assert.Equal(100m, result.EnergyProduction);
-        Assert.Equal(30m, result.EnergyConsumption);
-        Assert.Equal(70m, result.FreeEnergy);
+        Assert.Equal(40m, result.EnergyConsumption);
+        Assert.Equal(60m, result.FreeEnergy);
         Assert.Equal(20m, result.CommandRating);
         Assert.Equal(13m, result.CommandLoad);
         Assert.Equal(7m, result.FreeCommandRating);
@@ -88,6 +89,7 @@ public class ShipDesignCalculatorTests
         Assert.Equal(25m, result.InterSystemSpeed);
         Assert.Equal(30m, result.ScanRange);
         Assert.Equal(100m, result.CargoCapacity);
+        Assert.Equal(5m, result.MiningRatePerMinute);
         Assert.Equal(13m, result.ShieldDamage);
         Assert.Equal(14m, result.HullDamage);
     }
@@ -189,6 +191,10 @@ public class ShipDesignCalculatorTests
                 "test-cargo", "Test Cargo", RaceType.Humans,
                 10m, cost, 1, TechnologyType.IndustrialSystems, 1,
                 100m, 0m),
+            new MiningModuleDefinition(
+                "test-mining", "Test Mining", RaceType.Humans,
+                8m, cost, 1, TechnologyType.IndustrialSystems, 1,
+                5m, 10m),
             new LaserWeaponDefinition(
                 "test-laser", "Test Laser", RaceType.Humans,
                 3m, cost, 1, TechnologyType.LaserSystems, 1,

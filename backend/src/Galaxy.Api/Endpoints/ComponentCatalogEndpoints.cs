@@ -55,6 +55,7 @@ public static class ComponentCatalogEndpoints
         IComponentDefinition component)
     {
         var canManufacture =
+            component.Race is null ||
             component.Race == player.Race;
 
         var technologyUnlocked =
@@ -144,7 +145,131 @@ public static class ComponentCatalogEndpoints
                 colony.RequiredTechnology,
                 colony.RequiredTechnologyLevel,
                 canManufacture,
-                technologyUnlocked
+                technologyUnlocked,
+                colony.EnergyConsumption
+            },
+
+            ArmorDefinition armor => new
+            {
+                armor.Code,
+                armor.Name,
+                armor.Race,
+                armor.Type,
+                armor.Volume,
+                armor.Cost,
+                armor.ProductionSeconds,
+                armor.RequiredTechnology,
+                armor.RequiredTechnologyLevel,
+                canManufacture,
+                technologyUnlocked,
+                armor.BonusStructuralIntegrity
+            },
+
+            ShieldDefinition shield => new
+            {
+                shield.Code,
+                shield.Name,
+                shield.Race,
+                shield.Type,
+                shield.Volume,
+                shield.Cost,
+                shield.ProductionSeconds,
+                shield.RequiredTechnology,
+                shield.RequiredTechnologyLevel,
+                canManufacture,
+                technologyUnlocked,
+                shield.ShieldCapacity,
+                shield.EnergyConsumption
+            },
+
+            ScannerDefinition scanner => new
+            {
+                scanner.Code,
+                scanner.Name,
+                scanner.Race,
+                scanner.Type,
+                scanner.Volume,
+                scanner.Cost,
+                scanner.ProductionSeconds,
+                scanner.RequiredTechnology,
+                scanner.RequiredTechnologyLevel,
+                canManufacture,
+                technologyUnlocked,
+                scanner.ScanRange,
+                scanner.EnergyConsumption,
+                scanner.CommandLoad
+            },
+
+            CargoHoldDefinition cargo => new
+            {
+                cargo.Code,
+                cargo.Name,
+                cargo.Race,
+                cargo.Type,
+                cargo.Volume,
+                cargo.Cost,
+                cargo.ProductionSeconds,
+                cargo.RequiredTechnology,
+                cargo.RequiredTechnologyLevel,
+                canManufacture,
+                technologyUnlocked,
+                cargo.CargoCapacity,
+                cargo.EnergyConsumption
+            },
+
+            MiningModuleDefinition mining => new
+            {
+                mining.Code,
+                mining.Name,
+                mining.Race,
+                mining.Type,
+                mining.Volume,
+                mining.Cost,
+                mining.ProductionSeconds,
+                mining.RequiredTechnology,
+                mining.RequiredTechnologyLevel,
+                canManufacture,
+                technologyUnlocked,
+                mining.MiningRatePerMinute,
+                mining.EnergyConsumption
+            },
+
+            LaserWeaponDefinition laser => new
+            {
+                laser.Code,
+                laser.Name,
+                laser.Race,
+                laser.Type,
+                laser.Volume,
+                laser.Cost,
+                laser.ProductionSeconds,
+                laser.RequiredTechnology,
+                laser.RequiredTechnologyLevel,
+                canManufacture,
+                technologyUnlocked,
+                laser.ShieldDamage,
+                laser.HullDamage,
+                laser.EnergyConsumption,
+                laser.CommandLoad
+            },
+
+            MissileWeaponDefinition missile => new
+            {
+                missile.Code,
+                missile.Name,
+                missile.Race,
+                missile.Type,
+                missile.Volume,
+                missile.Cost,
+                missile.ProductionSeconds,
+                missile.RequiredTechnology,
+                missile.RequiredTechnologyLevel,
+                canManufacture,
+                technologyUnlocked,
+                missile.ShieldDamage,
+                missile.HullDamage,
+                missile.EnergyConsumption,
+                missile.CommandLoad
             },
 
             _ => throw new ArgumentOutOfRangeException(

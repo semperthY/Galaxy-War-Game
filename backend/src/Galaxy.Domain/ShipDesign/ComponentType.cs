@@ -12,5 +12,6 @@ public enum ComponentType
     Scanner = 8,
     CargoHold = 9,
     LaserWeapon = 10,
-    MissileWeapon = 11
+    MissileWeapon = 11,
+    MiningModule = 12
 }

@@ -8,7 +8,7 @@ public interface IComponentDefinition
 
     string Name { get; }
 
-    RaceType Race { get; }
+    RaceType? Race { get; }
 
     ComponentType Type { get; }
 

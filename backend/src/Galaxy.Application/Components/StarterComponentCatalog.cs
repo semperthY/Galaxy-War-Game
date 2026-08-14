@@ -26,7 +26,7 @@ public static class StarterComponentCatalog
         RaceType race)
     {
         return Components
-            .Where(x => x.Race == race)
+            .Where(x => x.Race is null || x.Race == race)
             .ToList();
     }
 
@@ -34,6 +34,8 @@ public static class StarterComponentCatalog
         CreateComponents()
     {
         var components = new List<IComponentDefinition>();
+
+        AddUniversalComponents(components);
 
         AddRaceComponents(
             components,
@@ -137,6 +139,131 @@ public static class StarterComponentCatalog
         return components;
     }
 
+    private static void AddUniversalComponents(
+        ICollection<IComponentDefinition> components)
+    {
+        components.Add(new HullDefinition(
+            "HUL-01", "Лёгкий каркас «Игла»", null,
+            new ComponentCost(400m, 40m), 240,
+            TechnologyType.ShipEngineering, 1, 50m, 100m));
+        components.Add(new HullDefinition(
+            "HUL-02", "Эскортный каркас «Коршун»", null,
+            new ComponentCost(900m, 100m), 600,
+            TechnologyType.ShipEngineering, 2, 90m, 200m));
+
+        components.Add(new EngineDefinition(
+            "ENG-01", "Химический двигатель «Вектор»", null,
+            8m, new ComponentCost(160m, 20m), 120,
+            TechnologyType.EngineSystems, 1,
+            120m, 25m, 4m));
+        components.Add(new EngineDefinition(
+            "ENG-02", "Ионный двигатель «Астер»", null,
+            10m, new ComponentCost(250m, 50m), 180,
+            TechnologyType.EngineSystems, 1,
+            65m, 80m, 8m));
+        components.Add(new EngineDefinition(
+            "ENG-03", "Плазменный двигатель «Спираль»", null,
+            12m, new ComponentCost(480m, 120m), 300,
+            TechnologyType.EngineSystems, 2,
+            100m, 100m, 18m));
+
+        components.Add(new ReactorDefinition(
+            "RCT-01", "Изотопное ядро «Искра»", null,
+            6m, new ComponentCost(120m, 30m), 120,
+            TechnologyType.ReactorSystems, 1, 22m));
+        components.Add(new ReactorDefinition(
+            "RCT-02", "Термоядерное ядро «Гелиос»", null,
+            10m, new ComponentCost(300m, 100m), 240,
+            TechnologyType.ReactorSystems, 2, 50m));
+
+        components.Add(new ControlSystemDefinition(
+            "CTL-01", "Навигационное ядро «Следопыт»", null,
+            5m, new ComponentCost(150m, 25m), 150,
+            TechnologyType.Electronics, 1, 30m, 4m));
+        components.Add(new ControlSystemDefinition(
+            "CTL-02", "Тактическое ядро «Эгида»", null,
+            8m, new ComponentCost(380m, 80m), 300,
+            TechnologyType.Electronics, 2, 60m, 8m));
+
+        components.Add(new ScannerDefinition(
+            "SNS-01", "Навигационный радар «Следопыт»", null,
+            3m, new ComponentCost(80m, 10m), 90,
+            TechnologyType.Electronics, 1,
+            30m, 3m, 4m));
+        components.Add(new ScannerDefinition(
+            "SNS-02", "Тактический сканер «Рысь»", null,
+            5m, new ComponentCost(180m, 40m), 150,
+            TechnologyType.Electronics, 2,
+            45m, 7m, 7m));
+
+        components.Add(new MiningModuleDefinition(
+            "IND-01", "Малый гравитационный захват «Клещ»", null,
+            8m, new ComponentCost(220m, 40m), 180,
+            TechnologyType.IndustrialSystems, 1, 5m, 10m));
+        components.Add(new CargoHoldDefinition(
+            "IND-05", "Стандартный грузовой отсек", null,
+            10m, new ComponentCost(180m, 10m), 120,
+            TechnologyType.IndustrialSystems, 1, 100m, 0m));
+        components.Add(new CargoHoldDefinition(
+            "IND-06", "Уплотнённое грузовое хранилище", null,
+            16m, new ComponentCost(480m, 60m), 300,
+            TechnologyType.IndustrialSystems, 2, 220m, 2m));
+        components.Add(new ColonyModuleDefinition(
+            "IND-08", "Колонизационное ядро «Пионер»", null,
+            18m, new ComponentCost(1800m, 700m), 1800,
+            TechnologyType.Colonization, 1, 8m));
+
+        components.Add(new ArmorDefinition(
+            "ARM-01", "Керамитовая броня", null,
+            7m, new ComponentCost(220m, 10m), 150,
+            TechnologyType.ShipEngineering, 1, 60m));
+        components.Add(new ArmorDefinition(
+            "ARM-02", "Абляционная броня", null,
+            10m, new ComponentCost(420m, 20m), 240,
+            TechnologyType.ShipEngineering, 2, 100m));
+
+        components.Add(new ShieldDefinition(
+            "SHD-01", "Лёгкий дефлектор «Мерцание»", null,
+            7m, new ComponentCost(180m, 70m), 180,
+            TechnologyType.FieldDefense, 1, 50m, 12m));
+        components.Add(new ShieldDefinition(
+            "SHD-02", "Импульсный барьер", null,
+            10m, new ComponentCost(380m, 170m), 300,
+            TechnologyType.FieldDefense, 2, 90m, 20m));
+
+        components.Add(new LaserWeaponDefinition(
+            "LAS-01", "Лазер «Игла»", null,
+            3m, new ComponentCost(100m, 20m), 90,
+            TechnologyType.LaserSystems, 1,
+            8m, 2m, 5m, 4m));
+        components.Add(new LaserWeaponDefinition(
+            "LAS-02", "Импульсный лазер «Мерцание»", null,
+            5m, new ComponentCost(220m, 60m), 150,
+            TechnologyType.LaserSystems, 2,
+            16m, 8m, 10m, 7m));
+        components.Add(new LaserWeaponDefinition(
+            "LAS-03", "Призменный излучатель", null,
+            8m, new ComponentCost(480m, 150m), 300,
+            TechnologyType.LaserSystems, 3,
+            28m, 15m, 17m, 12m));
+
+        components.Add(new MissileWeaponDefinition(
+            "MSL-01", "Микроячейка «Оса»", null,
+            4m, new ComponentCost(130m, 10m), 90,
+            TechnologyType.MissileSystems, 1,
+            5m, 12m, 2m, 5m));
+        components.Add(new MissileWeaponDefinition(
+            "MSL-02", "Лёгкая установка «Копейщик»", null,
+            7m, new ComponentCost(300m, 30m), 180,
+            TechnologyType.MissileSystems, 2,
+            10m, 22m, 3m, 8m));
+        components.Add(new MissileWeaponDefinition(
+            "MSL-03", "Ударный блок «Коготь»", null,
+            14m, new ComponentCost(700m, 90m), 360,
+            TechnologyType.MissileSystems, 3,
+            18m, 45m, 5m, 14m));
+    }
+
     private static void AddColonyModule(
         ICollection<IComponentDefinition> components,
         RaceType race,
@@ -220,4 +347,3 @@ public static class StarterComponentCatalog
             controlEnergy));
     }
 }
-

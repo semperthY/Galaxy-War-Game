@@ -64,6 +64,26 @@ public class ComponentProductionServiceTests
                 startedAt));
     }
 
+    [Fact]
+    public void Enqueue_AllowsUniversalComponent()
+    {
+        var startedAt = DateTime.UtcNow;
+        var player = CreatePlayer();
+        var planet = CreatePlanet(startedAt);
+
+        var result = ComponentProductionService.Enqueue(
+            player,
+            planet,
+            1,
+            "ENG-01",
+            1,
+            startedAt);
+
+        Assert.Equal("ENG-01", result.ComponentCode);
+        Assert.Equal(840m, planet.Materials);
+        Assert.Equal(980m, planet.Deuterium);
+    }
+
     private static Player CreatePlayer()
     {
         var player = new Player

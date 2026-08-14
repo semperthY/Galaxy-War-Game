@@ -42,7 +42,8 @@ public static class ComponentProductionService
                 "Component does not exist.");
         }
 
-        if (component.Race != player.Race)
+        if (component.Race is not null &&
+            component.Race != player.Race)
         {
             throw new InvalidOperationException(
                 "This race cannot manufacture the component.");

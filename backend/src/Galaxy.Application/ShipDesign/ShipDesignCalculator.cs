@@ -134,6 +134,10 @@ public static class ShipDesignCalculator
             .OfType<CargoHoldDefinition>()
             .Sum(x => x.CargoCapacity);
 
+        var miningRatePerMinute = resolvedModules
+            .OfType<MiningModuleDefinition>()
+            .Sum(x => x.MiningRatePerMinute);
+
         var shieldDamage =
             resolvedModules
                 .OfType<LaserWeaponDefinition>()
@@ -178,7 +182,8 @@ public static class ShipDesignCalculator
             cargoCapacity,
             shieldDamage,
             hullDamage,
-            requiredComponents);
+            requiredComponents,
+            miningRatePerMinute);
     }
 
     private static IComponentDefinition? FindComponent(
@@ -205,6 +210,7 @@ public static class ShipDesignCalculator
             CargoHoldDefinition cargo => cargo.Volume,
             LaserWeaponDefinition laser => laser.Volume,
             MissileWeaponDefinition missile => missile.Volume,
+            MiningModuleDefinition mining => mining.Volume,
 
             _ => throw new InvalidOperationException(
                 $"Component type '{component.Type}' " +
@@ -218,11 +224,13 @@ public static class ShipDesignCalculator
         {
             EngineDefinition engine => engine.EnergyConsumption,
             ControlSystemDefinition control => control.EnergyConsumption,
+            ColonyModuleDefinition colony => colony.EnergyConsumption,
             ShieldDefinition shield => shield.EnergyConsumption,
             ScannerDefinition scanner => scanner.EnergyConsumption,
             CargoHoldDefinition cargo => cargo.EnergyConsumption,
             LaserWeaponDefinition laser => laser.EnergyConsumption,
             MissileWeaponDefinition missile => missile.EnergyConsumption,
+            MiningModuleDefinition mining => mining.EnergyConsumption,
             _ => 0m
         };
 
@@ -275,4 +283,5 @@ public sealed record ShipDesignResult(
     decimal CargoCapacity,
     decimal ShieldDamage,
     decimal HullDamage,
-    IReadOnlyCollection<RequiredComponent> RequiredComponents);
+    IReadOnlyCollection<RequiredComponent> RequiredComponents,
+    decimal MiningRatePerMinute);
