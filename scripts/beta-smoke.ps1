@@ -275,6 +275,18 @@ try {
         Fail('A starting planet without a research center exposed an active stream')
     }
 
+    Write-Step "Verifying that a research order is inserted"
+    $enableResearchSql = "UPDATE `"Planets`" SET `"ResearchLaboratoryLevel`" = 1 WHERE `"Id`" = '$homeworldId';"
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $enableResearchSql | Out-Null
+
+    $startedResearch = Invoke-Api `
+        -Path "/api/game/research/MaterialsScience/start?planetId=$homeworldId" `
+        -Method POST
+    if (@($startedResearch.activeResearch).Count -ne 1 -or
+        $startedResearch.activeResearch[0].technology -ne 'MaterialsScience') {
+        Fail('Starting MaterialsScience did not create an active research order')
+    }
+
     Write-Step "Verifying account isolation with a second commander"
     $firstCommanderSession = $script:webSession
     $secondCommanderSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
