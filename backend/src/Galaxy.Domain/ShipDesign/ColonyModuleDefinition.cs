@@ -5,12 +5,13 @@ namespace Galaxy.Domain.ShipDesign;
 public sealed record ColonyModuleDefinition(
     string Code,
     string Name,
-    RaceType Race,
+    RaceType? Race,
     decimal Volume,
     ComponentCost Cost,
     int ProductionSeconds,
     TechnologyType RequiredTechnology,
-    int RequiredTechnologyLevel)
+    int RequiredTechnologyLevel,
+    decimal EnergyConsumption = 0m)
     : IComponentDefinition
 {
     public ComponentType Type => ComponentType.ColonyModule;

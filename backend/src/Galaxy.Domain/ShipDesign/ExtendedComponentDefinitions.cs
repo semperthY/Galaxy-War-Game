@@ -5,7 +5,7 @@ namespace Galaxy.Domain.ShipDesign;
 public sealed record ArmorDefinition(
     string Code,
     string Name,
-    RaceType Race,
+    RaceType? Race,
     decimal Volume,
     ComponentCost Cost,
     int ProductionSeconds,
@@ -19,7 +19,7 @@ public sealed record ArmorDefinition(
 public sealed record ShieldDefinition(
     string Code,
     string Name,
-    RaceType Race,
+    RaceType? Race,
     decimal Volume,
     ComponentCost Cost,
     int ProductionSeconds,
@@ -34,7 +34,7 @@ public sealed record ShieldDefinition(
 public sealed record ScannerDefinition(
     string Code,
     string Name,
-    RaceType Race,
+    RaceType? Race,
     decimal Volume,
     ComponentCost Cost,
     int ProductionSeconds,
@@ -50,7 +50,7 @@ public sealed record ScannerDefinition(
 public sealed record CargoHoldDefinition(
     string Code,
     string Name,
-    RaceType Race,
+    RaceType? Race,
     decimal Volume,
     ComponentCost Cost,
     int ProductionSeconds,
@@ -65,7 +65,7 @@ public sealed record CargoHoldDefinition(
 public sealed record LaserWeaponDefinition(
     string Code,
     string Name,
-    RaceType Race,
+    RaceType? Race,
     decimal Volume,
     ComponentCost Cost,
     int ProductionSeconds,
@@ -82,7 +82,7 @@ public sealed record LaserWeaponDefinition(
 public sealed record MissileWeaponDefinition(
     string Code,
     string Name,
-    RaceType Race,
+    RaceType? Race,
     decimal Volume,
     ComponentCost Cost,
     int ProductionSeconds,
@@ -94,4 +94,19 @@ public sealed record MissileWeaponDefinition(
     decimal CommandLoad) : IComponentDefinition
 {
     public ComponentType Type => ComponentType.MissileWeapon;
+}
+
+public sealed record MiningModuleDefinition(
+    string Code,
+    string Name,
+    RaceType? Race,
+    decimal Volume,
+    ComponentCost Cost,
+    int ProductionSeconds,
+    TechnologyType RequiredTechnology,
+    int RequiredTechnologyLevel,
+    decimal MiningRatePerMinute,
+    decimal EnergyConsumption) : IComponentDefinition
+{
+    public ComponentType Type => ComponentType.MiningModule;
 }

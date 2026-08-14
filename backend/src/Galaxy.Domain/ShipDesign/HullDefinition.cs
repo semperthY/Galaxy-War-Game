@@ -5,7 +5,7 @@ namespace Galaxy.Domain.ShipDesign;
 public sealed record HullDefinition(
     string Code,
     string Name,
-    RaceType Race,
+    RaceType? Race,
     ComponentCost Cost,
     int ProductionSeconds,
     TechnologyType RequiredTechnology,

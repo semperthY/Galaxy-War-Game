@@ -253,7 +253,124 @@ public static class ProductionEndpoints
                 colony.ProductionSeconds,
                 colony.RequiredTechnology,
                 colony.RequiredTechnologyLevel,
-                unlocked
+                unlocked,
+                colony.EnergyConsumption
+            },
+
+            ArmorDefinition armor => new
+            {
+                armor.Code,
+                armor.Name,
+                armor.Race,
+                armor.Type,
+                armor.Volume,
+                armor.Cost,
+                armor.ProductionSeconds,
+                armor.RequiredTechnology,
+                armor.RequiredTechnologyLevel,
+                unlocked,
+                armor.BonusStructuralIntegrity
+            },
+
+            ShieldDefinition shield => new
+            {
+                shield.Code,
+                shield.Name,
+                shield.Race,
+                shield.Type,
+                shield.Volume,
+                shield.Cost,
+                shield.ProductionSeconds,
+                shield.RequiredTechnology,
+                shield.RequiredTechnologyLevel,
+                unlocked,
+                shield.ShieldCapacity,
+                shield.EnergyConsumption
+            },
+
+            ScannerDefinition scanner => new
+            {
+                scanner.Code,
+                scanner.Name,
+                scanner.Race,
+                scanner.Type,
+                scanner.Volume,
+                scanner.Cost,
+                scanner.ProductionSeconds,
+                scanner.RequiredTechnology,
+                scanner.RequiredTechnologyLevel,
+                unlocked,
+                scanner.ScanRange,
+                scanner.EnergyConsumption,
+                scanner.CommandLoad
+            },
+
+            CargoHoldDefinition cargo => new
+            {
+                cargo.Code,
+                cargo.Name,
+                cargo.Race,
+                cargo.Type,
+                cargo.Volume,
+                cargo.Cost,
+                cargo.ProductionSeconds,
+                cargo.RequiredTechnology,
+                cargo.RequiredTechnologyLevel,
+                unlocked,
+                cargo.CargoCapacity,
+                cargo.EnergyConsumption
+            },
+
+            MiningModuleDefinition mining => new
+            {
+                mining.Code,
+                mining.Name,
+                mining.Race,
+                mining.Type,
+                mining.Volume,
+                mining.Cost,
+                mining.ProductionSeconds,
+                mining.RequiredTechnology,
+                mining.RequiredTechnologyLevel,
+                unlocked,
+                mining.MiningRatePerMinute,
+                mining.EnergyConsumption
+            },
+
+            LaserWeaponDefinition laser => new
+            {
+                laser.Code,
+                laser.Name,
+                laser.Race,
+                laser.Type,
+                laser.Volume,
+                laser.Cost,
+                laser.ProductionSeconds,
+                laser.RequiredTechnology,
+                laser.RequiredTechnologyLevel,
+                unlocked,
+                laser.ShieldDamage,
+                laser.HullDamage,
+                laser.EnergyConsumption,
+                laser.CommandLoad
+            },
+
+            MissileWeaponDefinition missile => new
+            {
+                missile.Code,
+                missile.Name,
+                missile.Race,
+                missile.Type,
+                missile.Volume,
+                missile.Cost,
+                missile.ProductionSeconds,
+                missile.RequiredTechnology,
+                missile.RequiredTechnologyLevel,
+                unlocked,
+                missile.ShieldDamage,
+                missile.HullDamage,
+                missile.EnergyConsumption,
+                missile.CommandLoad
             },
             _ => throw new ArgumentOutOfRangeException(
                 nameof(component))
@@ -289,7 +406,6 @@ public sealed record ProductionOrderResponse(
     int Quantity,
     DateTime? StartedAt,
     DateTime? CompletesAt);
-
 
 
 
