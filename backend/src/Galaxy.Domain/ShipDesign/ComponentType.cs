@@ -6,5 +6,11 @@ public enum ComponentType
     Engine = 2,
     Reactor = 3,
     ControlSystem = 4,
-    ColonyModule = 5
+    ColonyModule = 5,
+    Armor = 6,
+    Shield = 7,
+    Scanner = 8,
+    CargoHold = 9,
+    LaserWeapon = 10,
+    MissileWeapon = 11
 }
