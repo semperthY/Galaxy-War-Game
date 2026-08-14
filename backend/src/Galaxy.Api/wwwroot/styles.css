@@ -2137,3 +2137,18 @@ main {
         cursor: help;
     }
 }
+
+
+.mobile-navigation {
+    display: none;
+}
+
+@media (max-width: 820px) {
+    .sidebar .navigation {
+        display: none;
+    }
+
+    .mobile-navigation {
+        display: flex;
+    }
+}
