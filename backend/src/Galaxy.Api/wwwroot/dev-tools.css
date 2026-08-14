@@ -43,8 +43,16 @@
     margin-top: 10px;
 }
 
+.mobile-dev-supply-button {
+    display: none;
+}
+
 @media (max-width: 820px) {
-    .dev-supply-button {
+    .sidebar .dev-supply-button {
+        display: none;
+    }
+
+    .mobile-dev-supply-button {
         position: fixed;
         right: max(12px, env(safe-area-inset-right));
         bottom: calc(82px + env(safe-area-inset-bottom));

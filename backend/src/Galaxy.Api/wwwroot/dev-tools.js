@@ -1,22 +1,35 @@
 window.DevToolsUi = (() => {
     let context;
-    let button;
+    let buttons = [];
 
     async function init(options) {
         context = options;
-        button = document.querySelector("#devSupplyButton");
+        buttons = [
+            ...document.querySelectorAll("[data-dev-supply]")
+        ];
+
+        if (buttons.length === 0) {
+            return;
+        }
 
         try {
             await context.api("/api/dev/status");
-            button.hidden = false;
-            button.addEventListener("click", grantSupply);
+
+            for (const button of buttons) {
+                button.hidden = false;
+                button.addEventListener("click", grantSupply);
+            }
         } catch {
-            button.hidden = true;
+            for (const button of buttons) {
+                button.hidden = true;
+            }
         }
     }
 
     async function grantSupply() {
-        button.disabled = true;
+        for (const button of buttons) {
+            button.disabled = true;
+        }
 
         try {
             const result = await context.api(
@@ -37,7 +50,9 @@ window.DevToolsUi = (() => {
         } catch (error) {
             context.message(error.message, true);
         } finally {
-            button.disabled = false;
+            for (const button of buttons) {
+                button.disabled = false;
+            }
         }
     }
 
