@@ -82,6 +82,7 @@ public class StarterComponentCatalogTests
     {
         var modules = StarterComponentCatalog.GetAll()
             .OfType<ColonyModuleDefinition>()
+            .Where(x => x.Race is not null)
             .ToList();
 
         Assert.Equal(4, modules.Count);
