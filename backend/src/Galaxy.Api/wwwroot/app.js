@@ -331,6 +331,29 @@ function getPageFromLocation() {
     return pageDefinitions[page] ? page : "overview";
 }
 
+function createMobileNavigation() {
+    const desktopNavigation =
+        document.querySelector(".sidebar .navigation");
+
+    if (
+        !desktopNavigation ||
+        document.querySelector(".mobile-navigation")
+    ) {
+        return;
+    }
+
+    const mobileNavigation =
+        desktopNavigation.cloneNode(true);
+
+    mobileNavigation.classList.add("mobile-navigation");
+    mobileNavigation.setAttribute(
+        "aria-label",
+        "Мобильная навигация"
+    );
+
+    document.body.appendChild(mobileNavigation);
+}
+
 const elements = {
     planetSelect: document.querySelector("#planetSelect"),
     planetName: document.querySelector("#planetName"),
@@ -2321,6 +2344,8 @@ elements.planetSelect.addEventListener("change", event => {
     window.localStorage.setItem("activePlanetId", state.activePlanetId);
     loadDashboard();
 });
+
+createMobileNavigation();
 
 document.querySelectorAll("[data-page]").forEach(link => {
     link.addEventListener("click", event => {
