@@ -7,9 +7,18 @@ public static class ShipDesignCalculator
 {
     public static ShipDesignResult Calculate(
         string hullCode,
-        IReadOnlyCollection<ModuleSelection> modules)
+        IReadOnlyCollection<ModuleSelection> modules) =>
+        Calculate(
+            hullCode,
+            modules,
+            StarterComponentCatalog.GetAll());
+
+    public static ShipDesignResult Calculate(
+        string hullCode,
+        IReadOnlyCollection<ModuleSelection> modules,
+        IReadOnlyCollection<IComponentDefinition> catalog)
     {
-        var hull = StarterComponentCatalog.Find(hullCode)
+        var hull = FindComponent(catalog, hullCode)
             as HullDefinition
             ?? throw new InvalidOperationException(
                 "A valid hull is required.");
@@ -30,7 +39,8 @@ public static class ShipDesignCalculator
                 }
 
                 var definition =
-                    StarterComponentCatalog.Find(
+                    FindComponent(
+                        catalog,
                         selection.ComponentCode)
                     ?? throw new InvalidOperationException(
                         $"Component '{selection.ComponentCode}' " +
@@ -72,19 +82,28 @@ public static class ShipDesignCalculator
             .OfType<ReactorDefinition>()
             .Sum(x => x.EnergyOutput);
 
-        var energyConsumption =
-            resolvedModules
-                .OfType<EngineDefinition>()
-                .Sum(x => x.EnergyConsumption) +
-            resolvedModules
-                .OfType<ControlSystemDefinition>()
-                .Sum(x => x.EnergyConsumption);
+        var energyConsumption = resolvedModules
+            .Sum(GetEnergyConsumption);
 
         if (energyConsumption > energyProduction)
         {
             throw new InvalidOperationException(
                 "Installed modules require more energy " +
                 "than the reactors produce.");
+        }
+
+        var commandRating = resolvedModules
+            .OfType<ControlSystemDefinition>()
+            .Sum(x => x.CommandRating);
+
+        var commandLoad = resolvedModules
+            .Sum(GetCommandLoad);
+
+        if (commandLoad > commandRating)
+        {
+            throw new InvalidOperationException(
+                "Installed active systems exceed " +
+                "control system command capacity.");
         }
 
         var inSystemSpeed = resolvedModules
@@ -95,9 +114,41 @@ public static class ShipDesignCalculator
             .OfType<EngineDefinition>()
             .Sum(x => x.InterSystemSpeed);
 
-        var commandRating = resolvedModules
-            .OfType<ControlSystemDefinition>()
-            .Sum(x => x.CommandRating);
+        var structuralIntegrity =
+            hull.StructuralIntegrity +
+            resolvedModules
+                .OfType<ArmorDefinition>()
+                .Sum(x => x.BonusStructuralIntegrity);
+
+        var shieldCapacity = resolvedModules
+            .OfType<ShieldDefinition>()
+            .Sum(x => x.ShieldCapacity);
+
+        var scanRange = resolvedModules
+            .OfType<ScannerDefinition>()
+            .Select(x => x.ScanRange)
+            .DefaultIfEmpty(0m)
+            .Max();
+
+        var cargoCapacity = resolvedModules
+            .OfType<CargoHoldDefinition>()
+            .Sum(x => x.CargoCapacity);
+
+        var shieldDamage =
+            resolvedModules
+                .OfType<LaserWeaponDefinition>()
+                .Sum(x => x.ShieldDamage) +
+            resolvedModules
+                .OfType<MissileWeaponDefinition>()
+                .Sum(x => x.ShieldDamage);
+
+        var hullDamage =
+            resolvedModules
+                .OfType<LaserWeaponDefinition>()
+                .Sum(x => x.HullDamage) +
+            resolvedModules
+                .OfType<MissileWeaponDefinition>()
+                .Sum(x => x.HullDamage);
 
         var requiredComponents = modules
             .Select(x => new RequiredComponent(
@@ -113,15 +164,31 @@ public static class ShipDesignCalculator
             hull.Capacity,
             usedVolume,
             hull.Capacity - usedVolume,
-            hull.StructuralIntegrity,
+            structuralIntegrity,
+            shieldCapacity,
             energyProduction,
             energyConsumption,
             energyProduction - energyConsumption,
             inSystemSpeed,
             interSystemSpeed,
             commandRating,
+            commandLoad,
+            commandRating - commandLoad,
+            scanRange,
+            cargoCapacity,
+            shieldDamage,
+            hullDamage,
             requiredComponents);
     }
+
+    private static IComponentDefinition? FindComponent(
+        IEnumerable<IComponentDefinition> catalog,
+        string code) =>
+        catalog.SingleOrDefault(x =>
+            string.Equals(
+                x.Code,
+                code,
+                StringComparison.OrdinalIgnoreCase));
 
     private static decimal GetVolume(
         IComponentDefinition component)
@@ -132,12 +199,42 @@ public static class ShipDesignCalculator
             ReactorDefinition reactor => reactor.Volume,
             ControlSystemDefinition control => control.Volume,
             ColonyModuleDefinition colony => colony.Volume,
+            ArmorDefinition armor => armor.Volume,
+            ShieldDefinition shield => shield.Volume,
+            ScannerDefinition scanner => scanner.Volume,
+            CargoHoldDefinition cargo => cargo.Volume,
+            LaserWeaponDefinition laser => laser.Volume,
+            MissileWeaponDefinition missile => missile.Volume,
 
             _ => throw new InvalidOperationException(
                 $"Component type '{component.Type}' " +
                 "cannot be installed yet.")
         };
     }
+
+    private static decimal GetEnergyConsumption(
+        IComponentDefinition component) =>
+        component switch
+        {
+            EngineDefinition engine => engine.EnergyConsumption,
+            ControlSystemDefinition control => control.EnergyConsumption,
+            ShieldDefinition shield => shield.EnergyConsumption,
+            ScannerDefinition scanner => scanner.EnergyConsumption,
+            CargoHoldDefinition cargo => cargo.EnergyConsumption,
+            LaserWeaponDefinition laser => laser.EnergyConsumption,
+            MissileWeaponDefinition missile => missile.EnergyConsumption,
+            _ => 0m
+        };
+
+    private static decimal GetCommandLoad(
+        IComponentDefinition component) =>
+        component switch
+        {
+            ScannerDefinition scanner => scanner.CommandLoad,
+            LaserWeaponDefinition laser => laser.CommandLoad,
+            MissileWeaponDefinition missile => missile.CommandLoad,
+            _ => 0m
+        };
 
     private static void RequireModule<T>(
         IEnumerable<IComponentDefinition> modules,
@@ -165,11 +262,17 @@ public sealed record ShipDesignResult(
     decimal UsedVolume,
     decimal FreeVolume,
     decimal StructuralIntegrity,
+    decimal ShieldCapacity,
     decimal EnergyProduction,
     decimal EnergyConsumption,
     decimal FreeEnergy,
     decimal InSystemSpeed,
     decimal InterSystemSpeed,
     decimal CommandRating,
+    decimal CommandLoad,
+    decimal FreeCommandRating,
+    decimal ScanRange,
+    decimal CargoCapacity,
+    decimal ShieldDamage,
+    decimal HullDamage,
     IReadOnlyCollection<RequiredComponent> RequiredComponents);
-
