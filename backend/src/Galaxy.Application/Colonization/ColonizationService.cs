@@ -66,15 +66,16 @@ public static class ColonizationService
                 $"Colony {targetPlanet.StarSystem.SystemNumber}:" +
                 $"{targetPlanet.Position}";
 
-            targetPlanet.Materials = 250m;
-            targetPlanet.Deuterium = 50m;
+            targetPlanet.Materials = 600m;
+            targetPlanet.Deuterium = 150m;
             targetPlanet.MaterialsExtractorLevel = 1;
-            targetPlanet.DeuteriumExtractorLevel = 0;
+            targetPlanet.DeuteriumExtractorLevel = 1;
             targetPlanet.PowerPlantLevel = 1;
             targetPlanet.WarehouseLevel = 1;
             targetPlanet.ResearchLaboratoryLevel = 0;
             targetPlanet.ProductionComplexLevel = 0;
             targetPlanet.AssemblyComplexLevel = 0;
+            targetPlanet.RaceEngineeringComplexLevel = 0;
             targetPlanet.QueuedBuilding = null;
             targetPlanet.QueuedBuildingLevel = null;
             targetPlanet.BuildingCompletesAt = null;

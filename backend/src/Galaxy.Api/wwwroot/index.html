@@ -421,6 +421,29 @@
                                 </div>
                             </div>
 
+                            <div class="component-filters">
+                                <input id="componentSearch"
+                                       placeholder="Поиск компонента">
+                                <select id="componentTypeFilter">
+                                    <option value="">Все типы</option>
+                                </select>
+                                <select id="componentRaceFilter">
+                                    <option value="">Все расы</option>
+                                    <option value="universal">Универсальные</option>
+                                    <option value="Humans">Люди</option>
+                                    <option value="Synthetics">Синтетики</option>
+                                    <option value="Insectoids">Инсектоиды</option>
+                                    <option value="EnergyForms">Энергоформы</option>
+                                </select>
+                                <select id="componentAvailabilityFilter">
+                                    <option value="">Вся доступность</option>
+                                    <option value="available">Можно произвести сейчас</option>
+                                    <option value="technology">Технология изучена</option>
+                                    <option value="technology-locked">Технология закрыта</option>
+                                    <option value="manufacturing-locked">Производство недоступно</option>
+                                </select>
+                            </div>
+
                             <div
                                 id="componentCatalog"
                                 class="component-catalog">
@@ -586,6 +609,10 @@
                                 </label>
                             </div>
 
+                            <div id="designerOptionalModules"
+                                 class="designer-optional-modules">
+                            </div>
+
                             <button
                                 id="saveBlueprintButton"
                                 class="save-blueprint-button">
@@ -663,6 +690,26 @@
                                     <span>Управление</span>
                                     <strong id="designCommand">0</strong>
                                 </div>
+                                <div>
+                                    <span>Щит</span>
+                                    <strong id="designShield">0</strong>
+                                </div>
+                                <div>
+                                    <span>Урон щиту / корпусу</span>
+                                    <strong id="designDamage">0 / 0</strong>
+                                </div>
+                                <div>
+                                    <span>Сканирование</span>
+                                    <strong id="designScan">0</strong>
+                                </div>
+                                <div>
+                                    <span>Груз / добыча</span>
+                                    <strong id="designUtility">0 / 0</strong>
+                                </div>
+                            </div>
+
+                            <div id="designDeltaPreview"
+                                 class="design-delta-preview">
                             </div>
 
                             <div id="designWarnings" class="design-warnings">

@@ -95,6 +95,24 @@ public class ShipDesignCalculatorTests
     }
 
     [Fact]
+    public void Calculate_AllowsInstalledForeignUniqueComponent()
+    {
+        var result = ShipDesignCalculator.Calculate(
+            "HUL-02",
+            new[]
+            {
+                new ModuleSelection("ENG-I01", 1),
+                new ModuleSelection("RCT-02", 1),
+                new ModuleSelection("CTL-02", 1)
+            });
+
+        Assert.Equal(145m, result.InSystemSpeed);
+        Assert.Contains(
+            result.RequiredComponents,
+            component => component.ComponentCode == "ENG-I01");
+    }
+
+    [Fact]
     public void Calculate_RejectsExceededCommandCapacity()
     {
         var exception = Assert.Throws<InvalidOperationException>(

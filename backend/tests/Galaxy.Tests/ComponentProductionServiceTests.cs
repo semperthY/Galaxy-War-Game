@@ -84,6 +84,47 @@ public class ComponentProductionServiceTests
         Assert.Equal(980m, planet.Deuterium);
     }
 
+    [Fact]
+    public void Enqueue_RequiresOwnRaceAndLocalRaceComplex()
+    {
+        var startedAt = DateTime.UtcNow;
+        var player = CreatePlayer();
+        AddTechnology(player, TechnologyType.ShipEngineering, 3);
+        var planet = CreatePlanet(startedAt);
+        planet.Materials = 5000m;
+
+        var missingBuilding = Assert.Throws<InvalidOperationException>(
+            () => ComponentProductionService.Enqueue(
+                player, planet, 1, "ARM-H01", 1, startedAt));
+        Assert.Contains("race engineering complex", missingBuilding.Message);
+
+        planet.RaceEngineeringComplexLevel = 1;
+        var result = ComponentProductionService.Enqueue(
+            player, planet, 1, "ARM-H01", 1, startedAt);
+        Assert.Equal("ARM-H01", result.ComponentCode);
+
+        Assert.Throws<InvalidOperationException>(
+            () => ComponentProductionService.Enqueue(
+                player, planet, 1, "RCT-S01", 1, startedAt));
+    }
+
+    [Fact]
+    public void Enqueue_RaceComplexLevelTwoAcceleratesUniqueComponents()
+    {
+        var startedAt = new DateTime(
+            2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var player = CreatePlayer();
+        AddTechnology(player, TechnologyType.ShipEngineering, 3);
+        var planet = CreatePlanet(startedAt);
+        planet.Materials = 5000m;
+        planet.RaceEngineeringComplexLevel = 2;
+
+        var result = ComponentProductionService.Enqueue(
+            player, planet, 1, "ARM-H01", 1, startedAt);
+
+        Assert.Equal(startedAt.AddSeconds(594), result.CompletesAt);
+    }
+
     private static Player CreatePlayer()
     {
         var player = new Player
@@ -102,6 +143,20 @@ public class ComponentProductionServiceTests
         });
 
         return player;
+    }
+
+    private static void AddTechnology(
+        Player player,
+        TechnologyType technology,
+        int level)
+    {
+        player.Technologies.Add(new PlayerTechnology
+        {
+            PlayerId = player.Id,
+            Player = player,
+            Technology = technology,
+            Level = level
+        });
     }
 
     private static Planet CreatePlanet(DateTime startedAt)

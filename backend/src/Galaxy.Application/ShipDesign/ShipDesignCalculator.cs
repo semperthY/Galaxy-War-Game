@@ -11,7 +11,7 @@ public static class ShipDesignCalculator
         Calculate(
             hullCode,
             modules,
-            StarterComponentCatalog.GetAll());
+            StarterComponentCatalog.GetResolvable());
 
     public static ShipDesignResult Calculate(
         string hullCode,

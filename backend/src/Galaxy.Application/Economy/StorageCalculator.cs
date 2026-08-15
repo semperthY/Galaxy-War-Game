@@ -4,8 +4,8 @@ namespace Galaxy.Application.Economy;
 
 public static class StorageCalculator
 {
-    private const decimal BaseMaterialsCapacity = 1000m;
-    private const decimal BaseDeuteriumCapacity = 500m;
+    private const decimal BaseMaterialsCapacity = 1500m;
+    private const decimal BaseDeuteriumCapacity = 750m;
 
     public static StorageCapacity Calculate(Planet planet)
     {

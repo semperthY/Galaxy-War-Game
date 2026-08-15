@@ -50,8 +50,8 @@ public class ColonizationServiceTests
         Assert.Same(state.Target, result);
         Assert.Equal(state.Player.Id, state.Target.PlayerId);
         Assert.Equal("Colony 1:2", state.Target.Name);
-        Assert.Equal(250m, state.Target.Materials);
-        Assert.Equal(50m, state.Target.Deuterium);
+        Assert.Equal(600m, state.Target.Materials);
+        Assert.Equal(150m, state.Target.Deuterium);
         Assert.Equal(1, state.Target.MaterialsExtractorLevel);
         Assert.Equal(1, state.Target.PowerPlantLevel);
         Assert.Equal(1, state.Target.WarehouseLevel);

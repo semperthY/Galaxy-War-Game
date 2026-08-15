@@ -26,6 +26,8 @@ public class Planet
 
     public int AssemblyComplexLevel { get; set; }
 
+    public int RaceEngineeringComplexLevel { get; set; }
+
     public int BuildingSiteCapacity { get; set; }
 
     public DateTime ResourcesUpdatedAt { get; set; }

@@ -49,6 +49,16 @@ public static class ComponentProductionService
                 "This race cannot manufacture the component.");
         }
 
+        var details = ComponentCatalogDetails.Get(component.Code);
+
+        if (planet.RaceEngineeringComplexLevel <
+            details.RequiredRaceComplexLevel)
+        {
+            throw new InvalidOperationException(
+                "Required local race engineering complex: " +
+                $"level {details.RequiredRaceComplexLevel}.");
+        }
+
         if (ResearchService.GetLevel(
                 player,
                 component.RequiredTechnology) <
@@ -101,6 +111,7 @@ public static class ComponentProductionService
                 order,
                 component,
                 planet.ProductionComplexLevel,
+                planet.RaceEngineeringComplexLevel,
                 utcNow);
         }
 
@@ -151,6 +162,7 @@ public static class ComponentProductionService
                         activeOrder,
                         definition,
                         planet.ProductionComplexLevel,
+                        planet.RaceEngineeringComplexLevel,
                         utcNow);
                 }
 
@@ -187,6 +199,7 @@ public static class ComponentProductionService
                     nextOrder,
                     nextDefinition,
                     planet.ProductionComplexLevel,
+                    planet.RaceEngineeringComplexLevel,
                     completionTime);
             }
         }
@@ -203,15 +216,26 @@ public static class ComponentProductionService
         ComponentProductionOrder order,
         IComponentDefinition component,
         int complexLevel,
+        int raceComplexLevel,
         DateTime startedAt)
     {
         var speedMultiplier =
             1m + (complexLevel - 1) * 0.1m;
 
+        var raceTimeMultiplier = component.Race is null
+            ? 1m
+            : raceComplexLevel switch
+            {
+                >= 3 => 0.8m,
+                >= 2 => 0.9m,
+                _ => 1m
+            };
+
         var durationSeconds = decimal.Ceiling(
             component.ProductionSeconds *
             order.Quantity /
-            speedMultiplier);
+            speedMultiplier *
+            raceTimeMultiplier);
 
         order.StartedAt = startedAt;
         order.CompletesAt = startedAt.AddSeconds(
