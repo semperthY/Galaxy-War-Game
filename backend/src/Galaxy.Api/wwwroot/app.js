@@ -307,6 +307,11 @@ const buildingInfo = {
         name: "Расовый инженерный комплекс",
         icon: "icon-command",
         description: "Производит специализированные модели выбранной расы."
+    },
+    Shipyard: {
+        name: "Орбитальная верфь",
+        icon: "icon-ship",
+        description: "Ремонтирует корпуса кораблей после посадки флота."
     }
 };
 
@@ -352,8 +357,16 @@ const pageDefinitions = {
         breadcrumb: "ФЛОТ / ВЕРФЬ"
     },
     fleet: {
-        title: "Резерв флота",
-        breadcrumb: "ФЛОТ / РЕЗЕРВ"
+        title: "Командование флотами",
+        breadcrumb: "ФЛОТ / ПОЛЁТНЫЕ ЛИСТЫ"
+    },
+    operations: {
+        title: "Операции системы",
+        breadcrumb: "НАВИГАЦИЯ / ПОЛЯ И КОНТАКТЫ"
+    },
+    battles: {
+        title: "Боевой центр",
+        breadcrumb: "ФЛОТ / РАПОРТЫ"
     },
     galaxy: {
         title: "Карта галактики",
@@ -832,7 +845,7 @@ async function api(path, options = {}) {
 
         try {
             const error = await response.json();
-            message = error.error ?? message;
+            message = error.error ?? error.message ?? message;
         } catch {
         }
 
@@ -2675,10 +2688,32 @@ async function loadDashboard() {
                 break;
             }
             case "ship-assembly":
-            case "fleet": {
+            {
                 const blueprints = await api("/api/game/blueprints/");
                 state.blueprints = blueprints;
                 AssemblyUi.render(assembly, blueprints);
+                break;
+            }
+            case "fleet": {
+                const [blueprints, fleets] = await Promise.all([
+                    api("/api/game/blueprints/"),
+                    api("/api/game/living-galaxy/fleets")
+                ]);
+                state.blueprints = blueprints;
+                AssemblyUi.render(assembly, blueprints);
+                await LivingGalaxyUi.render(fleets, assembly, activePlanet);
+                break;
+            }
+            case "operations": {
+                const fleets = await api("/api/game/living-galaxy/fleets");
+                await LivingGalaxyUi.render(fleets, assembly, activePlanet);
+                await LivingGalaxyUi.loadSystem(activePlanet.galaxy, activePlanet.system);
+                break;
+            }
+            case "battles": {
+                const fleets = await api("/api/game/living-galaxy/fleets");
+                await LivingGalaxyUi.render(fleets, assembly, activePlanet);
+                await LivingGalaxyUi.loadBattles();
                 break;
             }
             case "galaxy": {
@@ -2799,6 +2834,13 @@ GalaxyUi.init({
     api,
     message: showMessage,
     reload: loadDashboard
+});
+
+LivingGalaxyUi.init({
+    api,
+    message: showMessage,
+    reload: loadDashboard,
+    openPage
 });
 
 DevToolsUi.init({

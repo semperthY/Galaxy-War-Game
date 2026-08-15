@@ -91,6 +91,7 @@ app.MapComponentCatalogEndpoints();
 app.MapShipBlueprintEndpoints();
 app.MapShipAssemblyEndpoints();
 app.MapColonizationEndpoints();
+app.MapLivingGalaxyEndpoints();
 
 app.MapGet("/health", () => Results.Ok(new
 {

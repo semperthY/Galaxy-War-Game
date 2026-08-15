@@ -19,4 +19,6 @@ public class Ship
     public string Name { get; set; } = null!;
 
     public DateTime CreatedAt { get; set; }
+
+    public FleetShip? FleetShip { get; set; }
 }

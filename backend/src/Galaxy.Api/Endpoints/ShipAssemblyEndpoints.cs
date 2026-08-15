@@ -128,6 +128,8 @@ public static class ShipAssemblyEndpoints
             .ThenInclude(x => x.Modules)
             .Include(x => x.Ships)
             .ThenInclude(x => x.Blueprint)
+            .Include(x => x.Ships)
+            .ThenInclude(x => x.FleetShip)
             .SelectOwnedPlanet(player.Id, planetId)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -160,6 +162,7 @@ public static class ShipAssemblyEndpoints
             .ToList();
 
         var reserve = planet.Ships
+            .Where(x => x.FleetShip == null)
             .OrderBy(x => x.CreatedAt)
             .Select(x => new ReserveShipResponse(
                 x.Id,
@@ -213,8 +216,6 @@ public sealed record ReserveShipResponse(
     string BlueprintName,
     int BlueprintVersion,
     DateTime CreatedAt);
-
-
 
 
 

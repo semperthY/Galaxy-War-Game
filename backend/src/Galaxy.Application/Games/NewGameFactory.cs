@@ -71,6 +71,7 @@ public static class NewGameFactory
                     ResearchLaboratoryLevel = 0,
                     ProductionComplexLevel = 0,
                     AssemblyComplexLevel = 0,
+                    ShipyardLevel = 0,
                     RaceEngineeringComplexLevel = 0,
                     BuildingSiteCapacity = isHomeworld
                         ? 20
@@ -119,6 +120,7 @@ public static class NewGameFactory
         planet.ResearchLaboratoryLevel = 0;
         planet.ProductionComplexLevel = 0;
         planet.AssemblyComplexLevel = 0;
+        planet.ShipyardLevel = 0;
         planet.RaceEngineeringComplexLevel = 0;
         planet.BuildingSiteCapacity = Math.Max(planet.BuildingSiteCapacity, 20);
         planet.ResourcesUpdatedAt = createdAt;
@@ -167,4 +169,3 @@ public sealed record NewGame(
     Player Player,
     IReadOnlyCollection<StarSystem> StarSystems,
     Planet Homeworld);
-
