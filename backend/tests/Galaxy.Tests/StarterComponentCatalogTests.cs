@@ -23,7 +23,7 @@ public class StarterComponentCatalogTests
             var components =
                 StarterComponentCatalog.GetForRace(race);
 
-            Assert.Equal(27, components.Count);
+            Assert.Equal(31, components.Count);
 
             foreach (var requiredType in requiredTypes)
             {
@@ -51,11 +51,11 @@ public class StarterComponentCatalogTests
             .Where(x => x.Race is null)
             .ToList();
 
-        Assert.Equal(25, universalComponents.Count);
+        Assert.Equal(29, universalComponents.Count);
 
         var expectedCodes = new[]
         {
-            "HUL-01", "HUL-02",
+            "HUL-01", "HUL-02", "HUL-03", "HUL-04", "HUL-05", "HUL-06",
             "ENG-01", "ENG-02", "ENG-03",
             "RCT-01", "RCT-02",
             "CTL-01", "CTL-02",
@@ -70,6 +70,12 @@ public class StarterComponentCatalogTests
         Assert.Equal(
             expectedCodes,
             universalComponents.Select(x => x.Code));
+
+        var leviathan = Assert.IsType<HullDefinition>(
+            StarterComponentCatalog.Find("HUL-06"));
+
+        Assert.Equal(900m, leviathan.Capacity);
+        Assert.Equal(3200m, leviathan.StructuralIntegrity);
 
         var pioneer = Assert.IsType<ColonyModuleDefinition>(
             StarterComponentCatalog.Find("IND-08"));
@@ -96,7 +102,7 @@ public class StarterComponentCatalogTests
         var components = StarterComponentCatalog.GetAll();
         var unique = components.Where(x => x.Race is not null).ToList();
 
-        Assert.Equal(33, components.Count);
+        Assert.Equal(37, components.Count);
         Assert.Equal(8, unique.Count);
         Assert.All(components, component =>
         {

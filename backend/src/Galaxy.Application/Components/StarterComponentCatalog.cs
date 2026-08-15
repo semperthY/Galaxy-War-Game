@@ -164,6 +164,22 @@ public static class StarterComponentCatalog
             "HUL-02", "Эскортный каркас «Коршун»", null,
             new ComponentCost(900m, 100m), 600,
             TechnologyType.ShipEngineering, 2, 90m, 200m));
+        components.Add(new HullDefinition(
+            "HUL-03", "Линейный каркас «Вектор»", null,
+            new ComponentCost(2200m, 280m), 1200,
+            TechnologyType.ShipEngineering, 3, 160m, 400m));
+        components.Add(new HullDefinition(
+            "HUL-04", "Тяжёлый каркас «Меридиан»", null,
+            new ComponentCost(5200m, 800m), 2400,
+            TechnologyType.ShipEngineering, 3, 280m, 800m));
+        components.Add(new HullDefinition(
+            "HUL-05", "Капитальный каркас «Атлас»", null,
+            new ComponentCost(12500m, 2400m), 4800,
+            TechnologyType.ShipEngineering, 4, 500m, 1600m));
+        components.Add(new HullDefinition(
+            "HUL-06", "Сверхтяжёлый каркас «Левиафан»", null,
+            new ComponentCost(30000m, 7000m), 9000,
+            TechnologyType.ShipEngineering, 4, 900m, 3200m));
 
         components.Add(new EngineDefinition(
             "ENG-01", "Химический двигатель «Вектор»", null,
