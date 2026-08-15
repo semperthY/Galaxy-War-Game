@@ -1506,6 +1506,25 @@ main {
     text-align: center;
 }
 
+.module-load-error {
+    display: grid;
+    gap: 6px;
+    margin: 18px 0;
+    border-color: rgba(255, 92, 120, 0.48);
+    background: rgba(79, 15, 34, 0.28);
+    color: #ffb8c5;
+    text-align: left;
+}
+
+.module-load-error strong {
+    color: #ffe4e9;
+    font-size: 12px;
+}
+
+.module-load-error span {
+    overflow-wrap: anywhere;
+}
+
 .production-lines {
     display: grid;
     gap: 9px;
