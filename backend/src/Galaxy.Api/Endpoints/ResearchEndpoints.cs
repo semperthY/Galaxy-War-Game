@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Galaxy.Application.Economy;
 using Galaxy.Api.Security;
 using Galaxy.Application.Research;
@@ -9,6 +10,8 @@ namespace Galaxy.Api.Endpoints;
 
 public static class ResearchEndpoints
 {
+    private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> ResearchGates = new();
+
     public static void MapResearchEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/game/research")
@@ -24,9 +27,40 @@ public static class ResearchEndpoints
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return Results.NotFound();
+        }
+
+        var gate = ResearchGates.GetOrAdd(playerId.Value, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken);
+        try
+        {
+            return await GetStatusCoreAsync(
+                planetId,
+                playerId.Value,
+                dbContext,
+                cancellationToken);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    private static async Task<IResult> GetStatusCoreAsync(
+        Guid? planetId,
+        Guid playerId,
+        ApplicationDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
         var state = await LoadStateAsync(
             planetId,
-            httpContext,
+            playerId,
             dbContext,
             cancellationToken);
 
@@ -60,9 +94,42 @@ public static class ResearchEndpoints
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var playerId = await CurrentAccount.GetPlayerIdAsync(
+            httpContext.User,
+            dbContext,
+            cancellationToken);
+        if (playerId is null)
+        {
+            return Results.NotFound();
+        }
+
+        var gate = ResearchGates.GetOrAdd(playerId.Value, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken);
+        try
+        {
+            return await StartCoreAsync(
+                planetId,
+                technology,
+                playerId.Value,
+                dbContext,
+                cancellationToken);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    private static async Task<IResult> StartCoreAsync(
+        Guid? planetId,
+        TechnologyType technology,
+        Guid playerId,
+        ApplicationDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
         var state = await LoadStateAsync(
             planetId,
-            httpContext,
+            playerId,
             dbContext,
             cancellationToken);
 
@@ -109,19 +176,10 @@ public static class ResearchEndpoints
 
     private static async Task<ResearchState?> LoadStateAsync(
         Guid? planetId,
-        HttpContext httpContext,
+        Guid playerId,
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
-        var playerId = await CurrentAccount.GetPlayerIdAsync(
-            httpContext.User,
-            dbContext,
-            cancellationToken);
-        if (playerId is null)
-        {
-            return null;
-        }
-
         var player = await dbContext.Players
             .Include(x => x.Technologies)
             .Include(x => x.ResearchOrders)
@@ -135,7 +193,7 @@ public static class ResearchEndpoints
 
         var planet = await dbContext.Planets
             .Include(x => x.ResearchOrders)
-            .SelectOwnedPlanet(player.Id, planetId)
+            .SelectOwnedPlanet(playerId, planetId)
             .FirstOrDefaultAsync(cancellationToken);
 
         return planet is null
@@ -263,5 +321,3 @@ public sealed record ActiveResearchResponse(
     int TargetLevel,
     DateTime StartedAt,
     DateTime CompletesAt);
-
-

@@ -2612,7 +2612,22 @@ async function saveBlueprint() {
         showMessage(error.message, true);
     }
 }
+let dashboardLoadPromise = null;
+
 async function loadDashboard() {
+    if (dashboardLoadPromise) {
+        return dashboardLoadPromise;
+    }
+
+    dashboardLoadPromise = loadDashboardCore();
+    try {
+        return await dashboardLoadPromise;
+    } finally {
+        dashboardLoadPromise = null;
+    }
+}
+
+async function loadDashboardCore() {
     try {
         state.planets = await api("/api/game/planets");
 
