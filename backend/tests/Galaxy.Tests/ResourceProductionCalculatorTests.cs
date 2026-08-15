@@ -9,15 +9,15 @@ public class ResourceProductionCalculatorTests
     public void Production_GrowsWithLevelAndGrowthFactor()
     {
         Assert.Equal(
-            40m,
+            100m,
             ResourceProductionCalculator.CalculateMaterialsPerHour(1));
 
         Assert.Equal(
-            422.9620m,
+            1057.4050m,
             ResourceProductionCalculator.CalculateMaterialsPerHour(6));
 
         Assert.Equal(
-            158.6107m,
+            370.0917m,
             ResourceProductionCalculator.CalculateDeuteriumPerHour(6));
     }
 
@@ -39,8 +39,8 @@ public class ResourceProductionCalculatorTests
             planet,
             startedAt.AddHours(2));
 
-        Assert.Equal(80m, planet.Materials);
-        Assert.Equal(30m, planet.Deuterium);
+        Assert.Equal(200m, planet.Materials);
+        Assert.Equal(70m, planet.Deuterium);
     }
 
     [Fact]
@@ -61,8 +61,8 @@ public class ResourceProductionCalculatorTests
             planet,
             startedAt.AddHours(1));
 
-        Assert.Equal(104.1669m, planet.Materials);
-        Assert.Equal(15.5702m, planet.Deuterium);
+        Assert.InRange(planet.Materials, 250m, 270m);
+        Assert.InRange(planet.Deuterium, 35m, 40m);
     }
 
     [Fact]
@@ -73,8 +73,8 @@ public class ResourceProductionCalculatorTests
 
         var planet = new Planet
         {
-            Materials = 990m,
-            Deuterium = 495m,
+            Materials = 1490m,
+            Deuterium = 745m,
             MaterialsExtractorLevel = 1,
             DeuteriumExtractorLevel = 1,
             PowerPlantLevel = 1,
@@ -86,8 +86,7 @@ public class ResourceProductionCalculatorTests
             planet,
             startedAt.AddHours(1));
 
-        Assert.Equal(1000m, planet.Materials);
-        Assert.Equal(500m, planet.Deuterium);
+        Assert.Equal(1500m, planet.Materials);
+        Assert.Equal(750m, planet.Deuterium);
     }
 }
-

@@ -6,16 +6,29 @@ namespace Galaxy.Application.Components;
 public static class StarterComponentCatalog
 {
     private static readonly IReadOnlyList<IComponentDefinition>
-        Components = CreateComponents();
+        AllComponents = CreateComponents();
+
+    private static readonly IReadOnlyList<IComponentDefinition>
+        Components = AllComponents
+            .Where(x => string.Equals(
+                x.Code,
+                x.Code.ToUpperInvariant(),
+                StringComparison.Ordinal))
+            .ToList();
 
     public static IReadOnlyList<IComponentDefinition> GetAll()
     {
         return Components;
     }
 
+    public static IReadOnlyList<IComponentDefinition> GetResolvable()
+    {
+        return AllComponents;
+    }
+
     public static IComponentDefinition? Find(string code)
     {
-        return Components.SingleOrDefault(x =>
+        return AllComponents.SingleOrDefault(x =>
             string.Equals(
                 x.Code,
                 code,
@@ -36,6 +49,7 @@ public static class StarterComponentCatalog
         var components = new List<IComponentDefinition>();
 
         AddUniversalComponents(components);
+        AddUniqueRaceComponents(components);
 
         AddRaceComponents(
             components,
@@ -262,6 +276,49 @@ public static class StarterComponentCatalog
             14m, new ComponentCost(700m, 90m), 360,
             TechnologyType.MissileSystems, 3,
             18m, 45m, 5m, 14m));
+    }
+
+    private static void AddUniqueRaceComponents(
+        ICollection<IComponentDefinition> components)
+    {
+        components.Add(new ArmorDefinition(
+            "ARM-H01", "Броня «Оплот»", RaceType.Humans,
+            16m, new ComponentCost(1300m, 100m), 660,
+            TechnologyType.ShipEngineering, 3, 210m));
+        components.Add(new ControlSystemDefinition(
+            "CTL-H01", "Ядро «Координатор»", RaceType.Humans,
+            14m, new ComponentCost(1250m, 320m), 720,
+            TechnologyType.Electronics, 3, 135m, 22m));
+
+        components.Add(new ReactorDefinition(
+            "RCT-S01", "Реактор «Логос»", RaceType.Synthetics,
+            11m, new ComponentCost(650m, 260m), 600,
+            TechnologyType.ReactorSystems, 3, 62m));
+        components.Add(new ScannerDefinition(
+            "SNS-S01", "Сканер «Аналитик»", RaceType.Synthetics,
+            8m, new ComponentCost(900m, 300m), 900,
+            TechnologyType.Electronics, 3,
+            95m, 9m, 15m));
+
+        components.Add(new EngineDefinition(
+            "ENG-I01", "Двигатель «Жало»", RaceType.Insectoids,
+            9m, new ComponentCost(520m, 130m), 420,
+            TechnologyType.EngineSystems, 2,
+            145m, 55m, 12m));
+        components.Add(new CargoHoldDefinition(
+            "IND-I01", "Ячеистый трюм «Соты»", RaceType.Insectoids,
+            12m, new ComponentCost(520m, 70m), 420,
+            TechnologyType.IndustrialSystems, 2, 180m, 3m));
+
+        components.Add(new ShieldDefinition(
+            "SHD-E01", "Щит «Сияние»", RaceType.EnergyForms,
+            18m, new ComponentCost(1700m, 1000m), 900,
+            TechnologyType.FieldDefense, 4, 230m, 55m));
+        components.Add(new LaserWeaponDefinition(
+            "LAS-E01", "Излучатель «Протуберанец»", RaceType.EnergyForms,
+            13m, new ComponentCost(1800m, 900m), 900,
+            TechnologyType.LaserSystems, 4,
+            55m, 15m, 42m, 24m));
     }
 
     private static void AddColonyModule(

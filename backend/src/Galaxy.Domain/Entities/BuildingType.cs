@@ -8,5 +8,6 @@ public enum BuildingType
     Warehouse = 4,
     ResearchLaboratory = 5,
     ProductionComplex = 6,
-    AssemblyComplex = 7
+    AssemblyComplex = 7,
+    RaceEngineeringComplex = 8
 }

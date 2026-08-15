@@ -265,6 +265,47 @@ try {
     if ($currentGame.planetName -ne 'Homeworld') {
         Fail('The initial planet was not named Homeworld')
     }
+    if ($currentGame.materials -lt 1200 -or $currentGame.deuterium -lt 400) {
+        Fail('Starting economy did not apply the Beta 2 resource balance')
+    }
+
+    Write-Step "Validating the complete Beta 2 component catalog"
+    $components = @(Invoke-Api -Path '/api/game/components' -Method GET)
+    if ($components.Count -ne 33) {
+        Fail("Expected 33 active components, got $($components.Count)")
+    }
+    $uniqueComponents = @($components | Where-Object { $null -ne $_.race })
+    if ($uniqueComponents.Count -ne 8) {
+        Fail("Expected 8 unique race components, got $($uniqueComponents.Count)")
+    }
+    if (@($components | Where-Object {
+        [string]::IsNullOrWhiteSpace($_.shortDescription) -or
+        [string]::IsNullOrWhiteSpace($_.bestFor) -or
+        [string]::IsNullOrWhiteSpace($_.tradeoff)
+    }).Count -ne 0) {
+        Fail('Component guidance is incomplete')
+    }
+
+    Write-Step "Creating a full-stat Beta 2 ship blueprint"
+    $blueprint = Invoke-Api -Path '/api/game/blueprints/' -Method POST -Body @{
+        name = 'Beta Smoke Escort'
+        hullCode = 'HUL-01'
+        modules = @(
+            @{ componentCode = 'ENG-01'; quantity = 1 },
+            @{ componentCode = 'RCT-02'; quantity = 1 },
+            @{ componentCode = 'CTL-01'; quantity = 1 },
+            @{ componentCode = 'ARM-01'; quantity = 1 },
+            @{ componentCode = 'SHD-01'; quantity = 1 },
+            @{ componentCode = 'LAS-01'; quantity = 1 },
+            @{ componentCode = 'MSL-01'; quantity = 1 }
+        )
+    }
+    if ($blueprint.design.structuralIntegrity -ne 160 -or
+        $blueprint.design.shieldCapacity -ne 50 -or
+        $blueprint.design.shieldDamage -ne 13 -or
+        $blueprint.design.hullDamage -ne 14) {
+        Fail('Blueprint API returned incorrect Beta 2 ship statistics')
+    }
 
     Write-Step "Validating the Beta 2 technology catalog"
     $research = Invoke-Api -Path "/api/game/research/?planetId=$homeworldId" -Method GET

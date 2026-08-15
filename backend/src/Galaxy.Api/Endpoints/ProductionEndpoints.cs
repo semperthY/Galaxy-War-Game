@@ -134,9 +134,12 @@ public static class ProductionEndpoints
         Planet planet)
     {
         var catalog = StarterComponentCatalog
-            .GetForRace(player.Race)
+            .GetAll()
             .Select(component =>
-                CreateCatalogItem(player, component))
+                ComponentCatalogResponseFactory.Create(
+                    player,
+                    component,
+                    planet))
             .ToList();
 
         var inventory = planet.ComponentInventory
@@ -391,7 +394,7 @@ public sealed record ProductionStatusResponse(
     decimal Deuterium,
     int ProductionComplexLevel,
     int LineCount,
-    List<object> Catalog,
+    List<Dictionary<string, object?>> Catalog,
     List<ComponentInventoryResponse> Inventory,
     List<ProductionOrderResponse> Orders);
 
@@ -406,8 +409,6 @@ public sealed record ProductionOrderResponse(
     int Quantity,
     DateTime? StartedAt,
     DateTime? CompletesAt);
-
-
 
 
 

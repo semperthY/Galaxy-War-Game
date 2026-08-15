@@ -34,6 +34,7 @@ html {
 body {
     min-width: 320px;
     min-height: 100vh;
+    min-height: 100dvh;
     margin: 0;
     color: var(--text);
     background:
@@ -92,6 +93,7 @@ svg {
     display: grid;
     grid-template-columns: 248px minmax(0, 1fr);
     min-height: 100vh;
+    min-height: 100dvh;
 }
 
 .sidebar {
@@ -960,7 +962,7 @@ main {
         align-items: stretch;
         flex-direction: column;
         gap: 14px;
-        padding: 20px;
+        padding: calc(12px + env(safe-area-inset-top)) 15px 12px;
     }
 
     .active-processes {
@@ -987,7 +989,12 @@ main {
     main {
         width: calc(100% - 30px);
         margin-top: 15px;
-        margin-bottom: 105px;
+        margin-bottom: calc(105px + env(safe-area-inset-bottom));
+    }
+
+    body:has(input:focus) .mobile-navigation,
+    body:has(select:focus) .mobile-navigation {
+        display: none;
     }
 }
 
@@ -1593,6 +1600,41 @@ main {
     scroll-margin-top: 105px;
 }
 
+.component-filters {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) repeat(3, minmax(145px, auto));
+    gap: 8px;
+    margin: 0 0 12px;
+}
+
+.component-filters input,
+.component-filters select {
+    min-width: 0;
+    padding: 9px 10px;
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: rgba(4, 11, 21, 0.88);
+}
+
+.component-description,
+.component-guidance {
+    margin: 7px 0 0;
+    color: var(--muted-light);
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+.component-guidance strong {
+    color: var(--text);
+}
+
+@media (max-width: 580px) {
+    .component-filters {
+        grid-template-columns: 1fr;
+    }
+}
+
 .designer-hero {
     position: relative;
     display: flex;
@@ -1678,6 +1720,73 @@ main {
 .designer-form {
     display: grid;
     gap: 13px;
+}
+
+.designer-optional-modules {
+    display: grid;
+    gap: 13px;
+}
+
+.design-delta-preview {
+    margin-top: 14px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: rgba(4, 11, 21, 0.6);
+}
+
+.design-delta-preview > strong {
+    font-size: 10px;
+}
+
+.design-delta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+    margin-top: 8px;
+}
+
+.design-delta-grid span {
+    padding: 5px 7px;
+    color: var(--muted-light);
+    border-radius: 5px;
+    font-size: 8px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.design-delta-grid .positive {
+    color: var(--green);
+}
+
+.selected-component-guidance {
+    display: grid;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.selected-component-guidance article {
+    display: grid;
+    gap: 3px;
+    padding: 8px;
+    border-left: 2px solid var(--cyan);
+    background: rgba(82, 217, 255, 0.04);
+}
+
+.selected-component-guidance span,
+.selected-component-guidance small {
+    color: var(--muted-light);
+    font-size: 8px;
+    line-height: 1.4;
+}
+
+.load-blueprint-button {
+    margin-top: 10px;
+    padding: 7px 9px;
+    color: var(--cyan);
+    border: 1px solid var(--line-active);
+    border-radius: 6px;
+    cursor: pointer;
+    background: transparent;
 }
 
 .designer-field,
@@ -1959,7 +2068,24 @@ main {
     }
 
     .module-row {
-        grid-template-columns: 1fr 80px;
+        grid-template-columns: minmax(0, 1fr) 72px;
+    }
+
+    .designer-hero {
+        min-height: 190px;
+        padding: 20px;
+    }
+
+    .designer-hero h2 {
+        font-size: 24px;
+    }
+
+    .designer-status {
+        display: none;
+    }
+
+    .design-delta-grid {
+        grid-template-columns: 1fr;
     }
 }
 

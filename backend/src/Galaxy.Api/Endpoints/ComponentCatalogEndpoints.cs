@@ -44,7 +44,9 @@ public static class ComponentCatalogEndpoints
         var components = StarterComponentCatalog
             .GetAll()
             .Select(component =>
-                CreateResponse(player, component))
+                ComponentCatalogResponseFactory.Create(
+                    player,
+                    component))
             .ToList();
 
         return Results.Ok(components);

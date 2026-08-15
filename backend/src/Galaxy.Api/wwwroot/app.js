@@ -1,18 +1,20 @@
 const buildingLevelSummaries = {
     MaterialsExtractor:
-        "Добыча: 40 × уровень × 1,12^(уровень−1) материалов в час. Энергопотребление: 6 × уровень × 1,10^(уровень−1).",
+        "Добыча: 100 × уровень × 1,12^(уровень−1) материалов в час. Энергопотребление: 6 × уровень × 1,10^(уровень−1).",
     DeuteriumExtractor:
-        "Добыча: 15 × уровень × 1,12^(уровень−1) дейтерия в час. Энергопотребление: 10 × уровень × 1,10^(уровень−1).",
+        "Добыча: 35 × уровень × 1,12^(уровень−1) дейтерия в час. Энергопотребление: 10 × уровень × 1,10^(уровень−1).",
     PowerPlant:
         "Производство: 25 × уровень × 1,10^(уровень−1) единиц энергии.",
     Warehouse:
-        "Каждый уровень удваивает вместимость: базово 1000 материалов и 500 дейтерия.",
+        "Каждый уровень удваивает вместимость: базово 1500 материалов и 750 дейтерия.",
     ResearchLaboratory:
         "Уровень центра открывает исследования и дополнительные планетарные потоки.",
     ProductionComplex:
         "Каждый уровень открывает дополнительную независимую линию. После первого уровня скорость растёт на 10% за уровень.",
     AssemblyComplex:
-        "Каждый уровень после первого ускоряет сборку кораблей на 10%."
+        "Каждый уровень после первого ускоряет сборку кораблей на 10%.",
+    RaceEngineeringComplex:
+        "Открывает две уникальные комплектующие выбранной расы."
 };
 
 const technologyLevelSummaries = {
@@ -158,18 +160,7 @@ function localizeComponentName(component) {
         return "Неизвестный компонент";
     }
 
-    if (component.race === null) {
-        return component.name;
-    }
-
-    const race =
-        localizeRace(component.race);
-
-    const type =
-        componentNames[component.type] ??
-        component.type;
-
-    return `${race} · ${type}`;
+    return component.name;
 }
 const componentTypeInfo = {
     Hull: {
@@ -311,6 +302,11 @@ const buildingInfo = {
         name: "Сборочный комплекс",
         icon: "icon-ship",
         description: "Собирает корабли по сохранённым инженерным проектам."
+    },
+    RaceEngineeringComplex: {
+        name: "Расовый инженерный комплекс",
+        icon: "icon-command",
+        description: "Производит специализированные модели выбранной расы."
     }
 };
 
@@ -420,6 +416,14 @@ const elements = {
         document.querySelector("#productionLineCount"),
     componentCatalog:
         document.querySelector("#componentCatalog"),
+    componentSearch:
+        document.querySelector("#componentSearch"),
+    componentTypeFilter:
+        document.querySelector("#componentTypeFilter"),
+    componentRaceFilter:
+        document.querySelector("#componentRaceFilter"),
+    componentAvailabilityFilter:
+        document.querySelector("#componentAvailabilityFilter"),
     componentInventory:
         document.querySelector("#componentInventory"),
     productionLines:
@@ -453,6 +457,8 @@ const designerElements = {
         document.querySelector("#designerSpecial"),
     designerSpecialQuantity:
         document.querySelector("#designerSpecialQuantity"),
+    designerOptionalModules:
+        document.querySelector("#designerOptionalModules"),
     saveBlueprintButton:
         document.querySelector("#saveBlueprintButton"),
     designStatus:
@@ -475,6 +481,16 @@ const designerElements = {
         document.querySelector("#designInterSpeed"),
     designCommand:
         document.querySelector("#designCommand"),
+    designShield:
+        document.querySelector("#designShield"),
+    designDamage:
+        document.querySelector("#designDamage"),
+    designScan:
+        document.querySelector("#designScan"),
+    designUtility:
+        document.querySelector("#designUtility"),
+    designDeltaPreview:
+        document.querySelector("#designDeltaPreview"),
     designWarnings:
         document.querySelector("#designWarnings"),
     blueprintGrid:
@@ -1609,6 +1625,39 @@ function updateProductionDraft(event) {
 
     state.productionDrafts[code] = draft;
 }
+
+function filterProductionCatalog(catalog) {
+    const search = elements.componentSearch.value
+        .trim()
+        .toLocaleLowerCase("ru");
+    const type = elements.componentTypeFilter.value;
+    const race = elements.componentRaceFilter.value;
+    const availability =
+        elements.componentAvailabilityFilter.value;
+
+    return catalog.filter(component => {
+        const matchesSearch = !search ||
+            `${component.name} ${component.code}`
+                .toLocaleLowerCase("ru")
+                .includes(search);
+        const matchesType = !type || component.type === type;
+        const matchesRace = !race ||
+            (race === "universal" && component.race === null) ||
+            component.race === race;
+        const matchesAvailability = !availability ||
+            (availability === "available" &&
+                component.canManufacture && component.unlocked) ||
+            (availability === "technology" && component.unlocked) ||
+            (availability === "technology-locked" &&
+                !component.unlocked) ||
+            (availability === "manufacturing-locked" &&
+                !component.canManufacture);
+
+        return matchesSearch && matchesType && matchesRace &&
+            matchesAvailability;
+    });
+}
+
 function renderProduction(status) {
     captureProductionDrafts();
     state.productionStatus = status;
@@ -1618,6 +1667,22 @@ function renderProduction(status) {
 
     elements.productionLineCount.textContent =
         status.lineCount;
+
+    if (elements.componentTypeFilter.options.length === 1) {
+        const types = [...new Set(
+            status.catalog.map(component => component.type)
+        )];
+        elements.componentTypeFilter.insertAdjacentHTML(
+            "beforeend",
+            types.map(type => `
+                <option value="${type}">
+                    ${componentTypeInfo[type]?.name ?? type}
+                </option>
+            `).join("")
+        );
+    }
+
+    const visibleCatalog = filterProductionCatalog(status.catalog);
 
     const createLineOptions = selectedLine =>
         Array.from(
@@ -1637,7 +1702,7 @@ function renderProduction(status) {
             }
         ).join("");
 
-    elements.componentCatalog.innerHTML = status.catalog
+    elements.componentCatalog.innerHTML = visibleCatalog
         .map(component => {
             const typeInfo =
                 componentTypeInfo[component.type] ?? {
@@ -1659,18 +1724,22 @@ function renderProduction(status) {
 
             const disabled =
                 !component.unlocked ||
+                !component.canManufacture ||
                 status.lineCount < 1;
 
-            const requirement = component.unlocked
+            const requirement = component.manufacturingBlockReason ??
+                (component.unlocked
                 ? `Время производства: ` +
                     `${component.productionSeconds} сек.`
                 : `Требуется: ${component.requiredTechnology} ` +
-                    `ур. ${component.requiredTechnologyLevel}`;
+                    `ур. ${component.requiredTechnologyLevel}`);
 
             return `
                 <article class="
                     component-card
-                    ${component.unlocked ? "" : "locked"}
+                    ${component.unlocked && component.canManufacture
+                        ? ""
+                        : "locked"}
                 ">
                     <div
                         class="component-icon"
@@ -1697,6 +1766,16 @@ function renderProduction(status) {
                         <div class="component-race">
                             Инженерная школа: ${localizeRace(component.race)}
                         </div>
+
+                        <p class="component-description">
+                            ${component.shortDescription}
+                        </p>
+                        <p class="component-guidance">
+                            <strong>Лучше всего:</strong>
+                            ${component.bestFor}<br>
+                            <strong>Компромисс:</strong>
+                            ${component.tradeoff}
+                        </p>
 
                         <div class="component-stats">
                             ${stats}
@@ -1916,6 +1995,16 @@ function sortDesignerComponents(components) {
     });
 }
 
+const optionalDesignerTypes = [
+    ["Armor", "Броня"],
+    ["Shield", "Щит"],
+    ["Scanner", "Сканер"],
+    ["CargoHold", "Грузовой отсек"],
+    ["MiningModule", "Гравитационный захват"],
+    ["LaserWeapon", "Лазерное вооружение"],
+    ["MissileWeapon", "Ракетное вооружение"]
+];
+
 function renderDesignerOptions() {
     const byType = type =>
         sortDesignerComponents(
@@ -1939,6 +2028,33 @@ function renderDesignerOptions() {
     elements.designerSpecial.innerHTML =
         `<option value="">Не устанавливать</option>` +
         byType("ColonyModule").map(componentOption).join("");
+
+    elements.designerOptionalModules.innerHTML =
+        optionalDesignerTypes.map(([type, label]) => `
+            <div class="module-row" data-optional-module="${type}">
+                <label class="designer-field">
+                    <span>${label}</span>
+                    <select data-designer-module data-module-type="${type}">
+                        <option value="">Не устанавливать</option>
+                        ${byType(type).map(componentOption).join("")}
+                    </select>
+                </label>
+                <label class="quantity-field">
+                    <span>Количество</span>
+                    <input type="number" min="1" max="10" value="1"
+                           data-designer-quantity data-quantity-type="${type}">
+                </label>
+            </div>
+        `).join("");
+
+    elements.designerOptionalModules
+        .querySelectorAll(
+            "[data-designer-module], [data-designer-quantity]"
+        )
+        .forEach(element => {
+            element.addEventListener("input", updateDesignPreview);
+            element.addEventListener("change", updateDesignPreview);
+        });
 }
 
 function selectedComponent(selectElement) {
@@ -1970,6 +2086,15 @@ function readDesignerModules() {
             quantity: elements.designerSpecialQuantity
         }
     ];
+
+    elements.designerOptionalModules
+        .querySelectorAll("[data-optional-module]")
+        .forEach(row => {
+            selections.push({
+                select: row.querySelector("[data-designer-module]"),
+                quantity: row.querySelector("[data-designer-quantity]")
+            });
+        });
 
     return selections
         .filter(selection => selection.select.value)
@@ -2070,6 +2195,60 @@ function updateDesignPreview() {
         0
     );
 
+    const commandLoad = modules.reduce(
+        (total, module) =>
+            total +
+            (module.component?.commandLoad ?? 0) *
+            module.quantity,
+        0
+    );
+
+    const structuralIntegrity =
+        hull.structuralIntegrity + modules.reduce(
+            (total, module) =>
+                total +
+                (module.component?.bonusStructuralIntegrity ?? 0) *
+                module.quantity,
+            0
+        );
+
+    const shieldCapacity = modules.reduce(
+        (total, module) => total +
+            (module.component?.shieldCapacity ?? 0) * module.quantity,
+        0
+    );
+
+    const shieldDamage = modules.reduce(
+        (total, module) => total +
+            (module.component?.shieldDamage ?? 0) * module.quantity,
+        0
+    );
+
+    const hullDamage = modules.reduce(
+        (total, module) => total +
+            (module.component?.hullDamage ?? 0) * module.quantity,
+        0
+    );
+
+    const scanRange = Math.max(
+        0,
+        ...modules.map(module =>
+            module.component?.scanRange ?? 0)
+    );
+
+    const cargoCapacity = modules.reduce(
+        (total, module) => total +
+            (module.component?.cargoCapacity ?? 0) * module.quantity,
+        0
+    );
+
+    const miningRate = modules.reduce(
+        (total, module) => total +
+            (module.component?.miningRatePerMinute ?? 0) *
+            module.quantity,
+        0
+    );
+
     if (usedVolume > hull.capacity) {
         warnings.push(
             `Превышена вместимость корпуса на ` +
@@ -2081,6 +2260,13 @@ function updateDesignPreview() {
         warnings.push(
             `Дефицит энергии: ` +
             `${formatNumber(energyConsumption - energyProduction)}.`
+        );
+    }
+
+    if (commandLoad > commandRating) {
+        warnings.push(
+            `Превышена командная вместимость на ` +
+            `${formatNumber(commandLoad - commandRating)}.`
         );
     }
 
@@ -2146,7 +2332,7 @@ function updateDesignPreview() {
     );
 
     elements.designIntegrity.textContent =
-        formatNumber(hull.structuralIntegrity);
+        formatNumber(structuralIntegrity);
 
     elements.designLocalSpeed.textContent =
         formatNumber(localSpeed);
@@ -2155,7 +2341,53 @@ function updateDesignPreview() {
         formatNumber(interSpeed);
 
     elements.designCommand.textContent =
-        formatNumber(commandRating);
+        `${formatNumber(commandLoad)} / ${formatNumber(commandRating)}`;
+
+    elements.designShield.textContent =
+        formatNumber(shieldCapacity);
+
+    elements.designDamage.textContent =
+        `${formatNumber(shieldDamage)} / ${formatNumber(hullDamage)}`;
+
+    elements.designScan.textContent =
+        formatNumber(scanRange);
+
+    elements.designUtility.textContent =
+        `${formatNumber(cargoCapacity)} / ${formatNumber(miningRate)}`;
+
+    const deltas = [
+        ["Объём", 0, usedVolume],
+        ["Потребление энергии", 0, energyConsumption],
+        ["Локальная скорость", 0, localSpeed],
+        ["Межзвёздная скорость", 0, interSpeed],
+        ["HP корпуса", hull.structuralIntegrity, structuralIntegrity],
+        ["HP щита", 0, shieldCapacity],
+        ["Урон щиту", 0, shieldDamage],
+        ["Урон корпусу", 0, hullDamage],
+        ["Командная нагрузка", 0, commandLoad]
+    ];
+
+    elements.designDeltaPreview.innerHTML = `
+        <strong>Изменения до → после установки</strong>
+        <div class="design-delta-grid">
+            ${deltas.map(([label, before, after]) => `
+                <span class="${after > before ? "positive" : "neutral"}">
+                    ${label}: ${formatNumber(before)} →
+                    ${formatNumber(after)}
+                </span>
+            `).join("")}
+        </div>
+        <div class="selected-component-guidance">
+            ${modules.map(module => `
+                <article>
+                    <strong>${module.component.name} × ${module.quantity}</strong>
+                    <span>${module.component.shortDescription}</span>
+                    <small>Подходит: ${module.component.bestFor}</small>
+                    <small>Компромисс: ${module.component.tradeoff}</small>
+                </article>
+            `).join("")}
+        </div>
+    `;
 
     elements.designWarnings.innerHTML =
         warnings.length > 0
@@ -2223,6 +2455,10 @@ function renderBlueprints() {
                                 )}
                             </span>
                         </div>
+                        <button class="load-blueprint-button"
+                                data-load-blueprint="${blueprint.id}">
+                            Открыть в конструкторе
+                        </button>
                     </article>
                 `)
                 .join("")
@@ -2231,6 +2467,73 @@ function renderBlueprints() {
                     Сохранённых проектов пока нет.
                 </div>
             `;
+
+    elements.blueprintGrid
+        .querySelectorAll("[data-load-blueprint]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                loadBlueprintIntoDesigner(button.dataset.loadBlueprint);
+            });
+        });
+}
+
+function loadBlueprintIntoDesigner(blueprintId) {
+    const blueprint = state.blueprints.find(
+        item => item.id === blueprintId
+    );
+    if (!blueprint) {
+        return;
+    }
+
+    elements.blueprintName.value = blueprint.name;
+    elements.designerHull.value = blueprint.hullCode;
+
+    document
+        .querySelectorAll("[data-designer-module]")
+        .forEach(select => { select.value = ""; });
+    document
+        .querySelectorAll("[data-designer-quantity]")
+        .forEach(input => { input.value = 1; });
+
+    const fixedByType = {
+        Engine: [elements.designerEngine, elements.designerEngineQuantity],
+        Reactor: [elements.designerReactor, elements.designerReactorQuantity],
+        ControlSystem: [elements.designerControl, elements.designerControlQuantity],
+        ColonyModule: [elements.designerSpecial, elements.designerSpecialQuantity]
+    };
+
+    blueprint.modules.forEach(module => {
+        const component = state.components.find(
+            item => item.code === module.componentCode
+        );
+        if (!component) {
+            return;
+        }
+
+        let controls = fixedByType[component.type];
+        if (!controls) {
+            const row = elements.designerOptionalModules.querySelector(
+                `[data-optional-module="${component.type}"]`
+            );
+            controls = row
+                ? [
+                    row.querySelector("[data-designer-module]"),
+                    row.querySelector("[data-designer-quantity]")
+                ]
+                : null;
+        }
+
+        if (controls) {
+            controls[0].value = component.code;
+            controls[1].value = module.quantity;
+        }
+    });
+
+    updateDesignPreview();
+    elements.blueprintName.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
 }
 
 function renderShipDesigner(
@@ -2470,6 +2773,19 @@ elements.designerHull?.addEventListener(
     "change",
     updateDesignPreview
 );
+
+[
+    elements.componentSearch,
+    elements.componentTypeFilter,
+    elements.componentRaceFilter,
+    elements.componentAvailabilityFilter
+].forEach(control => {
+    control?.addEventListener("input", () => {
+        if (state.productionStatus) {
+            renderProduction(state.productionStatus);
+        }
+    });
+});
 
 AssemblyUi.init({
     api,

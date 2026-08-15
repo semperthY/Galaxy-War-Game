@@ -4,8 +4,8 @@ namespace Galaxy.Application.Economy;
 
 public static class ResourceProductionCalculator
 {
-    public const decimal MaterialsBaseHourlyRate = 40m;
-    public const decimal DeuteriumBaseHourlyRate = 15m;
+    public const decimal MaterialsBaseHourlyRate = 100m;
+    public const decimal DeuteriumBaseHourlyRate = 35m;
     public const decimal ProductionGrowthFactor = 1.12m;
 
     public static decimal CalculateMaterialsPerHour(int level)

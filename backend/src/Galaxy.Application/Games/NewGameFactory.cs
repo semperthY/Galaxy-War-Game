@@ -4,6 +4,9 @@ namespace Galaxy.Application.Games;
 
 public static class NewGameFactory
 {
+    public const decimal StartingMaterials = 1200m;
+    public const decimal StartingDeuterium = 400m;
+
     private const int SystemsPerGalaxy = 10;
     private const int PlanetsPerSystem = 8;
 
@@ -59,15 +62,16 @@ public static class NewGameFactory
                         ? "Homeworld"
                         : $"Planet {systemNumber}:{position}",
                     Position = position,
-                    Materials = isHomeworld ? 500m : 0m,
-                    Deuterium = isHomeworld ? 100m : 0m,
-                    MaterialsExtractorLevel = isHomeworld ? 1 : 0,
-                    DeuteriumExtractorLevel = 0,
+                    Materials = isHomeworld ? StartingMaterials : 0m,
+                    Deuterium = isHomeworld ? StartingDeuterium : 0m,
+                    MaterialsExtractorLevel = isHomeworld ? 2 : 0,
+                    DeuteriumExtractorLevel = isHomeworld ? 1 : 0,
                     PowerPlantLevel = isHomeworld ? 1 : 0,
                     WarehouseLevel = isHomeworld ? 1 : 0,
                     ResearchLaboratoryLevel = 0,
                     ProductionComplexLevel = 0,
                     AssemblyComplexLevel = 0,
+                    RaceEngineeringComplexLevel = 0,
                     BuildingSiteCapacity = isHomeworld
                         ? 20
                         : 15 + ((systemNumber * 7 + position * 3) % 11),
@@ -106,15 +110,16 @@ public static class NewGameFactory
         var player = CreatePlayer(username, race, createdAt);
 
         planet.Name = $"{username}'s Homeworld";
-        planet.Materials = 500m;
-        planet.Deuterium = 100m;
-        planet.MaterialsExtractorLevel = 1;
-        planet.DeuteriumExtractorLevel = 0;
+        planet.Materials = StartingMaterials;
+        planet.Deuterium = StartingDeuterium;
+        planet.MaterialsExtractorLevel = 2;
+        planet.DeuteriumExtractorLevel = 1;
         planet.PowerPlantLevel = 1;
         planet.WarehouseLevel = 1;
         planet.ResearchLaboratoryLevel = 0;
         planet.ProductionComplexLevel = 0;
         planet.AssemblyComplexLevel = 0;
+        planet.RaceEngineeringComplexLevel = 0;
         planet.BuildingSiteCapacity = Math.Max(planet.BuildingSiteCapacity, 20);
         planet.ResourcesUpdatedAt = createdAt;
         planet.QueuedBuilding = null;
@@ -162,6 +167,4 @@ public sealed record NewGame(
     Player Player,
     IReadOnlyCollection<StarSystem> StarSystems,
     Planet Homeworld);
-
-
 

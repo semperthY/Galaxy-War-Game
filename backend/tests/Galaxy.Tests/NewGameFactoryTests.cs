@@ -17,9 +17,10 @@ public class NewGameFactoryTests
 
         Assert.Single(game.Player.Planets);
         Assert.Equal("Homeworld", game.Homeworld.Name);
-        Assert.Equal(500m, game.Homeworld.Materials);
-        Assert.Equal(100m, game.Homeworld.Deuterium);
-        Assert.Equal(1, game.Homeworld.MaterialsExtractorLevel);
+        Assert.Equal(1200m, game.Homeworld.Materials);
+        Assert.Equal(400m, game.Homeworld.Deuterium);
+        Assert.Equal(2, game.Homeworld.MaterialsExtractorLevel);
+        Assert.Equal(1, game.Homeworld.DeuteriumExtractorLevel);
         Assert.Equal(1, game.Homeworld.PowerPlantLevel);
         Assert.Equal(1, game.Homeworld.WarehouseLevel);
         Assert.Equal(20, game.Homeworld.BuildingSiteCapacity);
@@ -72,9 +73,10 @@ public class NewGameFactoryTests
         Assert.Same(player, planet.Player);
         Assert.Equal(player.Id, planet.PlayerId);
         Assert.Single(player.Planets);
-        Assert.Equal(500m, planet.Materials);
-        Assert.Equal(100m, planet.Deuterium);
-        Assert.Equal(1, planet.MaterialsExtractorLevel);
+        Assert.Equal(1200m, planet.Materials);
+        Assert.Equal(400m, planet.Deuterium);
+        Assert.Equal(2, planet.MaterialsExtractorLevel);
+        Assert.Equal(1, planet.DeuteriumExtractorLevel);
         Assert.Equal(0, planet.ResearchLaboratoryLevel);
         Assert.Equal(20, planet.BuildingSiteCapacity);
     }

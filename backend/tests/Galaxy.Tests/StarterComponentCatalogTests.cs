@@ -23,7 +23,7 @@ public class StarterComponentCatalogTests
             var components =
                 StarterComponentCatalog.GetForRace(race);
 
-            Assert.Equal(30, components.Count);
+            Assert.Equal(27, components.Count);
 
             foreach (var requiredType in requiredTypes)
             {
@@ -80,7 +80,7 @@ public class StarterComponentCatalogTests
     [Fact]
     public void ColonyModules_HaveRaceTradeoffs()
     {
-        var modules = StarterComponentCatalog.GetAll()
+        var modules = StarterComponentCatalog.GetResolvable()
             .OfType<ColonyModuleDefinition>()
             .Where(x => x.Race is not null)
             .ToList();
@@ -88,5 +88,22 @@ public class StarterComponentCatalogTests
         Assert.Equal(4, modules.Count);
         Assert.Equal(4, modules.Select(x => x.Volume).Distinct().Count());
         Assert.All(modules, x => Assert.True(x.Volume > 0));
+    }
+
+    [Fact]
+    public void ActiveCatalog_HasEightUniqueRaceModelsWithGuidance()
+    {
+        var components = StarterComponentCatalog.GetAll();
+        var unique = components.Where(x => x.Race is not null).ToList();
+
+        Assert.Equal(33, components.Count);
+        Assert.Equal(8, unique.Count);
+        Assert.All(components, component =>
+        {
+            var details = ComponentCatalogDetails.Get(component.Code);
+            Assert.False(string.IsNullOrWhiteSpace(details.ShortDescription));
+            Assert.False(string.IsNullOrWhiteSpace(details.BestFor));
+            Assert.False(string.IsNullOrWhiteSpace(details.Tradeoff));
+        });
     }
 }

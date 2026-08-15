@@ -58,6 +58,29 @@ public class BuildingServiceTests
             exception.Message);
     }
 
+    [Fact]
+    public void StartAndComplete_BuildsRaceEngineeringComplex()
+    {
+        var startedAt = new DateTime(
+            2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var planet = CreatePlanet(startedAt);
+        planet.BuildingSiteCapacity = 4;
+
+        var construction = BuildingService.Start(
+            planet,
+            BuildingType.RaceEngineeringComplex,
+            startedAt);
+
+        Assert.Equal(1, construction.TargetLevel);
+        Assert.Equal(100m, planet.Materials);
+        Assert.Equal(750m, planet.Deuterium);
+        Assert.True(BuildingService.Complete(
+            planet,
+            startedAt.AddSeconds(11)));
+        Assert.Equal(1, planet.RaceEngineeringComplexLevel);
+        Assert.Equal(4, BuildingService.GetUsedSites(planet));
+    }
+
     private static Planet CreatePlanet(DateTime startedAt)
     {
         return new Planet

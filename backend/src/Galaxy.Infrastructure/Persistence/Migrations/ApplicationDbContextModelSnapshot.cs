@@ -206,6 +206,9 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                     b.Property<int>("AssemblyComplexLevel")
                         .HasColumnType("integer");
 
+                    b.Property<int>("RaceEngineeringComplexLevel")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("BuildingCompletesAt")
                         .HasColumnType("timestamp with time zone");
 
