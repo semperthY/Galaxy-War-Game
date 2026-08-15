@@ -49,9 +49,17 @@ public static class ResearchEndpoints
         var strategy = dbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
+            dbContext.ChangeTracker.Clear();
             await using var transaction = await dbContext.Database.BeginTransactionAsync(
                 cancellationToken);
             await LockPlayerAsync(dbContext, playerId, cancellationToken);
+
+            var utcNow = DateTime.UtcNow;
+            await CompleteFinishedResearchAsync(
+                dbContext,
+                playerId,
+                utcNow,
+                cancellationToken);
 
             var state = await LoadStateAsync(
                 planetId,
@@ -63,13 +71,6 @@ public static class ResearchEndpoints
             {
                 return Results.NotFound();
             }
-
-            var utcNow = DateTime.UtcNow;
-
-            var completed = ResearchService.Complete(
-                state.Player,
-                utcNow);
-            dbContext.ResearchOrders.RemoveRange(completed);
 
             ResourceProductionCalculator.Update(
                 state.Planet,
@@ -118,9 +119,17 @@ public static class ResearchEndpoints
         var strategy = dbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
+            dbContext.ChangeTracker.Clear();
             await using var transaction = await dbContext.Database.BeginTransactionAsync(
                 cancellationToken);
             await LockPlayerAsync(dbContext, playerId, cancellationToken);
+
+            var utcNow = DateTime.UtcNow;
+            await CompleteFinishedResearchAsync(
+                dbContext,
+                playerId,
+                utcNow,
+                cancellationToken);
 
             var state = await LoadStateAsync(
                 planetId,
@@ -132,13 +141,6 @@ public static class ResearchEndpoints
             {
                 return Results.NotFound();
             }
-
-            var utcNow = DateTime.UtcNow;
-
-            var completed = ResearchService.Complete(
-                state.Player,
-                utcNow);
-            dbContext.ResearchOrders.RemoveRange(completed);
 
             try
             {
@@ -179,6 +181,54 @@ public static class ResearchEndpoints
         await dbContext.Database.ExecuteSqlInterpolatedAsync(
             $"""SELECT 1 FROM "Players" WHERE "Id" = {playerId} FOR UPDATE""",
             cancellationToken);
+    }
+
+    private static async Task CompleteFinishedResearchAsync(
+        ApplicationDbContext dbContext,
+        Guid playerId,
+        DateTime utcNow,
+        CancellationToken cancellationToken)
+    {
+        var completed = await dbContext.ResearchOrders
+            .AsNoTracking()
+            .Where(order =>
+                order.PlayerId == playerId &&
+                order.CompletesAt <= utcNow)
+            .Select(order => new
+            {
+                order.Id,
+                order.Technology,
+                order.TargetLevel
+            })
+            .ToListAsync(cancellationToken);
+
+        foreach (var order in completed)
+        {
+            var deleted = await dbContext.ResearchOrders
+                .Where(candidate => candidate.Id == order.Id)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            if (deleted == 0)
+            {
+                continue;
+            }
+
+            var technologyId = Guid.NewGuid();
+            var technology = (int)order.Technology;
+
+            await dbContext.Database.ExecuteSqlInterpolatedAsync(
+                $"""
+                INSERT INTO "PlayerTechnologies"
+                    ("Id", "PlayerId", "Technology", "Level")
+                VALUES
+                    ({technologyId}, {playerId}, {technology}, {order.TargetLevel})
+                ON CONFLICT ("PlayerId", "Technology")
+                DO UPDATE SET "Level" = GREATEST(
+                    "PlayerTechnologies"."Level",
+                    EXCLUDED."Level")
+                """,
+                cancellationToken);
+        }
     }
 
     private static async Task<ResearchState?> LoadStateAsync(

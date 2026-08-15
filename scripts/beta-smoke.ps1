@@ -362,6 +362,40 @@ try {
         Fail('Starting MaterialsScience did not create an active research order')
     }
 
+    Write-Step "Completing research under concurrent dashboard refreshes"
+    $finishResearchSql = "UPDATE `"ResearchOrders`" SET `"CompletesAt`" = NOW() - INTERVAL '1 second' WHERE `"PlayerId`" = '$($game.playerId)';"
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $finishResearchSql | Out-Null
+
+    $researchUri = "http://127.0.0.1:5178/api/game/research/?planetId=$homeworldId"
+    $researchCookies = $script:webSession.Cookies.GetCookies(
+        [Uri]'http://127.0.0.1:5178')
+    $cookieHeader = ($researchCookies |
+        ForEach-Object { "$($_.Name)=$($_.Value)" }) -join '; '
+    $concurrentResearch = 1..4 | ForEach-Object -Parallel {
+        Invoke-WebRequest `
+            -Uri $using:researchUri `
+            -Headers @{ Cookie = $using:cookieHeader } `
+            -NoProxy `
+            -SkipHttpErrorCheck
+    }
+    $failedResearchRequests = @($concurrentResearch | Where-Object {
+        $_.StatusCode -ne 200
+    })
+    if ($failedResearchRequests.Count -ne 0) {
+        Fail("$($failedResearchRequests.Count) concurrent research requests failed")
+    }
+
+    $completedResearch = Invoke-Api `
+        -Path "/api/game/research/?planetId=$homeworldId" `
+        -Method GET
+    $materialsScience = @($completedResearch.technologies | Where-Object {
+        $_.technology -eq 'MaterialsScience'
+    })[0]
+    if ($materialsScience.currentLevel -ne 1 -or
+        $completedResearch.activeResearch.Count -ne 0) {
+        Fail('Concurrent completion did not apply the research level exactly once')
+    }
+
     Write-Step "Verifying account isolation with a second commander"
     $firstCommanderSession = $script:webSession
     $secondCommanderSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
