@@ -49,6 +49,9 @@ public class PlanetConfiguration : IEntityTypeConfiguration<Planet>
         builder.Property(x => x.RaceEngineeringComplexLevel)
             .IsRequired();
 
+        builder.Property(x => x.ShipyardLevel)
+            .IsRequired();
+
         builder.Property(x => x.BuildingSiteCapacity)
             .IsRequired();
 

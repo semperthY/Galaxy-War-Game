@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/styles.css?v=2">
     <link rel="stylesheet" href="/assembly-ui.css">
     <link rel="stylesheet" href="/galaxy-ui.css">
+    <link rel="stylesheet" href="/living-galaxy-ui.css?v=1">
     <link rel="stylesheet" href="/dev-tools.css?v=2">
 </head>
 <body>
@@ -38,6 +39,13 @@
             <path d="M12 2c4 3 6 8 6 14l-6 5-6-5c0-6 2-11 6-14Z"/>
             <circle cx="12" cy="10" r="2"/>
             <path d="M6 14 3 18l4-1M18 14l3 4-4-1"/>
+        </symbol>
+        <symbol id="icon-radar" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/>
+            <path d="M12 12 19 7M3 12h4M17 12h4M12 3v4"/>
+        </symbol>
+        <symbol id="icon-battle" viewBox="0 0 24 24">
+            <path d="m5 3 14 14M19 3 5 17M4 20l3-3M20 20l-3-3"/>
         </symbol>
         <symbol id="icon-galaxy" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="2"/>
@@ -120,6 +128,14 @@
                 <a href="/game/fleet" class="nav-item" data-page="fleet">
                     <svg><use href="#icon-ship"></use></svg>
                     <span>Флот</span>
+                </a>
+                <a href="/game/operations" class="nav-item" data-page="operations">
+                    <svg><use href="#icon-radar"></use></svg>
+                    <span>Операции</span>
+                </a>
+                <a href="/game/battles" class="nav-item" data-page="battles">
+                    <svg><use href="#icon-battle"></use></svg>
+                    <span>Бои</span>
                 </a>
                 <a href="/game/galaxy" class="nav-item" data-page="galaxy">
                     <svg><use href="#icon-galaxy"></use></svg>
@@ -791,17 +807,54 @@
 
                 </section>
 
-                <section id="fleet" class="content-panel reserve-section game-page" data-game-page="fleet">
-                        <div class="subsection-heading">
-                            <div>
-                                <span class="section-label">РЕЗЕРВ</span>
-                                <h3>Готовые корабли</h3>
-                            </div>
-                            <span id="reserveCount" class="reserve-count">
-                                0 кораблей
-                            </span>
+                <section id="fleet" class="content-panel living-panel game-page" data-game-page="fleet">
+                    <div class="living-hero">
+                        <div><span class="section-label">ФЛОТСКИЙ КОНТУР</span><h2>Командование флотами</h2><p>Формируйте группы, программируйте маршрут и обслуживайте корабли.</p></div>
+                        <div id="fleetSummary" class="living-summary">0 групп</div>
+                    </div>
+                    <div class="living-tabs" role="tablist">
+                        <button class="active" data-fleet-tab="groups">Группы</button>
+                        <button data-fleet-tab="plan">Полётный лист</button>
+                        <button data-fleet-tab="service">Сервис</button>
+                    </div>
+                    <div class="living-tab active" data-fleet-view="groups">
+                        <div class="living-split">
+                            <section class="living-console">
+                                <span class="section-label">НОВАЯ ГРУППА</span><h3>Корабли резерва</h3>
+                                <input id="newFleetName" maxlength="100" placeholder="Название группы">
+                                <div id="fleetReservePicker" class="compact-list"></div>
+                                <button id="createFleetButton" class="save-blueprint-button">Сформировать флот</button>
+                            </section>
+                            <section><div class="subsection-heading"><div><span class="section-label">СОСТАВ</span><h3>Активные группы</h3></div></div><div id="fleetGrid" class="compact-grid"></div></section>
                         </div>
-                        <div id="reserveGrid" class="reserve-grid"></div>
+                        <div class="legacy-reserve" hidden><span id="reserveCount">0 кораблей</span><div id="reserveGrid"></div></div>
+                    </div>
+                    <div class="living-tab" data-fleet-view="plan">
+                        <div class="plan-layout">
+                            <section class="living-console">
+                                <label><span>Флот</span><select id="planFleetSelect"></select></label>
+                                <label><span>Команда</span><select id="commandType"><option value="Flight">Полёт</option><option value="Patrol">Патруль</option><option value="Attack">Атака</option><option value="Return">Возврат</option><option value="Recon">Разведка</option><option value="Mine">Добыча</option><option value="LoadUnload">Погрузка / выгрузка</option></select></label>
+                                <div class="coordinate-row"><input id="commandGalaxy" type="number" min="1" placeholder="G"><input id="commandSystem" type="number" min="1" placeholder="S"><input id="commandPosition" type="number" min="1" placeholder="P"></div>
+                                <label><span>Режим скорости</span><select id="commandSpeed"><option value="Economy">Экономичный · 50%</option><option value="Cruise" selected>Крейсерский · 75%</option><option value="Boost">Форсаж · 100%</option></select></label>
+                                <label><span>Цель / поле</span><select id="commandTarget"><option value="">По координатам</option></select></label>
+                                <div class="coordinate-row"><select id="commandDuration"><option value="30">30 минут</option><option value="120">2 часа</option><option value="480">8 часов</option><option value="0">До полного трюма</option></select><input id="commandMaterials" type="number" min="0" value="0" placeholder="материалы"><input id="commandDeuterium" type="number" min="0" value="0" placeholder="дейтерий"></div>
+                                <button id="addCommandButton" class="save-blueprint-button">Добавить команду</button>
+                                <p class="context-hint">Погрузка/выгрузка сама определяет действие по трюму, планете и манифесту.</p>
+                            </section>
+                            <section><div class="subsection-heading"><div><span class="section-label">МАРШРУТ</span><h3>Очередь приказов</h3></div></div><div id="flightPlanList" class="command-list"></div><div class="plan-actions"><button id="savePlanButton">Сохранить лист</button><button id="launchFleetButton" class="save-blueprint-button">Запустить</button></div></section>
+                        </div>
+                    </div>
+                    <div class="living-tab" data-fleet-view="service"><div id="serviceGrid" class="compact-grid"></div></div>
+                </section>
+
+                <section id="operations" class="content-panel living-panel game-page" data-game-page="operations">
+                    <div class="living-hero"><div><span class="section-label">ТАКТИЧЕСКИЙ РАДАР</span><h2>Операции системы</h2><p>Поля, обломки, орбитальные флоты и реальные пиратские контакты.</p></div><div class="coordinate-row"><input id="operationsGalaxy" type="number" min="1" aria-label="Галактика"><input id="operationsSystem" type="number" min="1" aria-label="Система"><button id="scanSystemButton">Сканировать</button></div></div>
+                    <div class="operations-layout"><section><span class="section-label">ДОБЫЧА</span><h3>Поля и обломки</h3><div id="spaceObjectGrid" class="compact-grid"></div></section><section><span class="section-label">КОНТАКТЫ</span><h3>Флоты в открытом космосе</h3><div id="contactGrid" class="compact-grid"></div></section></div>
+                </section>
+
+                <section id="battles" class="content-panel living-panel game-page" data-game-page="battles">
+                    <div class="living-hero"><div><span class="section-label">БОЕВОЙ ЦЕНТР</span><h2>Бои и рапорты</h2><p>Раунд длится 90 секунд: 60 секунд на приказ и 30 на расчёт.</p></div><div id="battleSummary" class="living-summary">Нет активных боёв</div></div>
+                    <div id="battleGrid" class="battle-grid"></div>
                 </section>
 
                 <section id="galaxy" class="content-panel galaxy-panel game-page" data-game-page="galaxy">
@@ -865,6 +918,7 @@
 
     <script src="/assembly-ui.js"></script>
     <script src="/galaxy-ui.js"></script>
+    <script src="/living-galaxy-ui.js?v=1"></script>
     <script src="/dev-tools.js?v=2"></script>
     <script src="/app.js?v=2"></script>
 </body>

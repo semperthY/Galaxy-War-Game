@@ -75,6 +75,7 @@ public static class ColonizationService
             targetPlanet.ResearchLaboratoryLevel = 0;
             targetPlanet.ProductionComplexLevel = 0;
             targetPlanet.AssemblyComplexLevel = 0;
+            targetPlanet.ShipyardLevel = 0;
             targetPlanet.RaceEngineeringComplexLevel = 0;
             targetPlanet.QueuedBuilding = null;
             targetPlanet.QueuedBuildingLevel = null;

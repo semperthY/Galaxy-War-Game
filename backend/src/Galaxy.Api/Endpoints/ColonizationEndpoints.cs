@@ -105,7 +105,8 @@ public static class ColonizationEndpoints
             .SingleOrDefaultAsync(
                 x =>
                     x.Id == request.ShipId &&
-                    x.PlayerId == player.Id,
+                    x.PlayerId == player.Id &&
+                    x.FleetShip == null,
                 cancellationToken);
 
         if (ship is null)

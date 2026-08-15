@@ -44,6 +44,16 @@ public class ApplicationDbContext : DbContext
     public DbSet<ColonizationOperation> ColonizationOperations =>
         Set<ColonizationOperation>();
 
+    public DbSet<Fleet> Fleets => Set<Fleet>();
+    public DbSet<FleetShip> FleetShips => Set<FleetShip>();
+    public DbSet<FlightCommand> FlightCommands => Set<FlightCommand>();
+    public DbSet<ResourceField> ResourceFields => Set<ResourceField>();
+    public DbSet<DebrisField> DebrisFields => Set<DebrisField>();
+    public DbSet<PirateCell> PirateCells => Set<PirateCell>();
+    public DbSet<Battle> Battles => Set<Battle>();
+    public DbSet<BattleOrder> BattleOrders => Set<BattleOrder>();
+    public DbSet<ShipServiceOrder> ShipServiceOrders => Set<ShipServiceOrder>();
+
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
     {

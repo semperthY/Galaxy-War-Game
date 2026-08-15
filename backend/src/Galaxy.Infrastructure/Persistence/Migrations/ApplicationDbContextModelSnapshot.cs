@@ -75,6 +75,94 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                     b.ToTable("ColonizationOperations");
                 });
 
+            modelBuilder.Entity("Galaxy.Domain.Entities.BattleOrder", b =>
+                {
+                    b.HasOne("Galaxy.Domain.Entities.Battle", null)
+                        .WithMany()
+                        .HasForeignKey("BattleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.Fleet", b =>
+                {
+                    b.HasOne("Galaxy.Domain.Entities.Planet", null)
+                        .WithMany()
+                        .HasForeignKey("HomePlanetId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Galaxy.Domain.Entities.PirateCell", null)
+                        .WithMany()
+                        .HasForeignKey("PirateCellId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Galaxy.Domain.Entities.Player", null)
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.FleetShip", b =>
+                {
+                    b.HasOne("Galaxy.Domain.Entities.Fleet", "Fleet")
+                        .WithMany("Ships")
+                        .HasForeignKey("FleetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Galaxy.Domain.Entities.Ship", "Ship")
+                        .WithOne("FleetShip")
+                        .HasForeignKey("Galaxy.Domain.Entities.FleetShip", "ShipId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Fleet");
+                    b.Navigation("Ship");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.FlightCommand", b =>
+                {
+                    b.HasOne("Galaxy.Domain.Entities.Fleet", "Fleet")
+                        .WithMany("Commands")
+                        .HasForeignKey("FleetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fleet");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.PirateCell", b =>
+                {
+                    b.HasOne("Galaxy.Domain.Entities.StarSystem", null)
+                        .WithMany()
+                        .HasForeignKey("StarSystemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.ResourceField", b =>
+                {
+                    b.HasOne("Galaxy.Domain.Entities.StarSystem", null)
+                        .WithMany()
+                        .HasForeignKey("StarSystemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.ShipServiceOrder", b =>
+                {
+                    b.HasOne("Galaxy.Domain.Entities.FleetShip", null)
+                        .WithMany()
+                        .HasForeignKey("FleetShipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Galaxy.Domain.Entities.Planet", null)
+                        .WithMany()
+                        .HasForeignKey("PlanetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Galaxy.Domain.Entities.ComponentInventoryItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -207,6 +295,9 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("RaceEngineeringComplexLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ShipyardLevel")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("BuildingCompletesAt")
@@ -511,6 +602,192 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                     b.ToTable("StarSystems");
                 });
 
+            modelBuilder.Entity("Galaxy.Domain.Entities.Battle", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<Guid>("AttackerFleetId").HasColumnType("uuid");
+                    b.Property<DateTime?>("CompletedAt").HasColumnType("timestamp with time zone");
+                    b.Property<DateTime>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<Guid>("DefenderFleetId").HasColumnType("uuid");
+                    b.Property<DateTime>("OrderDeadline").HasColumnType("timestamp with time zone");
+                    b.Property<string>("ReportJson").IsRequired().HasColumnType("jsonb");
+                    b.Property<DateTime>("ResolveAt").HasColumnType("timestamp with time zone");
+                    b.Property<int>("Round").HasColumnType("integer");
+                    b.Property<int>("Status").HasColumnType("integer");
+                    b.Property<Guid?>("WinnerFleetId").HasColumnType("uuid");
+                    b.HasKey("Id");
+                    b.HasIndex("AttackerFleetId");
+                    b.HasIndex("DefenderFleetId");
+                    b.ToTable("Battles");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.BattleOrder", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<Guid>("BattleId").HasColumnType("uuid");
+                    b.Property<Guid>("FleetId").HasColumnType("uuid");
+                    b.Property<int>("Round").HasColumnType("integer");
+                    b.Property<DateTime>("SubmittedAt").HasColumnType("timestamp with time zone");
+                    b.Property<string>("TargetPriority").IsRequired().HasMaxLength(32).HasColumnType("character varying(32)");
+                    b.Property<bool>("Retreat").HasColumnType("boolean");
+                    b.HasKey("Id");
+                    b.HasIndex("BattleId", "FleetId", "Round").IsUnique();
+                    b.ToTable("BattleOrders");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.DebrisField", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<string>("ComponentsJson").IsRequired().HasColumnType("jsonb");
+                    b.Property<DateTime>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<decimal>("Deuterium").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<Guid?>("ExclusivePlayerId").HasColumnType("uuid");
+                    b.Property<DateTime?>("ExclusiveUntil").HasColumnType("timestamp with time zone");
+                    b.Property<DateTime>("ExpiresAt").HasColumnType("timestamp with time zone");
+                    b.Property<int>("GalaxyNumber").HasColumnType("integer");
+                    b.Property<decimal>("Materials").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<int>("Position").HasColumnType("integer");
+                    b.Property<int>("SystemNumber").HasColumnType("integer");
+                    b.Property<DateTime>("UpdatedAt").HasColumnType("timestamp with time zone");
+                    b.HasKey("Id");
+                    b.HasIndex("GalaxyNumber", "SystemNumber", "Position");
+                    b.ToTable("DebrisFields");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.Fleet", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<DateTime>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<int>("CurrentCommandSequence").HasColumnType("integer");
+                    b.Property<decimal>("DeuteriumCargo").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("FuelReserve").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<int>("GalaxyNumber").HasColumnType("integer");
+                    b.Property<int>("HomeGalaxyNumber").HasColumnType("integer");
+                    b.Property<Guid?>("HomePlanetId").HasColumnType("uuid");
+                    b.Property<int>("HomePosition").HasColumnType("integer");
+                    b.Property<int>("HomeSystemNumber").HasColumnType("integer");
+                    b.Property<bool>("IsPirate").HasColumnType("boolean");
+                    b.Property<int>("LocationType").HasColumnType("integer");
+                    b.Property<decimal>("MaterialsCargo").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<string>("Name").IsRequired().HasMaxLength(100).HasColumnType("character varying(100)");
+                    b.Property<Guid?>("PirateCellId").HasColumnType("uuid");
+                    b.Property<Guid?>("PlayerId").HasColumnType("uuid");
+                    b.Property<int>("Position").HasColumnType("integer");
+                    b.Property<int>("Status").HasColumnType("integer");
+                    b.Property<int>("SystemNumber").HasColumnType("integer");
+                    b.Property<DateTime>("UpdatedAt").HasColumnType("timestamp with time zone");
+                    b.HasKey("Id");
+                    b.HasIndex("HomePlanetId");
+                    b.HasIndex("PirateCellId");
+                    b.HasIndex("PlayerId");
+                    b.HasIndex("GalaxyNumber", "SystemNumber", "Position");
+                    b.ToTable("Fleets");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.FleetShip", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<string>("BlueprintName").IsRequired().HasMaxLength(100).HasColumnType("character varying(100)");
+                    b.Property<decimal>("CargoCapacity").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<string>("ComponentCodesJson").IsRequired().HasColumnType("jsonb");
+                    b.Property<decimal>("ComponentDeuterium").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("ComponentMaterials").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<Guid>("FleetId").HasColumnType("uuid");
+                    b.Property<decimal>("Hull").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("InterSystemSpeed").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("LaserHullDamage").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("LaserShieldDamage").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("LocalSpeed").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("MaxHull").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("MaxShield").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("MiningRatePerMinute").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("MissileHullDamage").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("MissileShieldDamage").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<string>("Name").IsRequired().HasMaxLength(100).HasColumnType("character varying(100)");
+                    b.Property<decimal>("ScanRange").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("Shield").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<Guid?>("ShipId").HasColumnType("uuid");
+                    b.HasKey("Id");
+                    b.HasIndex("FleetId");
+                    b.HasIndex("ShipId").IsUnique();
+                    b.ToTable("FleetShips");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.FlightCommand", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<DateTime?>("CompletedAt").HasColumnType("timestamp with time zone");
+                    b.Property<DateTime?>("CompletesAt").HasColumnType("timestamp with time zone");
+                    b.Property<int>("DurationMinutes").HasColumnType("integer");
+                    b.Property<Guid>("FleetId").HasColumnType("uuid");
+                    b.Property<decimal>("ManifestDeuterium").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("ManifestMaterials").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<string>("Outcome").HasMaxLength(400).HasColumnType("character varying(400)");
+                    b.Property<int>("Sequence").HasColumnType("integer");
+                    b.Property<int>("SpeedMode").HasColumnType("integer");
+                    b.Property<DateTime?>("StartedAt").HasColumnType("timestamp with time zone");
+                    b.Property<int>("Status").HasColumnType("integer");
+                    b.Property<Guid?>("TargetFleetId").HasColumnType("uuid");
+                    b.Property<int?>("TargetGalaxy").HasColumnType("integer");
+                    b.Property<Guid?>("TargetObjectId").HasColumnType("uuid");
+                    b.Property<int?>("TargetPosition").HasColumnType("integer");
+                    b.Property<int?>("TargetSystem").HasColumnType("integer");
+                    b.Property<int>("Type").HasColumnType("integer");
+                    b.HasKey("Id");
+                    b.HasIndex("FleetId", "Sequence").IsUnique();
+                    b.ToTable("FlightCommands");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.PirateCell", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<decimal>("Deuterium").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<DateTime>("LastActedAt").HasColumnType("timestamp with time zone");
+                    b.Property<decimal>("Materials").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<int>("State").HasColumnType("integer");
+                    b.Property<Guid>("StarSystemId").HasColumnType("uuid");
+                    b.Property<int>("Threat").HasColumnType("integer");
+                    b.HasKey("Id");
+                    b.HasIndex("StarSystemId").IsUnique();
+                    b.ToTable("PirateCells");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.ResourceField", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<decimal>("Deuterium").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("Materials").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("MaxDeuterium").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<decimal>("MaxMaterials").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<string>("Name").IsRequired().HasMaxLength(100).HasColumnType("character varying(100)");
+                    b.Property<int>("Position").HasColumnType("integer");
+                    b.Property<decimal>("RegenPerHour").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<Guid>("StarSystemId").HasColumnType("uuid");
+                    b.Property<int>("Threat").HasColumnType("integer");
+                    b.Property<decimal>("ThroughputPerHour").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<int>("Type").HasColumnType("integer");
+                    b.Property<DateTime>("UpdatedAt").HasColumnType("timestamp with time zone");
+                    b.HasKey("Id");
+                    b.HasIndex("StarSystemId", "Position").IsUnique();
+                    b.ToTable("ResourceFields");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.ShipServiceOrder", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<DateTime>("CompletesAt").HasColumnType("timestamp with time zone");
+                    b.Property<decimal>("DeuteriumCost").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<Guid>("FleetShipId").HasColumnType("uuid");
+                    b.Property<decimal>("MaterialsCost").HasPrecision(20, 4).HasColumnType("numeric(20,4)");
+                    b.Property<Guid>("PlanetId").HasColumnType("uuid");
+                    b.Property<DateTime>("StartedAt").HasColumnType("timestamp with time zone");
+                    b.Property<int>("Type").HasColumnType("integer");
+                    b.HasKey("Id");
+                    b.HasIndex("FleetShipId").IsUnique();
+                    b.HasIndex("PlanetId");
+                    b.ToTable("ShipServiceOrders");
+                });
+
             modelBuilder.Entity("Galaxy.Domain.Entities.ComponentInventoryItem", b =>
                 {
                     b.HasOne("Galaxy.Domain.Entities.Planet", "Planet")
@@ -657,6 +934,17 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Player");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.Fleet", b =>
+                {
+                    b.Navigation("Commands");
+                    b.Navigation("Ships");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.Ship", b =>
+                {
+                    b.Navigation("FleetShip");
                 });
 
             modelBuilder.Entity("Galaxy.Domain.Entities.Planet", b =>

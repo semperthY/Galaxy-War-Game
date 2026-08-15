@@ -11,13 +11,13 @@ function Fail([string]$Message) {
 }
 
 function Write-Step([string]$Message) {
-    Write-Host "[beta-smoke] $Message" -ForegroundColor Cyan
+    Write-Host "[v0.1-smoke] $Message" -ForegroundColor Cyan
 }
 
 function Invoke-Api {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
-        [ValidateSet('GET', 'POST')][string]$Method = 'GET',
+        [ValidateSet('GET', 'POST', 'PUT')][string]$Method = 'GET',
         [object]$Body = $null,
         [Microsoft.PowerShell.Commands.WebRequestSession]$Session = $script:webSession
     )
@@ -236,6 +236,15 @@ try {
         $researchPage.Content -notmatch 'data-game-page="research"') {
         Fail('Direct research page route did not return the game interface')
     }
+    $operationsPage = Invoke-WebRequest `
+        -Uri 'http://127.0.0.1:5178/game/operations' `
+        -Method GET `
+        -NoProxy
+    if ($operationsPage.StatusCode -ne 200 -or
+        $operationsPage.Content -notmatch 'data-game-page="operations"' -or
+        $operationsPage.Content -notmatch 'data-page="operations"') {
+        Fail('Living Galaxy routes or mobile navigation are missing')
+    }
 
     Write-Step "Registering a Beta 2 account"
     $account = Invoke-Api -Path '/api/auth/register' -Method POST -Body @{
@@ -367,8 +376,125 @@ try {
         Fail('First commander session returned another commander''s planet')
     }
 
+    Write-Step "Creating a combat ship and a physical fleet"
+    $combatShipId = [Guid]::NewGuid().ToString()
+    $insertCombatShipSql = "INSERT INTO `"Ships`" (`"Id`", `"PlayerId`", `"PlanetId`", `"ShipBlueprintId`", `"Name`", `"CreatedAt`") VALUES ('$combatShipId', '$($game.playerId)', '$homeworldId', '$($blueprint.id)', 'Smoke Vanguard', NOW());"
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $insertCombatShipSql | Out-Null
+    $combatFleet = Invoke-Api -Path '/api/game/living-galaxy/fleets' -Method POST -Body @{
+        planetId = $homeworldId
+        name = 'Smoke Vanguard'
+        shipIds = @($combatShipId)
+    }
+    if ($combatFleet.status -ne 'Landed' -or $combatFleet.ships.Count -ne 1) {
+        Fail('A player fleet was not formed from the reserve')
+    }
+
+    Write-Step "Validating permanent fields and physical pirate contacts"
+    $systemView = Invoke-Api -Path "/api/game/living-galaxy/system?galaxy=$($game.galaxy)&system=$($game.system)" -Method GET
+    if ($systemView.fields.Count -lt 4 -or $systemView.fields.Count -gt 6) {
+        Fail("Expected 4-6 permanent resource fields, got $($systemView.fields.Count)")
+    }
+    $pirate = @($systemView.fleets | Where-Object { $_.isPirate })[0]
+    if ($null -eq $pirate -or [string]::IsNullOrWhiteSpace($pirate.id)) {
+        Fail('The system did not contain a physical pirate fleet')
+    }
+
+    Write-Step "Launching attack, resolving a simultaneous round and creating debris"
+    $combatPlan = @{
+        commands = @(
+            @{
+                type = 'Attack'; speedMode = 'Cruise'
+                targetGalaxy = $game.galaxy; targetSystem = $game.system; targetPosition = $pirate.position
+                targetFleetId = $pirate.id; targetObjectId = $null; durationMinutes = 0
+                manifestMaterials = 0; manifestDeuterium = 0
+            },
+            @{
+                type = 'Patrol'; speedMode = 'Economy'
+                targetGalaxy = $null; targetSystem = $null; targetPosition = $null
+                targetFleetId = $null; targetObjectId = $null; durationMinutes = 0
+                manifestMaterials = 0; manifestDeuterium = 0
+            }
+        )
+    }
+    Invoke-Api -Path "/api/game/living-galaxy/fleets/$($combatFleet.id)/plan" -Method PUT -Body $combatPlan | Out-Null
+    Invoke-Api -Path "/api/game/living-galaxy/fleets/$($combatFleet.id)/launch" -Method POST | Out-Null
+    $forceAttackSql = "UPDATE `"FlightCommands`" SET `"CompletesAt`" = NOW() - INTERVAL '1 second' WHERE `"FleetId`" = '$($combatFleet.id)' AND `"Status`" = 2; UPDATE `"FleetShips`" SET `"Shield`" = 0, `"Hull`" = 1 WHERE `"FleetId`" = '$($pirate.id)';"
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $forceAttackSql | Out-Null
+    Invoke-Api -Path '/api/game/living-galaxy/fleets' -Method GET | Out-Null
+    $battles = Invoke-Api -Path '/api/game/living-galaxy/battles' -Method GET
+    $battle = @($battles | Where-Object { $_.status -ne 'Completed' })[0]
+    if ($null -eq $battle) { Fail('Attack arrival did not create a battle') }
+    $resolveBattleSql = "UPDATE `"Battles`" SET `"ResolveAt`" = NOW() - INTERVAL '1 second' WHERE `"Id`" = '$($battle.id)';"
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $resolveBattleSql | Out-Null
+    $resolvedBattles = Invoke-Api -Path '/api/game/living-galaxy/battles' -Method GET
+    $resolvedBattle = @($resolvedBattles | Where-Object { $_.id -eq $battle.id })[0]
+    if ($resolvedBattle.status -ne 'Completed' -or $resolvedBattle.report.Count -lt 1) {
+        Fail('The deterministic battle round did not complete with a report')
+    }
+    $systemAfterBattle = Invoke-Api -Path "/api/game/living-galaxy/system?galaxy=$($game.galaxy)&system=$($game.system)" -Method GET
+    if ($systemAfterBattle.debris.Count -lt 1) { Fail('Destroyed pirate ship did not create a debris field') }
+
+    Write-Step "Changing only the next patrol command, returning and landing"
+    $returnCommand = @{
+        command = @{
+            type = 'Return'; speedMode = 'Economy'
+            targetGalaxy = $null; targetSystem = $null; targetPosition = $null
+            targetFleetId = $null; targetObjectId = $null; durationMinutes = 0
+            manifestMaterials = 0; manifestDeuterium = 0
+        }
+    }
+    Invoke-Api -Path "/api/game/living-galaxy/fleets/$($combatFleet.id)/next-command" -Method PUT -Body $returnCommand | Out-Null
+    $forceReturnSql = "UPDATE `"FlightCommands`" SET `"CompletesAt`" = NOW() - INTERVAL '1 second' WHERE `"FleetId`" = '$($combatFleet.id)' AND `"Status`" = 2;"
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $forceReturnSql | Out-Null
+    $fleetsAfterReturn = Invoke-Api -Path '/api/game/living-galaxy/fleets' -Method GET
+    $returnedFleet = @($fleetsAfterReturn | Where-Object { $_.id -eq $combatFleet.id })[0]
+    if ($returnedFleet.status -ne 'Orbiting') { Fail('Return did not leave the fleet vulnerable in orbit') }
+    $landedFleet = Invoke-Api -Path "/api/game/living-galaxy/fleets/$($combatFleet.id)/land" -Method POST
+    if ($landedFleet.status -ne 'Landed') { Fail('Explicit landing did not protect the fleet') }
+    $damagedShip = @($landedFleet.ships | Where-Object { $_.shield -lt $_.maxShield })[0]
+    if ($null -eq $damagedShip) { Fail('Simultaneous fire did not damage the winning fleet') }
+    Invoke-Api -Path "/api/game/living-galaxy/ships/$($damagedShip.id)/service" -Method POST -Body @{ type = 'ShieldRecharge' } | Out-Null
+
+    Write-Step "Mining a permanent field and unloading cargo contextually"
+    $minerBlueprint = Invoke-Api -Path '/api/game/blueprints/' -Method POST -Body @{
+        name = 'Beta Smoke Miner'
+        hullCode = 'HUL-01'
+        modules = @(
+            @{ componentCode = 'ENG-01'; quantity = 1 },
+            @{ componentCode = 'RCT-02'; quantity = 1 },
+            @{ componentCode = 'CTL-01'; quantity = 1 },
+            @{ componentCode = 'IND-01'; quantity = 1 },
+            @{ componentCode = 'IND-05'; quantity = 1 }
+        )
+    }
+    $minerShipId = [Guid]::NewGuid().ToString()
+    $insertMinerSql = "INSERT INTO `"Ships`" (`"Id`", `"PlayerId`", `"PlanetId`", `"ShipBlueprintId`", `"Name`", `"CreatedAt`") VALUES ('$minerShipId', '$($game.playerId)', '$homeworldId', '$($minerBlueprint.id)', 'Smoke Miner', NOW());"
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $insertMinerSql | Out-Null
+    $minerFleet = Invoke-Api -Path '/api/game/living-galaxy/fleets' -Method POST -Body @{ planetId = $homeworldId; name = 'Smoke Miners'; shipIds = @($minerShipId) }
+    $field = $systemView.fields[0]
+    $minePlan = @{ commands = @(
+        @{ type = 'Mine'; speedMode = 'Economy'; targetGalaxy = $game.galaxy; targetSystem = $game.system; targetPosition = $field.position; targetFleetId = $null; targetObjectId = $field.id; durationMinutes = 1; manifestMaterials = 0; manifestDeuterium = 0 },
+        @{ type = 'Return'; speedMode = 'Economy'; targetGalaxy = $null; targetSystem = $null; targetPosition = $null; targetFleetId = $null; targetObjectId = $null; durationMinutes = 0; manifestMaterials = 0; manifestDeuterium = 0 }
+    ) }
+    Invoke-Api -Path "/api/game/living-galaxy/fleets/$($minerFleet.id)/plan" -Method PUT -Body $minePlan | Out-Null
+    Invoke-Api -Path "/api/game/living-galaxy/fleets/$($minerFleet.id)/launch" -Method POST | Out-Null
+    $forceMineSql = "UPDATE `"FlightCommands`" SET `"CompletesAt`" = NOW() - INTERVAL '1 second' WHERE `"FleetId`" = '$($minerFleet.id)' AND `"Status`" = 2;"
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $forceMineSql | Out-Null
+    $miningResult = Invoke-Api -Path '/api/game/living-galaxy/fleets' -Method GET
+    $loadedMiner = @($miningResult | Where-Object { $_.id -eq $minerFleet.id })[0]
+    if (($loadedMiner.materialsCargo + $loadedMiner.deuteriumCargo) -le 0) { Fail('Mining did not put resources into the cargo hold') }
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $forceMineSql | Out-Null
+    Invoke-Api -Path '/api/game/living-galaxy/fleets' -Method GET | Out-Null
+    Invoke-Api -Path "/api/game/living-galaxy/fleets/$($minerFleet.id)/land" -Method POST | Out-Null
+    $unloadPlan = @{ commands = @(@{ type = 'LoadUnload'; speedMode = 'Economy'; targetGalaxy = $null; targetSystem = $null; targetPosition = $null; targetFleetId = $null; targetObjectId = $null; durationMinutes = 0; manifestMaterials = 0; manifestDeuterium = 0 }) }
+    Invoke-Api -Path "/api/game/living-galaxy/fleets/$($minerFleet.id)/plan" -Method PUT -Body $unloadPlan | Out-Null
+    Invoke-Api -Path "/api/game/living-galaxy/fleets/$($minerFleet.id)/launch" -Method POST | Out-Null
+    $afterUnload = Invoke-Api -Path '/api/game/living-galaxy/fleets' -Method GET
+    $emptyMiner = @($afterUnload | Where-Object { $_.id -eq $minerFleet.id })[0]
+    if (($emptyMiner.materialsCargo + $emptyMiner.deuteriumCargo) -ne 0) { Fail('Context-aware unload did not empty the cargo hold') }
+
     Write-Host ''
-    Write-Host 'BETA V2 FOUNDATION SMOKE TEST PASSED' -ForegroundColor Green
+    Write-Host 'GALAXY WAR GAME V0.1 SMOKE TEST PASSED' -ForegroundColor Green
 }
 catch {
     Write-Host ''

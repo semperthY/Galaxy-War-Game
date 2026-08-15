@@ -95,7 +95,8 @@ public static class BuildingService
             planet.ResearchLaboratoryLevel,
             planet.ProductionComplexLevel,
             planet.AssemblyComplexLevel,
-            planet.RaceEngineeringComplexLevel
+            planet.RaceEngineeringComplexLevel,
+            planet.ShipyardLevel
         };
 
         return levels.Count(level => level > 0);
@@ -155,6 +156,11 @@ public static class BuildingService
                     decimal.Ceiling(900m * multiplier),
                     decimal.Ceiling(250m * multiplier)),
 
+            BuildingType.Shipyard =>
+                new BuildingCost(
+                    decimal.Ceiling(450m * multiplier),
+                    decimal.Ceiling(120m * multiplier)),
+
             _ => throw new ArgumentOutOfRangeException(
                 nameof(building))
         };
@@ -189,6 +195,9 @@ public static class BuildingService
 
             BuildingType.RaceEngineeringComplex =>
                 planet.RaceEngineeringComplexLevel,
+
+            BuildingType.Shipyard =>
+                planet.ShipyardLevel,
 
             _ => throw new ArgumentOutOfRangeException(
                 nameof(building))
@@ -232,6 +241,10 @@ public static class BuildingService
 
             case BuildingType.RaceEngineeringComplex:
                 planet.RaceEngineeringComplexLevel = level;
+                break;
+
+            case BuildingType.Shipyard:
+                planet.ShipyardLevel = level;
                 break;
 
             default:
