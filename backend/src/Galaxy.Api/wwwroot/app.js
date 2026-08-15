@@ -849,7 +849,11 @@ async function api(path, options = {}) {
         } catch {
         }
 
-        throw new Error(message);
+        const endpoint = path.split("?")[0];
+        const error = new Error(`${message} · ${endpoint}`);
+        error.status = response.status;
+        error.path = path;
+        throw error;
     }
 
     return response.json();
@@ -941,7 +945,7 @@ function renderActiveProcesses(
 {
     const processes = [];
 
-    if (buildings.queuedBuilding && buildings.buildingCompletesAt) {
+    if (buildings?.queuedBuilding && buildings.buildingCompletesAt) {
         processes.push({
             page: "buildings",
             icon: "icon-buildings",
@@ -951,7 +955,7 @@ function renderActiveProcesses(
         });
     }
 
-    research.empireActiveResearch.forEach(order => processes.push({
+    (research?.empireActiveResearch ?? []).forEach(order => processes.push({
             page: "research",
             icon: "icon-research",
             type: `Исследование · ${order.planetName} · поток ${order.streamNumber}`,
@@ -959,7 +963,7 @@ function renderActiveProcesses(
             completesAt: order.completesAt
         }));
 
-    production.orders
+    (production?.orders ?? [])
         .filter(order => order.completesAt)
         .forEach(order => processes.push({
             page: "production",
@@ -969,7 +973,7 @@ function renderActiveProcesses(
             completesAt: order.completesAt
         }));
 
-    assembly.orders
+    (assembly?.orders ?? [])
         .filter(order => order.completesAt)
         .forEach(order => processes.push({
             page: "ship-assembly",
@@ -979,7 +983,7 @@ function renderActiveProcesses(
             completesAt: order.completesAt
         }));
 
-    colonization.forEach(operation => processes.push({
+    (colonization ?? []).forEach(operation => processes.push({
         page: "galaxy",
         icon: "icon-galaxy",
         type: "Колонизация",
@@ -1019,6 +1023,47 @@ function showMessage(text, isError = false) {
     window.setTimeout(() => {
         elements.message.classList.add("hidden");
     }, 4500);
+}
+
+function renderPageLoadError(page, error) {
+    const panel = document.querySelector(`[data-game-page="${page}"]`);
+    if (!panel) {
+        return true;
+    }
+
+    const message = error?.message ?? "Не удалось загрузить данные раздела.";
+    const existing = panel.querySelector(".module-load-error");
+
+    if (existing?.dataset.message === message) {
+        return false;
+    }
+
+    existing?.remove();
+
+    const notice = document.createElement("div");
+    notice.className = "empty-state module-load-error";
+    notice.dataset.message = message;
+    notice.setAttribute("role", "alert");
+
+    const title = document.createElement("strong");
+    title.textContent = "Данные раздела временно недоступны";
+
+    const details = document.createElement("span");
+    details.textContent = message;
+
+    notice.append(title, details);
+
+    const heading = panel.querySelector(
+        ".panel-heading, .designer-hero, .assembly-hero, .living-hero"
+    );
+    heading?.insertAdjacentElement("afterend", notice) ?? panel.prepend(notice);
+    return true;
+}
+
+function clearPageLoadError(page) {
+    document
+        .querySelector(`[data-game-page="${page}"] .module-load-error`)
+        ?.remove();
 }
 
 function renderPlanetSelector() {
@@ -2652,13 +2697,7 @@ async function loadDashboardCore() {
 
         renderPlanet(activePlanet);
 
-        const [
-            buildings,
-            research,
-            production,
-            assembly,
-            colonization
-        ] = await Promise.all([
+        const coreResults = await Promise.allSettled([
             api(
                 `/api/game/buildings/?planetId=${state.activePlanetId}`
             ),
@@ -2674,7 +2713,26 @@ async function loadDashboardCore() {
             api("/api/game/colonization/")
         ]);
 
-        state.productionStatus = production;
+        const [
+            buildingsResult,
+            researchResult,
+            productionResult,
+            assemblyResult,
+            colonizationResult
+        ] = coreResults;
+
+        const valueOrNull = result =>
+            result.status === "fulfilled" ? result.value : null;
+
+        const buildings = valueOrNull(buildingsResult);
+        const research = valueOrNull(researchResult);
+        const production = valueOrNull(productionResult);
+        const assembly = valueOrNull(assemblyResult);
+        const colonization = valueOrNull(colonizationResult);
+
+        if (production) {
+            state.productionStatus = production;
+        }
 
         renderActiveProcesses(
             buildings,
@@ -2686,12 +2744,21 @@ async function loadDashboardCore() {
 
         switch (state.activePage) {
             case "buildings":
+                if (!buildings) {
+                    throw buildingsResult.reason;
+                }
                 renderBuildings(buildings);
                 break;
             case "research":
+                if (!research) {
+                    throw researchResult.reason;
+                }
                 renderResearch(research);
                 break;
             case "production":
+                if (!production) {
+                    throw productionResult.reason;
+                }
                 renderProduction(production);
                 break;
             case "ship-designer": {
@@ -2704,12 +2771,18 @@ async function loadDashboardCore() {
             }
             case "ship-assembly":
             {
+                if (!assembly) {
+                    throw assemblyResult.reason;
+                }
                 const blueprints = await api("/api/game/blueprints/");
                 state.blueprints = blueprints;
                 AssemblyUi.render(assembly, blueprints);
                 break;
             }
             case "fleet": {
+                if (!assembly) {
+                    throw assemblyResult.reason;
+                }
                 const [blueprints, fleets] = await Promise.all([
                     api("/api/game/blueprints/"),
                     api("/api/game/living-galaxy/fleets")
@@ -2720,18 +2793,30 @@ async function loadDashboardCore() {
                 break;
             }
             case "operations": {
+                if (!assembly) {
+                    throw assemblyResult.reason;
+                }
                 const fleets = await api("/api/game/living-galaxy/fleets");
                 await LivingGalaxyUi.render(fleets, assembly, activePlanet);
                 await LivingGalaxyUi.loadSystem(activePlanet.galaxy, activePlanet.system);
                 break;
             }
             case "battles": {
+                if (!assembly) {
+                    throw assemblyResult.reason;
+                }
                 const fleets = await api("/api/game/living-galaxy/fleets");
                 await LivingGalaxyUi.render(fleets, assembly, activePlanet);
                 await LivingGalaxyUi.loadBattles();
                 break;
             }
             case "galaxy": {
+                if (!assembly) {
+                    throw assemblyResult.reason;
+                }
+                if (!colonization) {
+                    throw colonizationResult.reason;
+                }
                 const [galaxy, blueprints, components] = await Promise.all([
                     api("/api/galaxy"),
                     api("/api/game/blueprints/"),
@@ -2750,8 +2835,11 @@ async function loadDashboardCore() {
                 break;
             }
         }
+        clearPageLoadError(state.activePage);
     } catch (error) {
-        showMessage(error.message, true);
+        if (renderPageLoadError(state.activePage, error)) {
+            showMessage(error.message, true);
+        }
     }
 }
 
