@@ -63,7 +63,10 @@ public static class LivingGalaxyEndpoints
         if (fleet is null) return Results.NotFound();
         try
         {
+            var previousCommands = fleet.Commands.ToList();
             FlightRules.ReplacePlan(fleet, request.Commands.Select(ToCommand).ToList());
+            db.FlightCommands.RemoveRange(previousCommands);
+            db.FlightCommands.AddRange(fleet.Commands);
             await db.SaveChangesAsync(token); return Results.Ok(ToFleetResponse(fleet));
         }
         catch (InvalidOperationException ex) { return Results.BadRequest(new { message = ex.Message }); }
@@ -87,7 +90,12 @@ public static class LivingGalaxyEndpoints
         if (fleet is null) return Results.NotFound();
         try
         {
+            var sequence = fleet.CurrentCommandSequence + 1;
+            var previousCommand = fleet.Commands.SingleOrDefault(x => x.Sequence == sequence);
             FlightRules.ReplaceNext(fleet, request.Command is null ? null : ToCommand(request.Command));
+            if (previousCommand is not null) db.FlightCommands.Remove(previousCommand);
+            var replacement = fleet.Commands.SingleOrDefault(x => x.Sequence == sequence);
+            if (replacement is not null) db.FlightCommands.Add(replacement);
             if (fleet.Status == FleetStatus.Patrolling && request.Command is not null)
             {
                 var current = fleet.Commands.Single(x => x.Sequence == fleet.CurrentCommandSequence);
