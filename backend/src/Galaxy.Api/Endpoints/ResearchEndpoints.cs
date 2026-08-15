@@ -46,38 +46,42 @@ public static class ResearchEndpoints
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(
-            cancellationToken);
-        await LockPlayerAsync(dbContext, playerId, cancellationToken);
-
-        var state = await LoadStateAsync(
-            planetId,
-            playerId,
-            dbContext,
-            cancellationToken);
-
-        if (state is null)
+        var strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            return Results.NotFound();
-        }
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(
+                cancellationToken);
+            await LockPlayerAsync(dbContext, playerId, cancellationToken);
 
-        var utcNow = DateTime.UtcNow;
+            var state = await LoadStateAsync(
+                planetId,
+                playerId,
+                dbContext,
+                cancellationToken);
 
-        var completed = ResearchService.Complete(
-            state.Player,
-            utcNow);
-        dbContext.ResearchOrders.RemoveRange(completed);
+            if (state is null)
+            {
+                return Results.NotFound();
+            }
 
-        ResourceProductionCalculator.Update(
-            state.Planet,
-            utcNow);
+            var utcNow = DateTime.UtcNow;
 
-        await dbContext.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+            var completed = ResearchService.Complete(
+                state.Player,
+                utcNow);
+            dbContext.ResearchOrders.RemoveRange(completed);
 
-        return Results.Ok(CreateStatus(
-            state.Player,
-            state.Planet));
+            ResourceProductionCalculator.Update(
+                state.Planet,
+                utcNow);
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            return Results.Ok(CreateStatus(
+                state.Player,
+                state.Planet));
+        });
     }
 
     private static async Task<IResult> StartAsync(
@@ -111,56 +115,60 @@ public static class ResearchEndpoints
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(
-            cancellationToken);
-        await LockPlayerAsync(dbContext, playerId, cancellationToken);
-
-        var state = await LoadStateAsync(
-            planetId,
-            playerId,
-            dbContext,
-            cancellationToken);
-
-        if (state is null)
+        var strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            return Results.NotFound();
-        }
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(
+                cancellationToken);
+            await LockPlayerAsync(dbContext, playerId, cancellationToken);
 
-        var utcNow = DateTime.UtcNow;
+            var state = await LoadStateAsync(
+                planetId,
+                playerId,
+                dbContext,
+                cancellationToken);
 
-        var completed = ResearchService.Complete(
-            state.Player,
-            utcNow);
-        dbContext.ResearchOrders.RemoveRange(completed);
-
-        try
-        {
-            var research = ResearchService.Start(
-                state.Player,
-                state.Planet,
-                technology,
-                utcNow);
-
-            dbContext.ResearchOrders.Add(research.Order);
-        }
-        catch (InvalidOperationException exception)
-        {
-            return Results.BadRequest(new
+            if (state is null)
             {
-                error = exception.Message
-            });
-        }
-        catch (ArgumentOutOfRangeException exception)
-        {
-            return Results.BadRequest(new { error = exception.Message });
-        }
+                return Results.NotFound();
+            }
 
-        await dbContext.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+            var utcNow = DateTime.UtcNow;
 
-        return Results.Ok(CreateStatus(
-            state.Player,
-            state.Planet));
+            var completed = ResearchService.Complete(
+                state.Player,
+                utcNow);
+            dbContext.ResearchOrders.RemoveRange(completed);
+
+            try
+            {
+                var research = ResearchService.Start(
+                    state.Player,
+                    state.Planet,
+                    technology,
+                    utcNow);
+
+                dbContext.ResearchOrders.Add(research.Order);
+            }
+            catch (InvalidOperationException exception)
+            {
+                return Results.BadRequest(new
+                {
+                    error = exception.Message
+                });
+            }
+            catch (ArgumentOutOfRangeException exception)
+            {
+                return Results.BadRequest(new { error = exception.Message });
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            return Results.Ok(CreateStatus(
+                state.Player,
+                state.Planet));
+        });
     }
 
     private static async Task LockPlayerAsync(
