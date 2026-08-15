@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using Galaxy.Application.Economy;
 using Galaxy.Api.Security;
 using Galaxy.Application.Research;
@@ -10,8 +9,6 @@ namespace Galaxy.Api.Endpoints;
 
 public static class ResearchEndpoints
 {
-    private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> ResearchGates = new();
-
     public static void MapResearchEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/game/research")
@@ -36,20 +33,11 @@ public static class ResearchEndpoints
             return Results.NotFound();
         }
 
-        var gate = ResearchGates.GetOrAdd(playerId.Value, _ => new SemaphoreSlim(1, 1));
-        await gate.WaitAsync(cancellationToken);
-        try
-        {
-            return await GetStatusCoreAsync(
-                planetId,
-                playerId.Value,
-                dbContext,
-                cancellationToken);
-        }
-        finally
-        {
-            gate.Release();
-        }
+        return await GetStatusCoreAsync(
+            planetId,
+            playerId.Value,
+            dbContext,
+            cancellationToken);
     }
 
     private static async Task<IResult> GetStatusCoreAsync(
@@ -58,6 +46,10 @@ public static class ResearchEndpoints
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(
+            cancellationToken);
+        await LockPlayerAsync(dbContext, playerId, cancellationToken);
+
         var state = await LoadStateAsync(
             planetId,
             playerId,
@@ -81,6 +73,7 @@ public static class ResearchEndpoints
             utcNow);
 
         await dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         return Results.Ok(CreateStatus(
             state.Player,
@@ -103,21 +96,12 @@ public static class ResearchEndpoints
             return Results.NotFound();
         }
 
-        var gate = ResearchGates.GetOrAdd(playerId.Value, _ => new SemaphoreSlim(1, 1));
-        await gate.WaitAsync(cancellationToken);
-        try
-        {
-            return await StartCoreAsync(
-                planetId,
-                technology,
-                playerId.Value,
-                dbContext,
-                cancellationToken);
-        }
-        finally
-        {
-            gate.Release();
-        }
+        return await StartCoreAsync(
+            planetId,
+            technology,
+            playerId.Value,
+            dbContext,
+            cancellationToken);
     }
 
     private static async Task<IResult> StartCoreAsync(
@@ -127,6 +111,10 @@ public static class ResearchEndpoints
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(
+            cancellationToken);
+        await LockPlayerAsync(dbContext, playerId, cancellationToken);
+
         var state = await LoadStateAsync(
             planetId,
             playerId,
@@ -168,10 +156,21 @@ public static class ResearchEndpoints
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         return Results.Ok(CreateStatus(
             state.Player,
             state.Planet));
+    }
+
+    private static async Task LockPlayerAsync(
+        ApplicationDbContext dbContext,
+        Guid playerId,
+        CancellationToken cancellationToken)
+    {
+        await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"""SELECT 1 FROM "Players" WHERE "Id" = {playerId} FOR UPDATE""",
+            cancellationToken);
     }
 
     private static async Task<ResearchState?> LoadStateAsync(
