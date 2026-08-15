@@ -280,8 +280,8 @@ try {
 
     Write-Step "Validating the complete Beta 2 component catalog"
     $components = Invoke-Api -Path '/api/game/components' -Method GET
-    if ($components.Count -ne 33) {
-        Fail("Expected 33 active components, got $($components.Count)")
+    if ($components.Count -ne 37) {
+        Fail("Expected 37 active components, got $($components.Count)")
     }
     $uniqueComponents = @($components | Where-Object { $null -ne $_.race })
     if ($uniqueComponents.Count -ne 8) {
@@ -293,6 +293,31 @@ try {
         [string]::IsNullOrWhiteSpace($_.tradeoff)
     }).Count -ne 0) {
         Fail('Component guidance is incomplete')
+    }
+
+    $hulls = @($components | Where-Object { $_.type -eq 'Hull' })
+    if ($hulls.Count -ne 6 -or
+        -not ($hulls.code -contains 'HUL-06')) {
+        Fail('The catalog does not expose all six ship hulls')
+    }
+
+    Write-Step "Validating the large-hull test supply"
+    $supply = Invoke-Api `
+        -Path "/api/dev/supply?planetId=$homeworldId" `
+        -Method POST
+    if ($supply.componentTypes -ne 37 -or
+        $supply.minimumQuantityPerComponent -ne 100) {
+        Fail('Development supply did not grant the complete component catalog')
+    }
+
+    $productionStatus = Invoke-Api `
+        -Path "/api/game/production/?planetId=$homeworldId" `
+        -Method GET
+    $stockedHulls = @($productionStatus.inventory | Where-Object {
+        $_.componentCode -like 'HUL-*' -and $_.quantity -ge 100
+    })
+    if ($stockedHulls.Count -ne 6) {
+        Fail("Expected six stocked hulls, got $($stockedHulls.Count)")
     }
 
     Write-Step "Creating a full-stat Beta 2 ship blueprint"
