@@ -270,7 +270,7 @@ try {
     }
 
     Write-Step "Validating the complete Beta 2 component catalog"
-    $components = @(Invoke-Api -Path '/api/game/components' -Method GET)
+    $components = Invoke-Api -Path '/api/game/components' -Method GET
     if ($components.Count -ne 33) {
         Fail("Expected 33 active components, got $($components.Count)")
     }
@@ -309,10 +309,10 @@ try {
 
     Write-Step "Validating the Beta 2 technology catalog"
     $research = Invoke-Api -Path "/api/game/research/?planetId=$homeworldId" -Method GET
-    if (@($research.technologies).Count -ne 15) {
-        Fail("Expected 15 technology branches, got $(@($research.technologies).Count)")
+    if ($research.technologies.Count -ne 15) {
+        Fail("Expected 15 technology branches, got $($research.technologies.Count)")
     }
-    if ($research.availableStreams -ne 0 -or @($research.activeResearch).Count -ne 0) {
+    if ($research.availableStreams -ne 0 -or $research.activeResearch.Count -ne 0) {
         Fail('A starting planet without a research center exposed an active stream')
     }
 
@@ -323,7 +323,7 @@ try {
     $startedResearch = Invoke-Api `
         -Path "/api/game/research/MaterialsScience/start?planetId=$homeworldId" `
         -Method POST
-    if (@($startedResearch.activeResearch).Count -ne 1 -or
+    if ($startedResearch.activeResearch.Count -ne 1 -or
         $startedResearch.activeResearch[0].technology -ne 'MaterialsScience') {
         Fail('Starting MaterialsScience did not create an active research order')
     }
@@ -344,7 +344,7 @@ try {
         Fail("Second session belongs to '$($secondCommanderIdentity.commanderName)' instead of BetaSmokeTwo")
     }
 
-    $secondCommanderPlanets = @(Invoke-Api -Path '/api/game/planets' -Method GET -Session $secondCommanderSession)
+    $secondCommanderPlanets = Invoke-Api -Path '/api/game/planets' -Method GET -Session $secondCommanderSession
     if ($secondCommanderPlanets.Count -ne 1) {
         Fail("Second commander saw $($secondCommanderPlanets.Count) planets instead of exactly one")
     }
@@ -359,7 +359,7 @@ try {
         Fail("First session belongs to '$($firstCommanderIdentity.commanderName)' instead of BetaSmoke")
     }
 
-    $firstCommanderPlanets = @(Invoke-Api -Path '/api/game/planets' -Method GET -Session $firstCommanderSession)
+    $firstCommanderPlanets = Invoke-Api -Path '/api/game/planets' -Method GET -Session $firstCommanderSession
     if ($firstCommanderPlanets.Count -ne 1) {
         Fail("First commander saw $($firstCommanderPlanets.Count) planets instead of exactly one")
     }
