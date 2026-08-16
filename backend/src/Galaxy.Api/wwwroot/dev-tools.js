@@ -40,9 +40,9 @@ window.DevToolsUi = (() => {
             );
 
             context.message(
-                `Тестовый запас выдан: ` +
-                `${result.materials} материалов, ` +
-                `${result.deuterium} дейтерия, ` +
+                `Добавлено: +${result.materialsGranted} материалов, ` +
+                `+${result.deuteriumGranted} дейтерия и ` +
+                `+${result.componentQuantityGranted} каждого из ` +
                 `${result.componentTypes} типов комплектующих.`
             );
 

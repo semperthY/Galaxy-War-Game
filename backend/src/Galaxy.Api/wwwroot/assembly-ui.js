@@ -33,6 +33,11 @@ window.AssemblyUi = (() => {
         });
 
         elements.quantity.addEventListener("input", () => {
+            state.quantity = parseQuantity(elements.quantity.value);
+            renderRequirements();
+        });
+
+        elements.quantity.addEventListener("change", () => {
             state.quantity = clampQuantity(elements.quantity.value);
             elements.quantity.value = state.quantity;
             renderRequirements();
@@ -47,7 +52,21 @@ window.AssemblyUi = (() => {
     }
 
     function clampQuantity(value) {
-        return Math.min(20, Math.max(1, Number(value) || 1));
+        return Math.min(
+            20,
+            Math.max(1, Math.trunc(Number(value) || 1))
+        );
+    }
+
+    function parseQuantity(value) {
+        if (value.trim() === "") {
+            return null;
+        }
+
+        const quantity = Number(value);
+        return Number.isInteger(quantity) && quantity >= 1 && quantity <= 20
+            ? quantity
+            : null;
     }
 
     function selectedBlueprint() {
@@ -76,14 +95,17 @@ window.AssemblyUi = (() => {
         }
 
         let hasEverything = true;
+        const quantityIsValid = state.quantity !== null;
 
         elements.requirements.innerHTML =
             blueprint.design.requiredComponents.map(requirement => {
-                const required = requirement.quantity * state.quantity;
+                const required = quantityIsValid
+                    ? requirement.quantity * state.quantity
+                    : null;
                 const available = inventoryQuantity(
                     requirement.componentCode
                 );
-                const enough = available >= required;
+                const enough = required !== null && available >= required;
 
                 hasEverything &&= enough;
 
@@ -92,12 +114,13 @@ window.AssemblyUi = (() => {
                         <span>
                             ${context.componentName(requirement.componentCode)}
                         </span>
-                        <strong>${available} / ${required}</strong>
+                        <strong>${available} / ${required ?? "—"}</strong>
                     </div>
                 `;
             }).join("");
 
         elements.button.disabled =
+            !quantityIsValid ||
             state.status.assemblyComplexLevel < 1 ||
             !hasEverything;
     }
@@ -235,7 +258,9 @@ window.AssemblyUi = (() => {
             elements.blueprint.value = state.selectedBlueprintId;
         }
 
-        elements.quantity.value = state.quantity;
+        if (document.activeElement !== elements.quantity) {
+            elements.quantity.value = state.quantity ?? "";
+        }
 
         renderRequirements();
         renderQueue();
