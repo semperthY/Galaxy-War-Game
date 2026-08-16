@@ -9,9 +9,9 @@ namespace Galaxy.Api.Endpoints;
 
 public static class DevelopmentEndpoints
 {
-    private const decimal MinimumMaterials = 100_000m;
-    private const decimal MinimumDeuterium = 50_000m;
-    private const int MinimumComponentQuantity = 100;
+    private const decimal MaterialsGrant = 100_000m;
+    private const decimal DeuteriumGrant = 50_000m;
+    private const int ComponentQuantityGrant = 100;
 
     public static void MapDevelopmentEndpoints(
         this WebApplication app)
@@ -55,13 +55,8 @@ public static class DevelopmentEndpoints
             return Results.NotFound();
         }
 
-        planet.Materials = decimal.Max(
-            planet.Materials,
-            MinimumMaterials);
-
-        planet.Deuterium = decimal.Max(
-            planet.Deuterium,
-            MinimumDeuterium);
+        planet.Materials += MaterialsGrant;
+        planet.Deuterium += DeuteriumGrant;
 
         foreach (var component in StarterComponentCatalog.GetAll())
         {
@@ -80,15 +75,13 @@ public static class DevelopmentEndpoints
                         PlanetId = planet.Id,
                         Planet = planet,
                         ComponentCode = component.Code,
-                        Quantity = MinimumComponentQuantity
+                        Quantity = ComponentQuantityGrant
                     });
 
                 continue;
             }
 
-            inventoryItem.Quantity = int.Max(
-                inventoryItem.Quantity,
-                MinimumComponentQuantity);
+            inventoryItem.Quantity += ComponentQuantityGrant;
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -98,7 +91,9 @@ public static class DevelopmentEndpoints
             planet.Materials,
             planet.Deuterium,
             planet.ComponentInventory.Count,
-            MinimumComponentQuantity));
+            MaterialsGrant,
+            DeuteriumGrant,
+            ComponentQuantityGrant));
     }
 
     private static async Task<IResult> CompleteColonizationAsync(
@@ -150,4 +145,6 @@ public sealed record DevelopmentSupplyResponse(
     decimal Materials,
     decimal Deuterium,
     int ComponentTypes,
-    int MinimumQuantityPerComponent);
+    decimal MaterialsGranted,
+    decimal DeuteriumGranted,
+    int ComponentQuantityGranted);

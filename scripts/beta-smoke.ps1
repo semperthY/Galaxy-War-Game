@@ -302,19 +302,33 @@ try {
     }
 
     Write-Step "Validating the large-hull test supply"
+    $materialsBeforeSupply = $currentGame.materials
+    $deuteriumBeforeSupply = $currentGame.deuterium
     $supply = Invoke-Api `
         -Path "/api/dev/supply?planetId=$homeworldId" `
         -Method POST
     if ($supply.componentTypes -ne 37 -or
-        $supply.minimumQuantityPerComponent -ne 100) {
+        $supply.materialsGranted -ne 100000 -or
+        $supply.deuteriumGranted -ne 50000 -or
+        $supply.componentQuantityGranted -ne 100 -or
+        $supply.materials -ne ($materialsBeforeSupply + 100000) -or
+        $supply.deuterium -ne ($deuteriumBeforeSupply + 50000)) {
         Fail('Development supply did not grant the complete component catalog')
+    }
+
+    $secondSupply = Invoke-Api `
+        -Path "/api/dev/supply?planetId=$homeworldId" `
+        -Method POST
+    if ($secondSupply.materials -ne ($supply.materials + 100000) -or
+        $secondSupply.deuterium -ne ($supply.deuterium + 50000)) {
+        Fail('Repeated development supply replaced resources instead of adding them')
     }
 
     $productionStatus = Invoke-Api `
         -Path "/api/game/production/?planetId=$homeworldId" `
         -Method GET
     $stockedHulls = @($productionStatus.inventory | Where-Object {
-        $_.componentCode -like 'HUL-*' -and $_.quantity -ge 100
+        $_.componentCode -like 'HUL-*' -and $_.quantity -eq 200
     })
     if ($stockedHulls.Count -ne 6) {
         Fail("Expected six stocked hulls, got $($stockedHulls.Count)")

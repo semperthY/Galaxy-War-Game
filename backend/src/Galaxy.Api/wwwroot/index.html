@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="/styles.css?v=2">
     <link rel="stylesheet" href="/assembly-ui.css">
     <link rel="stylesheet" href="/galaxy-ui.css">
-    <link rel="stylesheet" href="/living-galaxy-ui.css?v=1">
+    <link rel="stylesheet" href="/living-galaxy-ui.css?v=2">
     <link rel="stylesheet" href="/dev-tools.css?v=2">
 </head>
 <body>
@@ -783,7 +783,8 @@
                             <label class="quantity-field assembly-quantity">
                                 <span>Количество</span>
                                 <input id="assemblyQuantity" type="number"
-                                       min="1" max="20" value="1">
+                                       min="1" max="20" value="1"
+                                       inputmode="numeric">
                             </label>
                             <div id="assemblyRequirements"
                                  class="assembly-requirements"></div>
@@ -916,10 +917,10 @@
         </div>
     </div>
 
-    <script src="/assembly-ui.js"></script>
+    <script src="/assembly-ui.js?v=2"></script>
     <script src="/galaxy-ui.js"></script>
-    <script src="/living-galaxy-ui.js?v=1"></script>
-    <script src="/dev-tools.js?v=2"></script>
+    <script src="/living-galaxy-ui.js?v=2"></script>
+    <script src="/dev-tools.js?v=3"></script>
     <script src="/app.js?v=2"></script>
 </body>
 </html>

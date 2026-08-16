@@ -1,5 +1,5 @@
 window.LivingGalaxyUi = (() => {
-    const state = { fleets: [], assembly: null, planet: null, selectedFleetId: null, draftFleetId: null, draft: [], system: null, battles: [] };
+    const state = { fleets: [], assembly: null, planet: null, selectedFleetId: null, draftFleetId: null, draft: [], reserveDraft: {}, system: null, battles: [] };
     let context;
     const $ = selector => document.querySelector(selector);
     const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
@@ -9,6 +9,10 @@ window.LivingGalaxyUi = (() => {
         context = options;
         document.querySelectorAll("[data-fleet-tab]").forEach(button => button.addEventListener("click", () => showTab(button.dataset.fleetTab)));
         $("#createFleetButton")?.addEventListener("click", createFleet);
+        $("#fleetReservePicker")?.addEventListener(
+            "input",
+            reserveQuantityChanged
+        );
         $("#planFleetSelect")?.addEventListener("change", event => selectFleet(event.target.value));
         $("#addCommandButton")?.addEventListener("click", addCommand);
         $("#savePlanButton")?.addEventListener("click", savePlan);
@@ -40,7 +44,87 @@ window.LivingGalaxyUi = (() => {
 
     function renderReserve() {
         const reserve = state.assembly?.reserve ?? [];
-        $("#fleetReservePicker").innerHTML = reserve.length ? reserve.map(ship => `<label class="reserve-pick"><input type="checkbox" value="${ship.id}"><svg width="22" height="22"><use href="#icon-ship"></use></svg><span><strong>${esc(ship.name)}</strong><small>${esc(ship.blueprintName)} Mk.${ship.blueprintVersion}</small></span></label>`).join("") : `<div class="empty-living">Соберите корабли — свободный резерв пуст.</div>`;
+        const groups = groupReserve(reserve);
+        const availableBlueprints = new Set(
+            groups.map(group => group.blueprintId)
+        );
+
+        Object.keys(state.reserveDraft).forEach(blueprintId => {
+            if (!availableBlueprints.has(blueprintId)) {
+                delete state.reserveDraft[blueprintId];
+            }
+        });
+
+        $("#fleetReservePicker").innerHTML = groups.length
+            ? groups.map(group => {
+                const selected = Math.min(
+                    state.reserveDraft[group.blueprintId] ?? 0,
+                    group.ships.length
+                );
+                state.reserveDraft[group.blueprintId] = selected;
+
+                return `<article class="reserve-pick">
+                    <svg width="22" height="22">
+                        <use href="#icon-ship"></use>
+                    </svg>
+                    <span>
+                        <strong>${esc(group.blueprintName)}</strong>
+                        <small>
+                            Mk.${group.blueprintVersion} · в резерве
+                            ${group.ships.length}
+                        </small>
+                    </span>
+                    <div class="reserve-quantity-control">
+                        <small>В ФЛОТ</small>
+                        <input
+                            class="reserve-quantity"
+                            type="number"
+                            min="0"
+                            max="${group.ships.length}"
+                            inputmode="numeric"
+                            value="${selected}"
+                            aria-label="Количество ${esc(group.blueprintName)}"
+                            data-reserve-blueprint="${group.blueprintId}">
+                    </div>
+                </article>`;
+            }).join("")
+            : `<div class="empty-living">
+                Соберите корабли — свободный резерв пуст.
+            </div>`;
+    }
+
+    function groupReserve(reserve) {
+        return Array.from(reserve.reduce((result, ship) => {
+            const group = result.get(ship.blueprintId) ?? {
+                blueprintId: ship.blueprintId,
+                blueprintName: ship.blueprintName,
+                blueprintVersion: ship.blueprintVersion,
+                ships: []
+            };
+
+            group.ships.push(ship);
+            result.set(ship.blueprintId, group);
+            return result;
+        }, new Map()).values()).sort((left, right) =>
+            left.blueprintName.localeCompare(right.blueprintName, "ru")
+        );
+    }
+
+    function reserveQuantityChanged(event) {
+        const input = event.target.closest("[data-reserve-blueprint]");
+        if (!input) return;
+
+        const blueprintId = input.dataset.reserveBlueprint;
+        if (input.value.trim() === "") {
+            delete state.reserveDraft[blueprintId];
+            return;
+        }
+
+        const maximum = Number(input.max);
+        const quantity = Number(input.value);
+        state.reserveDraft[blueprintId] = Number.isInteger(quantity)
+            ? Math.min(maximum, Math.max(0, quantity))
+            : 0;
     }
 
     function renderFleetGrid() {
@@ -86,7 +170,38 @@ window.LivingGalaxyUi = (() => {
         $("#battleGrid").innerHTML = battles.length ? battles.map(battle => { const fleet = state.fleets.find(x => x.id === battle.attackerFleetId || x.id === battle.defenderFleetId); const reports = Array.isArray(battle.report) ? battle.report : []; return `<article class="battle-card"><header><div><small>БОЙ ${battle.id.slice(0, 8)}</small><strong>Раунд ${battle.round}</strong></div><span class="status-pill ${battle.status !== "Completed" ? "danger" : ""}">${battle.status}</span></header><div class="battle-report">${reports.length ? reports.map(x => `<div>${esc(x)}</div>`).join("") : "Ожидание первого расчёта."}</div>${battle.status !== "Completed" && fleet ? `<div class="battle-actions"><select data-battle-priority><option value="Weakest">Слабейшая цель</option><option value="Shields">Сильный щит</option><option value="Firepower">Максимальный урон</option></select><button data-battle="${battle.id}" data-fleet="${fleet.id}" data-order="fight">Продолжить бой</button><button data-battle="${battle.id}" data-fleet="${fleet.id}" data-order="retreat">Отступить</button></div>` : ""}</article>`; }).join("") : `<div class="empty-living">Боевых рапортов пока нет.</div>`;
     }
 
-    async function createFleet() { const shipIds = [...document.querySelectorAll("#fleetReservePicker input:checked")].map(x => x.value); try { await context.api("/api/game/living-galaxy/fleets", { method: "POST", body: JSON.stringify({ planetId: state.planet.id, name: $("#newFleetName").value || "Экспедиционная группа", shipIds }) }); context.message("Флот сформирован и готов к полётному листу."); await context.reload(); } catch (error) { context.message(error.message, true); } }
+    async function createFleet() {
+        const groups = groupReserve(state.assembly?.reserve ?? []);
+        const shipIds = groups.flatMap(group => {
+            const quantity = Math.min(
+                group.ships.length,
+                Math.max(0, state.reserveDraft[group.blueprintId] ?? 0)
+            );
+            return group.ships.slice(0, quantity).map(ship => ship.id);
+        });
+
+        if (shipIds.length === 0) {
+            context.message("Укажите количество кораблей для флота.", true);
+            return;
+        }
+
+        try {
+            await context.api("/api/game/living-galaxy/fleets", {
+                method: "POST",
+                body: JSON.stringify({
+                    planetId: state.planet.id,
+                    name: $("#newFleetName").value ||
+                        "Экспедиционная группа",
+                    shipIds
+                })
+            });
+            state.reserveDraft = {};
+            context.message("Флот сформирован и готов к полётному листу.");
+            await context.reload();
+        } catch (error) {
+            context.message(error.message, true);
+        }
+    }
     function selectFleet(id) { state.selectedFleetId = id; state.draftFleetId = id; state.draft = selectedFleet()?.commands?.filter(x => x.status === "Planned").map(stripCommand) ?? []; renderFleetGrid(); renderPlan(); renderService(); }
     function selectedFleet() { return state.fleets.find(x => x.id === state.selectedFleetId); }
     function stripCommand(x) { return { type: x.type, speedMode: x.speedMode, targetGalaxy: x.targetGalaxy, targetSystem: x.targetSystem, targetPosition: x.targetPosition, targetFleetId: x.targetFleetId, targetObjectId: x.targetObjectId, durationMinutes: x.durationMinutes, manifestMaterials: x.manifestMaterials, manifestDeuterium: x.manifestDeuterium }; }
