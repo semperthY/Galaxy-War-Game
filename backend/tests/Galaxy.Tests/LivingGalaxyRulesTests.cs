@@ -77,6 +77,40 @@ public class LivingGalaxyRulesTests
         Assert.Equal(120m, result.Cost.Deuterium);
     }
 
+    [Fact]
+    public void Refueling_TransfersPlanetDeuteriumToLandedFleet()
+    {
+        var playerId = Guid.NewGuid();
+        var planet = new Planet { Id = Guid.NewGuid(), PlayerId = playerId, Deuterium = 2500m };
+        var fleet = CreateFleet();
+        fleet.PlayerId = playerId;
+        fleet.HomePlanetId = planet.Id;
+        fleet.FuelReserve = 450m;
+
+        var transferred = FleetRefueling.Transfer(fleet, planet, 1000m);
+
+        Assert.Equal(1000m, transferred);
+        Assert.Equal(1450m, fleet.FuelReserve);
+        Assert.Equal(1500m, planet.Deuterium);
+    }
+
+    [Fact]
+    public void Refueling_RejectsFleetThatIsNotLanded()
+    {
+        var playerId = Guid.NewGuid();
+        var planet = new Planet { Id = Guid.NewGuid(), PlayerId = playerId, Deuterium = 2500m };
+        var fleet = CreateFleet();
+        fleet.PlayerId = playerId;
+        fleet.HomePlanetId = planet.Id;
+        fleet.Status = FleetStatus.Orbiting;
+
+        var error = Assert.Throws<InvalidOperationException>(() =>
+            FleetRefueling.Transfer(fleet, planet, 1000m));
+
+        Assert.Equal("Заправка доступна только после посадки флота.", error.Message);
+        Assert.Equal(2500m, planet.Deuterium);
+    }
+
     private static Fleet CreateFleet()
     {
         var fleet = new Fleet { Id = Guid.NewGuid(), PlayerId = Guid.NewGuid(), Name = "Test", Status = FleetStatus.Landed, LocationType = FleetLocationType.Planet, FuelReserve = 1000 };

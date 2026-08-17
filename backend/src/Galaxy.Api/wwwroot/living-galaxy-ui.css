@@ -19,3 +19,53 @@
     width: 74px;
     text-align: center;
 }
+
+.fleet-refuel-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 110px auto;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0 14px;
+    padding: 10px;
+    border: 1px solid rgba(126, 100, 238, .35);
+    border-radius: 9px;
+    background: rgba(68, 48, 130, .13);
+}
+
+.fleet-refuel-panel[hidden] {
+    display: none;
+}
+
+.fleet-refuel-panel div {
+    display: grid;
+    gap: 3px;
+}
+
+.fleet-refuel-panel span {
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: .08em;
+}
+
+.fleet-refuel-panel strong {
+    font-size: 12px;
+}
+
+.fleet-refuel-panel input {
+    min-width: 0;
+    text-align: center;
+}
+
+.fleet-refuel-panel button {
+    padding: 10px 12px;
+}
+
+@media(max-width:580px) {
+    .fleet-refuel-panel {
+        grid-template-columns: minmax(0, 1fr) 92px;
+    }
+
+    .fleet-refuel-panel button {
+        grid-column: 1 / -1;
+    }
+}

@@ -462,6 +462,17 @@ try {
         Fail('A player fleet was not formed from the reserve')
     }
 
+    Write-Step "Refueling the landed fleet from its home planet"
+    $fuelBefore = [decimal]$combatFleet.fuelReserve
+    $refuel = Invoke-Api `
+        -Path "/api/game/living-galaxy/fleets/$($combatFleet.id)/refuel" `
+        -Method POST `
+        -Body @{ amount = 1000 }
+    if ([decimal]$refuel.amount -ne 1000 -or
+        [decimal]$refuel.fuelReserve -ne ($fuelBefore + 1000)) {
+        Fail('Refueling did not transfer deuterium into the fleet fuel reserve')
+    }
+
     Write-Step "Validating permanent fields and physical pirate contacts"
     $systemView = Invoke-Api -Path "/api/game/living-galaxy/system?galaxy=$($game.galaxy)&system=$($game.system)" -Method GET
     if ($systemView.fields.Count -lt 4 -or $systemView.fields.Count -gt 6) {
