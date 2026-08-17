@@ -125,6 +125,28 @@ public class ComponentProductionServiceTests
         Assert.Equal(startedAt.AddSeconds(594), result.CompletesAt);
     }
 
+    [Fact]
+    public void Enqueue_RejectsFutureQuantumDamper()
+    {
+        var startedAt = DateTime.UtcNow;
+        var player = CreatePlayer();
+        AddTechnology(player, TechnologyType.Electronics, 4);
+        var planet = CreatePlanet(startedAt);
+
+        var error = Assert.Throws<InvalidOperationException>(() =>
+            ComponentProductionService.Enqueue(
+                player,
+                planet,
+                1,
+                "QDM-01",
+                1,
+                startedAt));
+
+        Assert.Equal(
+            "Component is reserved for future archaeology content.",
+            error.Message);
+    }
+
     private static Player CreatePlayer()
     {
         var player = new Player

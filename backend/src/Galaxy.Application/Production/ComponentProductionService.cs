@@ -42,6 +42,12 @@ public static class ComponentProductionService
                 "Component does not exist.");
         }
 
+        if (!StarterComponentCatalog.IsCurrentlyAvailable(component))
+        {
+            throw new InvalidOperationException(
+                "Component is reserved for future archaeology content.");
+        }
+
         if (component.Race is not null &&
             component.Race != player.Race)
         {

@@ -22,6 +22,8 @@ internal static class ComponentCatalogResponseFactory
         var buildingAllowed = planet is null ||
             planet.RaceEngineeringComplexLevel >=
             details.RequiredRaceComplexLevel;
+        var currentlyAvailable =
+            StarterComponentCatalog.IsCurrentlyAvailable(component);
 
         var response = new Dictionary<string, object?>
         {
@@ -37,11 +39,13 @@ internal static class ComponentCatalogResponseFactory
             ["shortDescription"] = details.ShortDescription,
             ["bestFor"] = details.BestFor,
             ["tradeoff"] = details.Tradeoff,
-            ["technologyUnlocked"] = technologyUnlocked,
-            ["unlocked"] = technologyUnlocked,
-            ["canManufacture"] = raceAllowed && buildingAllowed,
-            ["canInstall"] = true,
+            ["technologyUnlocked"] = technologyUnlocked && currentlyAvailable,
+            ["unlocked"] = technologyUnlocked && currentlyAvailable,
+            ["canManufacture"] = currentlyAvailable && raceAllowed && buildingAllowed,
+            ["canInstall"] = currentlyAvailable,
+            ["futureContent"] = !currentlyAvailable,
             ["manufacturingBlockReason"] = GetBlockReason(
+                currentlyAvailable,
                 raceAllowed,
                 technologyUnlocked,
                 buildingAllowed,
@@ -54,12 +58,18 @@ internal static class ComponentCatalogResponseFactory
     }
 
     private static string? GetBlockReason(
+        bool currentlyAvailable,
         bool raceAllowed,
         bool technologyUnlocked,
         bool buildingAllowed,
         IComponentDefinition component,
         ComponentDetails details)
     {
+        if (!currentlyAvailable)
+        {
+            return "Источник: археология — функция появится в будущей версии.";
+        }
+
         if (!raceAllowed)
         {
             return "Уникальная модель другой расы.";
@@ -144,6 +154,11 @@ internal static class ComponentCatalogResponseFactory
                 AddWeapon(response, missile.Volume, missile.ShieldDamage,
                     missile.HullDamage, missile.EnergyConsumption,
                     missile.CommandLoad);
+                break;
+            case QuantumDamperDefinition damper:
+                AddVolume(response, damper.Volume);
+                response["volumeReduction"] = damper.VolumeReduction;
+                response["energyReduction"] = damper.EnergyReduction;
                 break;
         }
     }

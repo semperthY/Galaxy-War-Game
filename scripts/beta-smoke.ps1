@@ -11,7 +11,7 @@ function Fail([string]$Message) {
 }
 
 function Write-Step([string]$Message) {
-    Write-Host "[v0.1-smoke] $Message" -ForegroundColor Cyan
+    Write-Host "[v0.2-smoke] $Message" -ForegroundColor Cyan
 }
 
 function Invoke-Api {
@@ -280,8 +280,8 @@ try {
 
     Write-Step "Validating the complete Beta 2 component catalog"
     $components = Invoke-Api -Path '/api/game/components' -Method GET
-    if ($components.Count -ne 37) {
-        Fail("Expected 37 active components, got $($components.Count)")
+    if ($components.Count -ne 40) {
+        Fail("Expected 40 v0.2 catalog components, got $($components.Count)")
     }
     $uniqueComponents = @($components | Where-Object { $null -ne $_.race })
     if ($uniqueComponents.Count -ne 8) {
@@ -300,6 +300,25 @@ try {
         -not ($hulls.code -contains 'HUL-06')) {
         Fail('The catalog does not expose all six ship hulls')
     }
+    $quantumDamper = @($components | Where-Object { $_.code -eq 'QDM-01' })[0]
+    if ($null -eq $quantumDamper -or
+        -not $quantumDamper.futureContent -or
+        $quantumDamper.canInstall -or
+        $quantumDamper.canManufacture) {
+        Fail('Quantum damper is not visible as locked future archaeology content')
+    }
+
+    $controlRatings = @{
+        'CTL-01' = 120; 'CTL-02' = 240; 'CTL-03' = 440
+        'CTL-04' = 880; 'CTL-H01' = 540
+    }
+    foreach ($controlCode in $controlRatings.Keys) {
+        $control = @($components | Where-Object { $_.code -eq $controlCode })[0]
+        if ($null -eq $control -or
+            $control.commandRating -ne $controlRatings[$controlCode]) {
+            Fail("Unexpected command rating for $controlCode")
+        }
+    }
 
     Write-Step "Validating the large-hull test supply"
     $materialsBeforeSupply = $currentGame.materials
@@ -307,7 +326,7 @@ try {
     $supply = Invoke-Api `
         -Path "/api/dev/supply?planetId=$homeworldId" `
         -Method POST
-    if ($supply.componentTypes -ne 37 -or
+    if ($supply.componentTypes -ne 39 -or
         $supply.materialsGranted -ne 100000 -or
         $supply.deuteriumGranted -ne 50000 -or
         $supply.componentQuantityGranted -ne 100 -or
@@ -344,6 +363,7 @@ try {
             @{ componentCode = 'CTL-01'; quantity = 1 },
             @{ componentCode = 'ARM-01'; quantity = 1 },
             @{ componentCode = 'SHD-01'; quantity = 1 },
+            @{ componentCode = 'SNS-01'; quantity = 2 },
             @{ componentCode = 'LAS-01'; quantity = 1 },
             @{ componentCode = 'MSL-01'; quantity = 1 }
         )
@@ -351,7 +371,8 @@ try {
     if ($blueprint.design.structuralIntegrity -ne 160 -or
         $blueprint.design.shieldCapacity -ne 50 -or
         $blueprint.design.shieldDamage -ne 13 -or
-        $blueprint.design.hullDamage -ne 14) {
+        $blueprint.design.hullDamage -ne 14 -or
+        $blueprint.design.scanRange -ne 45) {
         Fail('Blueprint API returned incorrect Beta 2 ship statistics')
     }
 
@@ -376,10 +397,38 @@ try {
         Fail('Starting MaterialsScience did not create an active research order')
     }
 
-    Write-Step "Completing research under concurrent dashboard refreshes"
+    Write-Step "Verifying active research survives logout and login"
+    Invoke-Api -Path '/api/auth/logout' -Method POST | Out-Null
+    $loginAfterStart = Invoke-Api -Path '/api/auth/login' -Method POST -Body @{
+        email = 'beta-smoke@example.test'
+        password = 'BetaSmoke2026'
+    }
+    if (-not $loginAfterStart.authenticated) {
+        Fail('Login after starting research failed')
+    }
+    $researchAfterLogin = Invoke-Api `
+        -Path "/api/game/research/?planetId=$homeworldId" `
+        -Method GET
+    if ($researchAfterLogin.activeResearch.Count -ne 1 -or
+        $researchAfterLogin.activeResearch[0].technology -ne 'MaterialsScience') {
+        Fail('Active research was lost after logout and login')
+    }
+
+    Write-Step "Completing research while the commander is offline"
+    Invoke-Api -Path '/api/auth/logout' -Method POST | Out-Null
+
     $finishResearchSql = "UPDATE `"ResearchOrders`" SET `"CompletesAt`" = NOW() - INTERVAL '1 second' WHERE `"PlayerId`" = '$($game.playerId)';"
     docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $finishResearchSql | Out-Null
 
+    $loginAfterCompletion = Invoke-Api -Path '/api/auth/login' -Method POST -Body @{
+        email = 'beta-smoke@example.test'
+        password = 'BetaSmoke2026'
+    }
+    if (-not $loginAfterCompletion.authenticated) {
+        Fail('Login after offline research completion failed')
+    }
+
+    Write-Step "Applying offline completion under concurrent dashboard refreshes"
     $researchUri = "http://127.0.0.1:5178/api/game/research/?planetId=$homeworldId"
     $researchCookies = $script:webSession.Cookies.GetCookies(
         [Uri]'http://127.0.0.1:5178')
@@ -578,7 +627,7 @@ try {
     if (($emptyMiner.materialsCargo + $emptyMiner.deuteriumCargo) -ne 0) { Fail('Context-aware unload did not empty the cargo hold') }
 
     Write-Host ''
-    Write-Host 'GALAXY WAR GAME V0.1 SMOKE TEST PASSED' -ForegroundColor Green
+    Write-Host 'GALAXY WAR GAME V0.2 SMOKE TEST PASSED' -ForegroundColor Green
 }
 catch {
     Write-Host ''

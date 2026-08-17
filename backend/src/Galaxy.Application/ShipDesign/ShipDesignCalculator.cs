@@ -58,6 +58,12 @@ public static class ShipDesignCalculator
             })
             .ToList();
 
+        if (resolvedModules.OfType<QuantumDamperDefinition>().Any())
+        {
+            throw new InvalidOperationException(
+                "Quantum dampers are reserved for future archaeology content.");
+        }
+
         RequireModule<EngineDefinition>(
             resolvedModules,
             "An engine is required.");
@@ -124,11 +130,16 @@ public static class ShipDesignCalculator
             .OfType<ShieldDefinition>()
             .Sum(x => x.ShieldCapacity);
 
-        var scanRange = resolvedModules
+        var scannerRanges = resolvedModules
             .OfType<ScannerDefinition>()
             .Select(x => x.ScanRange)
-            .DefaultIfEmpty(0m)
-            .Max();
+            .OrderByDescending(x => x)
+            .ToList();
+        var scanRange = scannerRanges.Count == 0
+            ? 0m
+            : Math.Min(
+                150m,
+                scannerRanges[0] + scannerRanges.Skip(1).Sum() * .5m);
 
         var cargoCapacity = resolvedModules
             .OfType<CargoHoldDefinition>()

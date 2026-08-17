@@ -35,6 +35,9 @@ public static class StarterComponentCatalog
                 StringComparison.OrdinalIgnoreCase));
     }
 
+    public static bool IsCurrentlyAvailable(IComponentDefinition component) =>
+        component is not QuantumDamperDefinition;
+
     public static IReadOnlyList<IComponentDefinition> GetForRace(
         RaceType race)
     {
@@ -64,7 +67,7 @@ public static class StarterComponentCatalog
             reactorVolume: 10m,
             reactorOutput: 50m,
             controlVolume: 5m,
-            commandRating: 50m,
+            commandRating: 200m,
             controlEnergy: 5m);
 
         AddRaceComponents(
@@ -80,7 +83,7 @@ public static class StarterComponentCatalog
             reactorVolume: 9m,
             reactorOutput: 46m,
             controlVolume: 4m,
-            commandRating: 55m,
+            commandRating: 220m,
             controlEnergy: 3m);
 
         AddRaceComponents(
@@ -96,7 +99,7 @@ public static class StarterComponentCatalog
             reactorVolume: 8m,
             reactorOutput: 42m,
             controlVolume: 4m,
-            commandRating: 42m,
+            commandRating: 168m,
             controlEnergy: 4m);
 
         AddRaceComponents(
@@ -112,7 +115,7 @@ public static class StarterComponentCatalog
             reactorVolume: 12m,
             reactorOutput: 70m,
             controlVolume: 6m,
-            commandRating: 60m,
+            commandRating: 240m,
             controlEnergy: 8m);
 
         AddColonyModule(
@@ -209,11 +212,19 @@ public static class StarterComponentCatalog
         components.Add(new ControlSystemDefinition(
             "CTL-01", "Навигационное ядро «Следопыт»", null,
             5m, new ComponentCost(150m, 25m), 150,
-            TechnologyType.Electronics, 1, 30m, 4m));
+            TechnologyType.Electronics, 1, 120m, 4m));
         components.Add(new ControlSystemDefinition(
             "CTL-02", "Тактическое ядро «Эгида»", null,
             8m, new ComponentCost(380m, 80m), 300,
-            TechnologyType.Electronics, 2, 60m, 8m));
+            TechnologyType.Electronics, 2, 240m, 8m));
+        components.Add(new ControlSystemDefinition(
+            "CTL-03", "Командное ядро «Цитадель»", null,
+            14m, new ComponentCost(1000m, 260m), 600,
+            TechnologyType.Electronics, 3, 440m, 16m));
+        components.Add(new ControlSystemDefinition(
+            "CTL-04", "Стратегическое ядро «Гегемон»", null,
+            24m, new ComponentCost(2800m, 900m), 1200,
+            TechnologyType.Electronics, 4, 880m, 30m));
 
         components.Add(new ScannerDefinition(
             "SNS-01", "Навигационный радар «Следопыт»", null,
@@ -292,6 +303,12 @@ public static class StarterComponentCatalog
             14m, new ComponentCost(700m, 90m), 360,
             TechnologyType.MissileSystems, 3,
             18m, 45m, 5m, 14m));
+
+        components.Add(new QuantumDamperDefinition(
+            "QDM-01", "Квантовый демпфер «Нулевая грань»", null,
+            18m, new ComponentCost(0m, 0m), 0,
+            TechnologyType.Electronics, 4,
+            .10m, .10m));
     }
 
     private static void AddUniqueRaceComponents(
@@ -304,7 +321,7 @@ public static class StarterComponentCatalog
         components.Add(new ControlSystemDefinition(
             "CTL-H01", "Ядро «Координатор»", RaceType.Humans,
             14m, new ComponentCost(1250m, 320m), 720,
-            TechnologyType.Electronics, 3, 135m, 22m));
+            TechnologyType.Electronics, 3, 540m, 22m));
 
         components.Add(new ReactorDefinition(
             "RCT-S01", "Реактор «Логос»", RaceType.Synthetics,

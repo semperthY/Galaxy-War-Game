@@ -110,3 +110,18 @@ public sealed record MiningModuleDefinition(
 {
     public ComponentType Type => ComponentType.MiningModule;
 }
+
+public sealed record QuantumDamperDefinition(
+    string Code,
+    string Name,
+    RaceType? Race,
+    decimal Volume,
+    ComponentCost Cost,
+    int ProductionSeconds,
+    TechnologyType RequiredTechnology,
+    int RequiredTechnologyLevel,
+    decimal VolumeReduction,
+    decimal EnergyReduction) : IComponentDefinition
+{
+    public ComponentType Type => ComponentType.QuantumDamper;
+}

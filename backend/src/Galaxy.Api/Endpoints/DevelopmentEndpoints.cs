@@ -58,7 +58,8 @@ public static class DevelopmentEndpoints
         planet.Materials += MaterialsGrant;
         planet.Deuterium += DeuteriumGrant;
 
-        foreach (var component in StarterComponentCatalog.GetAll())
+        foreach (var component in StarterComponentCatalog.GetAll()
+                     .Where(StarterComponentCatalog.IsCurrentlyAvailable))
         {
             var inventoryItem = planet.ComponentInventory
                 .SingleOrDefault(item =>
