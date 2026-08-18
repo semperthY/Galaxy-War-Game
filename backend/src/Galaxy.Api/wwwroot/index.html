@@ -7,11 +7,11 @@
         content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#050912">
     <title>Galaxy War Game</title>
-    <link rel="stylesheet" href="/styles.css?v=2">
+    <link rel="stylesheet" href="/styles.css?v=3">
     <link rel="stylesheet" href="/assembly-ui.css">
     <link rel="stylesheet" href="/galaxy-ui.css">
-    <link rel="stylesheet" href="/living-galaxy-ui.css?v=2">
-    <link rel="stylesheet" href="/dev-tools.css?v=2">
+    <link rel="stylesheet" href="/living-galaxy-ui.css?v=3">
+    <link rel="stylesheet" href="/dev-tools.css?v=3">
 </head>
 <body>
     <svg class="svg-library" aria-hidden="true">
@@ -834,6 +834,14 @@
                         <div class="plan-layout">
                             <section class="living-console">
                                 <label><span>Флот</span><select id="planFleetSelect"></select></label>
+                                <div id="fleetRefuelPanel" class="fleet-refuel-panel" hidden>
+                                    <div>
+                                        <span>ЗАПРАВКА НА ПЛАНЕТЕ</span>
+                                        <strong id="fleetFuelReserve">Топливо: 0</strong>
+                                    </div>
+                                    <input id="fleetRefuelAmount" type="number" min="1" step="1" value="1000" inputmode="numeric" aria-label="Количество дейтерия для заправки">
+                                    <button id="refuelFleetButton" type="button">Заправить</button>
+                                </div>
                                 <label><span>Команда</span><select id="commandType"><option value="Flight">Полёт</option><option value="Patrol">Патруль</option><option value="Attack">Атака</option><option value="Return">Возврат</option><option value="Recon">Разведка</option><option value="Mine">Добыча</option><option value="LoadUnload">Погрузка / выгрузка</option></select></label>
                                 <div class="coordinate-row"><input id="commandGalaxy" type="number" min="1" placeholder="G"><input id="commandSystem" type="number" min="1" placeholder="S"><input id="commandPosition" type="number" min="1" placeholder="P"></div>
                                 <label><span>Режим скорости</span><select id="commandSpeed"><option value="Economy">Экономичный · 50%</option><option value="Cruise" selected>Крейсерский · 75%</option><option value="Boost">Форсаж · 100%</option></select></label>
@@ -919,8 +927,8 @@
 
     <script src="/assembly-ui.js?v=2"></script>
     <script src="/galaxy-ui.js"></script>
-    <script src="/living-galaxy-ui.js?v=2"></script>
+    <script src="/living-galaxy-ui.js?v=3"></script>
     <script src="/dev-tools.js?v=3"></script>
-    <script src="/app.js?v=2"></script>
+    <script src="/app.js?v=3"></script>
 </body>
 </html>

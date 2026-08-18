@@ -146,7 +146,8 @@ const componentNames = {
     CargoHold: "Грузовой отсек",
     LaserWeapon: "Лазер",
     MissileWeapon: "Ракетная установка",
-    MiningModule: "Гравитационный захват"
+    MiningModule: "Гравитационный захват",
+    QuantumDamper: "Квантовый демпфер"
 };
 
 function localizeRace(race) {
@@ -210,6 +211,10 @@ const componentTypeInfo = {
     MiningModule: {
         name: "Гравитационный захват",
         icon: "icon-materials"
+    },
+    QuantumDamper: {
+        name: "Квантовый демпфер",
+        icon: "icon-command"
     }
 };
 const technologyInfo = {
@@ -1581,6 +1586,18 @@ function getComponentStats(component) {
         stats.push(`Команда ${formatNumber(component.commandLoad)}`);
     }
 
+    if (component.volumeReduction !== undefined) {
+        stats.push(
+            `Снижение объёма ${formatNumber(component.volumeReduction * 100)}%`
+        );
+    }
+
+    if (component.energyReduction !== undefined) {
+        stats.push(
+            `Снижение энергии ${formatNumber(component.energyReduction * 100)}%`
+        );
+    }
+
     return stats;
 }
 
@@ -1839,7 +1856,7 @@ function renderProduction(status) {
                             ${stats}
                         </div>
 
-                        <div class="cost-row">
+                        ${component.futureContent ? "" : `<div class="cost-row">
                             <span class="cost-item">
                                 Материалы ·
                                 ${formatNumber(component.cost.materials)}
@@ -1848,13 +1865,13 @@ function renderProduction(status) {
                                 Дейтерий ·
                                 ${formatNumber(component.cost.deuterium)}
                             </span>
-                        </div>
+                        </div>`}
 
                         <div class="unlock-requirement">
                             ${requirement}
                         </div>
 
-                        <div class="production-controls">
+                        ${component.futureContent ? "" : `<div class="production-controls">
                             <input
                                 type="number"
                                 min="1"
@@ -1875,7 +1892,7 @@ function renderProduction(status) {
                                 ${disabled ? "disabled" : ""}>
                                 Запустить производство
                             </button>
-                        </div>
+                        </div>`}
                     </div>
                 </article>
             `;
@@ -2033,12 +2050,10 @@ async function startProduction(componentCode) {
     }
 }
 function componentOption(component) {
-    const manufactureMark =
-        component.canManufacture ? "своя технология" : "импорт";
-
     return `
-        <option value="${component.code}">
-            ${localizeComponentName(component)} · ${manufactureMark}
+        <option value="${component.code}"
+                ${component.canInstall === false ? "disabled" : ""}>
+            ${localizeComponentName(component)}
         </option>
     `;
 }
@@ -2060,8 +2075,153 @@ const optionalDesignerTypes = [
     ["CargoHold", "Грузовой отсек"],
     ["MiningModule", "Гравитационный захват"],
     ["LaserWeapon", "Лазерное вооружение"],
-    ["MissileWeapon", "Ракетное вооружение"]
+    ["MissileWeapon", "Ракетное вооружение"],
+    ["QuantumDamper", "Квантовый демпфер"]
 ];
+
+const designerComparisonMetrics = {
+    Hull: [
+        ["capacity", "Объём", "icon-ship", 1],
+        ["structuralIntegrity", "Прочность", "icon-ship", 1]
+    ],
+    Engine: [
+        ["inSystemSpeed", "Система", "icon-ship", 1],
+        ["interSystemSpeed", "Галактика", "icon-galaxy", 1],
+        ["energyConsumption", "Энергия", "icon-energy", -1]
+    ],
+    Reactor: [
+        ["energyOutput", "Энергия", "icon-power", 1],
+        ["volume", "Объём", "icon-ship", -1]
+    ],
+    ControlSystem: [
+        ["commandRating", "Управление", "icon-command", 1],
+        ["energyConsumption", "Энергия", "icon-energy", -1],
+        ["volume", "Объём", "icon-ship", -1]
+    ],
+    Armor: [
+        ["bonusStructuralIntegrity", "Прочность", "icon-ship", 1],
+        ["volume", "Объём", "icon-ship", -1]
+    ],
+    Shield: [
+        ["shieldCapacity", "Щит", "icon-power", 1],
+        ["energyConsumption", "Энергия", "icon-energy", -1],
+        ["volume", "Объём", "icon-ship", -1]
+    ],
+    Scanner: [
+        ["scanRange", "Дальность", "icon-command", 1],
+        ["energyConsumption", "Энергия", "icon-energy", -1],
+        ["volume", "Объём", "icon-ship", -1]
+    ],
+    CargoHold: [
+        ["cargoCapacity", "Груз", "icon-factory", 1],
+        ["volume", "Объём", "icon-ship", -1],
+        ["energyConsumption", "Энергия", "icon-energy", -1]
+    ],
+    MiningModule: [
+        ["miningRatePerMinute", "Добыча", "icon-materials", 1],
+        ["energyConsumption", "Энергия", "icon-energy", -1],
+        ["volume", "Объём", "icon-ship", -1]
+    ],
+    LaserWeapon: [
+        ["shieldDamage", "Щит", "icon-energy", 1],
+        ["hullDamage", "Корпус", "icon-ship", 1],
+        ["energyConsumption", "Энергия", "icon-power", -1]
+    ],
+    MissileWeapon: [
+        ["shieldDamage", "Щит", "icon-energy", 1],
+        ["hullDamage", "Корпус", "icon-ship", 1],
+        ["energyConsumption", "Энергия", "icon-power", -1]
+    ],
+    QuantumDamper: [
+        ["volumeReduction", "Объём", "icon-ship", 1],
+        ["energyReduction", "Энергия", "icon-energy", 1]
+    ]
+};
+
+function comparisonMarkup(component, reference) {
+    if (!component) return "";
+    const metrics = designerComparisonMetrics[component.type] ?? [];
+    return metrics.map(([key, label, icon, direction]) => {
+        const value = component[key] ?? 0;
+        const baseline = reference?.[key] ?? value;
+        const delta = value - baseline;
+        const score = delta * direction;
+        const stateClass = score > 0 ? "better" : score < 0 ? "worse" : "equal";
+        const arrow = score > 0 ? "↑" : score < 0 ? "↓" : "=";
+        const deltaText = delta === 0
+            ? formatNumber(value)
+            : `${delta > 0 ? "+" : ""}${formatNumber(delta)}`;
+        return `<span class="designer-comparison ${stateClass}">
+            <svg><use href="#${icon}"></use></svg>
+            <b>${arrow}</b>${label} ${deltaText}
+        </span>`;
+    }).join("");
+}
+
+function enhanceDesignerSelect(select) {
+    if (!select) return;
+    if (select._refreshComparison) {
+        select._refreshComparison();
+        return;
+    }
+
+    select.classList.add("designer-native-select");
+    const combobox = document.createElement("div");
+    combobox.className = "designer-combobox";
+    combobox.innerHTML = `
+        <button type="button" class="designer-combobox-toggle"
+                aria-haspopup="listbox" aria-expanded="false"></button>
+        <div class="designer-combobox-menu" role="listbox" hidden></div>`;
+    select.insertAdjacentElement("afterend", combobox);
+    const toggle = combobox.querySelector(".designer-combobox-toggle");
+    const menu = combobox.querySelector(".designer-combobox-menu");
+
+    const refresh = () => {
+        const reference = selectedComponent(select);
+        toggle.innerHTML = reference
+            ? `<strong>${localizeComponentName(reference)}</strong>`
+            : `<strong>Не устанавливать</strong>`;
+        menu.innerHTML = [...select.options].map(option => {
+            const component = state.components.find(x => x.code === option.value);
+            const blocked = option.disabled || component?.canInstall === false;
+            return `<button type="button" role="option"
+                    data-comparison-value="${option.value}"
+                    ${blocked ? "disabled" : ""}
+                    aria-selected="${option.value === select.value}">
+                <span><strong>${component ? localizeComponentName(component) : option.textContent}</strong>
+                ${blocked ? `<small>${component?.manufacturingBlockReason ?? "Недоступно"}</small>` : ""}</span>
+                <span class="designer-comparison-list">
+                    ${comparisonMarkup(component, reference)}
+                </span>
+            </button>`;
+        }).join("");
+    };
+
+    toggle.addEventListener("click", () => {
+        const opening = menu.hidden;
+        document.querySelectorAll(".designer-combobox-menu")
+            .forEach(other => {
+                if (other === menu) return;
+                other.hidden = true;
+                other.parentElement
+                    ?.querySelector(".designer-combobox-toggle")
+                    ?.setAttribute("aria-expanded", "false");
+            });
+        menu.hidden = !opening;
+        toggle.setAttribute("aria-expanded", String(opening));
+    });
+    menu.addEventListener("click", event => {
+        const option = event.target.closest("[data-comparison-value]");
+        if (!option || option.disabled) return;
+        select.value = option.dataset.comparisonValue;
+        menu.hidden = true;
+        toggle.setAttribute("aria-expanded", "false");
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+        refresh();
+    });
+    select._refreshComparison = refresh;
+    refresh();
+}
 
 function renderDesignerOptions() {
     const byType = type =>
@@ -2113,6 +2273,17 @@ function renderDesignerOptions() {
             element.addEventListener("input", updateDesignPreview);
             element.addEventListener("change", updateDesignPreview);
         });
+
+    [
+        elements.designerHull,
+        elements.designerEngine,
+        elements.designerReactor,
+        elements.designerControl,
+        elements.designerSpecial,
+        ...elements.designerOptionalModules.querySelectorAll(
+            "[data-designer-module]"
+        )
+    ].forEach(enhanceDesignerSelect);
 }
 
 function selectedComponent(selectElement) {
@@ -2169,6 +2340,9 @@ function readDesignerModules() {
 }
 
 function updateDesignPreview() {
+    document.querySelectorAll(".designer-native-select")
+        .forEach(select => select._refreshComparison?.());
+
     const hull = selectedComponent(
         elements.designerHull
     );
@@ -2288,11 +2462,20 @@ function updateDesignPreview() {
         0
     );
 
-    const scanRange = Math.max(
-        0,
-        ...modules.map(module =>
-            module.component?.scanRange ?? 0)
-    );
+    const scannerRanges = modules
+        .filter(module => module.component?.type === "Scanner")
+        .flatMap(module => Array.from(
+            { length: module.quantity },
+            () => module.component.scanRange ?? 0
+        ))
+        .sort((left, right) => right - left);
+    const scanRange = scannerRanges.length === 0
+        ? 0
+        : Math.min(
+            150,
+            scannerRanges[0] +
+                scannerRanges.slice(1).reduce((sum, value) => sum + value, 0) * .5
+        );
 
     const cargoCapacity = modules.reduce(
         (total, module) => total +

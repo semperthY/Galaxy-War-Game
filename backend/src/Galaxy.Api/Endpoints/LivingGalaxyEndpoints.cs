@@ -19,6 +19,7 @@ public static class LivingGalaxyEndpoints
         group.MapPost("/fleets/{fleetId:guid}/launch", LaunchAsync);
         group.MapPut("/fleets/{fleetId:guid}/next-command", ReplaceNextAsync);
         group.MapPost("/fleets/{fleetId:guid}/land", LandAsync);
+        group.MapPost("/fleets/{fleetId:guid}/refuel", RefuelAsync);
         group.MapGet("/system", GetSystemAsync);
         group.MapGet("/battles", GetBattlesAsync);
         group.MapPost("/battles/{battleId:guid}/orders", SubmitOrderAsync);
@@ -125,6 +126,40 @@ public static class LivingGalaxyEndpoints
         await db.SaveChangesAsync(token); return Results.Ok(ToFleetResponse(fleet));
     }
 
+    private static async Task<IResult> RefuelAsync(
+        Guid fleetId,
+        RefuelRequest request,
+        HttpContext http,
+        ApplicationDbContext db,
+        CancellationToken token)
+    {
+        var fleet = await OwnedFleetAsync(fleetId, http, db, token);
+        if (fleet is null) return Results.NotFound();
+
+        var planet = await db.Planets.SingleOrDefaultAsync(
+            x => x.Id == fleet.HomePlanetId && x.PlayerId == fleet.PlayerId,
+            token);
+        if (planet is null) return Results.NotFound();
+
+        ResourceProductionCalculator.Update(planet, DateTime.UtcNow);
+
+        try
+        {
+            var transferred = FleetRefueling.Transfer(fleet, planet, request.Amount);
+            await db.SaveChangesAsync(token);
+            return Results.Ok(new
+            {
+                amount = transferred,
+                fuelReserve = fleet.FuelReserve,
+                planetDeuterium = planet.Deuterium
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
+    }
+
     private static async Task<IResult> GetSystemAsync(int galaxy, int system, HttpContext http, ApplicationDbContext db, CancellationToken token)
     {
         var playerId = await CurrentAccount.GetPlayerIdAsync(http.User, db, token);
@@ -224,6 +259,7 @@ public static class LivingGalaxyEndpoints
 public sealed record CreateFleetRequest(Guid PlanetId, string Name, List<Guid> ShipIds);
 public sealed record PlanRequest(List<CommandRequest> Commands);
 public sealed record NextCommandRequest(CommandRequest? Command);
+public sealed record RefuelRequest(decimal Amount);
 public sealed record CommandRequest(FlightCommandType Type, FlightSpeedMode SpeedMode, int? TargetGalaxy, int? TargetSystem, int? TargetPosition, Guid? TargetFleetId, Guid? TargetObjectId, int DurationMinutes, decimal ManifestMaterials, decimal ManifestDeuterium);
 public sealed record BattleOrderRequest(Guid FleetId, string? TargetPriority, bool Retreat);
 public sealed record ServiceRequest(ShipServiceType Type);

@@ -113,6 +113,60 @@ public class ShipDesignCalculatorTests
     }
 
     [Fact]
+    public void Calculate_StacksAdditionalScannersAtHalfRange()
+    {
+        var result = ShipDesignCalculator.Calculate(
+            "test-hull",
+            new[]
+            {
+                new ModuleSelection("test-engine", 1),
+                new ModuleSelection("test-reactor", 1),
+                new ModuleSelection("test-control", 1),
+                new ModuleSelection("test-scanner", 2)
+            },
+            CreateBeta2Catalog());
+
+        Assert.Equal(45m, result.ScanRange);
+    }
+
+    [Fact]
+    public void Calculate_CapsCombinedScannerRangeAt150()
+    {
+        var result = ShipDesignCalculator.Calculate(
+            "test-hull",
+            new[]
+            {
+                new ModuleSelection("test-engine", 1),
+                new ModuleSelection("test-reactor", 1),
+                new ModuleSelection("test-control", 3),
+                new ModuleSelection("test-scanner", 10)
+            },
+            CreateBeta2Catalog());
+
+        Assert.Equal(150m, result.ScanRange);
+    }
+
+    [Fact]
+    public void Calculate_RejectsFutureQuantumDamper()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() =>
+            ShipDesignCalculator.Calculate(
+                "test-hull",
+                new[]
+                {
+                    new ModuleSelection("test-engine", 1),
+                    new ModuleSelection("test-reactor", 1),
+                    new ModuleSelection("test-control", 1),
+                    new ModuleSelection("test-damper", 1)
+                },
+                CreateBeta2Catalog()));
+
+        Assert.Equal(
+            "Quantum dampers are reserved for future archaeology content.",
+            error.Message);
+    }
+
+    [Fact]
     public void Calculate_RejectsExceededCommandCapacity()
     {
         var exception = Assert.Throws<InvalidOperationException>(
@@ -220,7 +274,11 @@ public class ShipDesignCalculatorTests
             new MissileWeaponDefinition(
                 "test-missile", "Test Missile", RaceType.Humans,
                 4m, cost, 1, TechnologyType.MissileSystems, 1,
-                5m, 12m, 2m, 5m)
+                5m, 12m, 2m, 5m),
+            new QuantumDamperDefinition(
+                "test-damper", "Test Damper", null,
+                18m, cost, 1, TechnologyType.Electronics, 4,
+                .10m, .10m)
         };
     }
 

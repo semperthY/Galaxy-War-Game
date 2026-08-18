@@ -230,6 +230,29 @@ public static class FlightRules
     }
 }
 
+public static class FleetRefueling
+{
+    public static decimal Transfer(Fleet fleet, Planet planet, decimal requestedAmount)
+    {
+        if (fleet.Status != FleetStatus.Landed)
+            throw new InvalidOperationException("Заправка доступна только после посадки флота.");
+        if (fleet.HomePlanetId != planet.Id || fleet.PlayerId != planet.PlayerId)
+            throw new InvalidOperationException("Заправка доступна только на домашней планете флота.");
+
+        var amount = decimal.Floor(requestedAmount);
+        if (amount <= 0)
+            throw new InvalidOperationException("Укажите количество топлива не меньше 1.");
+        if (planet.Deuterium < amount)
+            throw new InvalidOperationException(
+                $"Недостаточно дейтерия на планете: требуется {amount:0}, доступно {planet.Deuterium:0}.");
+
+        planet.Deuterium -= amount;
+        fleet.FuelReserve += amount;
+        fleet.UpdatedAt = DateTime.UtcNow;
+        return amount;
+    }
+}
+
 public static class CombatRules
 {
     public static CombatRoundResult ResolveRound(
