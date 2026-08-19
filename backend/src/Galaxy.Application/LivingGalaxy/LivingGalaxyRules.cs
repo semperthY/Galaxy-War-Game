@@ -66,6 +66,15 @@ public static class FleetFactory
 
 public static class FlightRules
 {
+    public static bool RequiresTargetCoordinates(FlightCommandType type) =>
+        type is FlightCommandType.Flight or FlightCommandType.Recon or FlightCommandType.Attack or FlightCommandType.Mine;
+
+    public static bool HasValidTargetCoordinates(FlightCommand command) =>
+        !RequiresTargetCoordinates(command.Type) ||
+        command.TargetGalaxy is >= 1 &&
+        command.TargetSystem is >= 1 &&
+        command.TargetPosition is >= 1;
+
     public static int EditableSequence(Fleet fleet) =>
         fleet.Status == FleetStatus.Landed || fleet.Status == FleetStatus.Orbiting
             ? Math.Max(1, fleet.Commands.Where(x => x.Status == FlightCommandStatus.Planned).Select(x => x.Sequence).DefaultIfEmpty(1).Min())
@@ -215,17 +224,15 @@ public static class FlightRules
 
     private static void ValidateCommand(Fleet fleet, FlightCommand command)
     {
-        if ((command.Type is FlightCommandType.Flight or FlightCommandType.Recon or FlightCommandType.Attack) &&
-            (command.TargetGalaxy is null || command.TargetSystem is null || command.TargetPosition is null))
-            throw new InvalidOperationException("Для полёта укажите полные координаты.");
+        if (!HasValidTargetCoordinates(command))
+            throw new InvalidOperationException("Координаты цели должны быть целыми числами не меньше 1.");
         if (command.Type == FlightCommandType.Attack && command.TargetFleetId is null)
             throw new InvalidOperationException("Для атаки выберите обнаруженный чужой флот.");
         if (command.Type == FlightCommandType.Recon && fleet.Ships.All(x => x.ScanRange <= 0))
             throw new InvalidOperationException("Для разведки нужен корабль со сканером.");
         if (command.Type == FlightCommandType.Mine && fleet.Ships.All(x => x.MiningRatePerMinute <= 0))
             throw new InvalidOperationException("Для добычи нужен добывающий модуль.");
-        if (command.Type == FlightCommandType.Mine &&
-            (command.TargetObjectId is null || command.TargetGalaxy is null || command.TargetSystem is null || command.TargetPosition is null))
+        if (command.Type == FlightCommandType.Mine && command.TargetObjectId is null)
             throw new InvalidOperationException("Для добычи выберите поле или обломки на карте операций.");
     }
 }

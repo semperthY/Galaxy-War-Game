@@ -373,6 +373,10 @@ const pageDefinitions = {
         title: "Боевой центр",
         breadcrumb: "ФЛОТ / РАПОРТЫ"
     },
+    events: {
+        title: "Центр событий",
+        breadcrumb: "КОМАНДОВАНИЕ / СООБЩЕНИЯ"
+    },
     galaxy: {
         title: "Карта галактики",
         breadcrumb: "НАВИГАЦИЯ / ГАЛАКТИКА"
@@ -407,6 +411,13 @@ function createMobileNavigation() {
     );
 
     document.body.appendChild(mobileNavigation);
+}
+
+function renderEventBadge(unreadCount) {
+    document.querySelectorAll("[data-event-badge]").forEach(badge => {
+        badge.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
+        badge.classList.toggle("visible", unreadCount > 0);
+    });
 }
 
 const elements = {
@@ -2893,7 +2904,8 @@ async function loadDashboardCore() {
             api(
                 `/api/game/assembly/?planetId=${state.activePlanetId}`
             ),
-            api("/api/game/colonization/")
+            api("/api/game/colonization/"),
+            api(`/api/game/events/?limit=${state.activePage === "events" ? 50 : 0}`)
         ]);
 
         const [
@@ -2901,7 +2913,8 @@ async function loadDashboardCore() {
             researchResult,
             productionResult,
             assemblyResult,
-            colonizationResult
+            colonizationResult,
+            eventsResult
         ] = coreResults;
 
         const valueOrNull = result =>
@@ -2912,6 +2925,9 @@ async function loadDashboardCore() {
         const production = valueOrNull(productionResult);
         const assembly = valueOrNull(assemblyResult);
         const colonization = valueOrNull(colonizationResult);
+        const events = valueOrNull(eventsResult);
+
+        if (events) renderEventBadge(events.unreadCount);
 
         if (production) {
             state.productionStatus = production;
@@ -2993,6 +3009,12 @@ async function loadDashboardCore() {
                 await LivingGalaxyUi.loadBattles();
                 break;
             }
+            case "events":
+                if (!events) {
+                    throw eventsResult.reason;
+                }
+                EventCenterUi.render(events);
+                break;
             case "galaxy": {
                 if (!assembly) {
                     throw assemblyResult.reason;
@@ -3127,6 +3149,13 @@ LivingGalaxyUi.init({
     message: showMessage,
     reload: loadDashboard,
     openPage
+});
+
+EventCenterUi.init({
+    api,
+    message: showMessage,
+    openPage,
+    unreadChanged: renderEventBadge
 });
 
 DevToolsUi.init({

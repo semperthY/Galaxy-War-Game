@@ -134,6 +134,21 @@ public sealed class BattleOrderConfiguration : IEntityTypeConfiguration<BattleOr
     }
 }
 
+public sealed class GameEventConfiguration : IEntityTypeConfiguration<GameEvent>
+{
+    public void Configure(EntityTypeBuilder<GameEvent> builder)
+    {
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Title).HasMaxLength(140).IsRequired();
+        builder.Property(x => x.Body).HasMaxLength(600).IsRequired();
+        builder.Property(x => x.DataJson).HasColumnType("jsonb");
+        builder.HasOne<Player>().WithMany().HasForeignKey(x => x.PlayerId)
+            .OnDelete(DeleteBehavior.Cascade);
+        builder.HasIndex(x => new { x.PlayerId, x.CreatedAt });
+        builder.HasIndex(x => x.SourceCommandId).IsUnique();
+    }
+}
+
 public sealed class ShipServiceOrderConfiguration : IEntityTypeConfiguration<ShipServiceOrder>
 {
     public void Configure(EntityTypeBuilder<ShipServiceOrder> builder)

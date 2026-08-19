@@ -1,6 +1,7 @@
 window.LivingGalaxyUi = (() => {
     const state = { fleets: [], assembly: null, planet: null, selectedFleetId: null, draftFleetId: null, draft: [], reserveDraft: {}, system: null, battles: [] };
     let context;
+    let countdownTimerStarted = false;
     const $ = selector => document.querySelector(selector);
     const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
     const names = { Landed: "На планете", Orbiting: "На орбите", Executing: "В полёте", Patrolling: "Патруль", Mining: "Добыча", InBattle: "В бою", Flight: "Полёт", Patrol: "Патруль", Attack: "Атака", Return: "Возврат", Recon: "Разведка", Mine: "Добыча", LoadUnload: "Погрузка / выгрузка" };
@@ -20,11 +21,16 @@ window.LivingGalaxyUi = (() => {
         $("#refuelFleetButton")?.addEventListener("click", refuelFleet);
         $("#scanSystemButton")?.addEventListener("click", scanFromInputs);
         $("#fleetGrid")?.addEventListener("click", fleetAction);
+        $("#attackIntentPanel")?.addEventListener("click", cancelAttackIntent);
         $("#flightPlanList")?.addEventListener("click", commandAction);
         $("#spaceObjectGrid")?.addEventListener("click", targetAction);
         $("#contactGrid")?.addEventListener("click", targetAction);
         $("#serviceGrid")?.addEventListener("click", serviceAction);
         $("#battleGrid")?.addEventListener("click", battleAction);
+        if (!countdownTimerStarted) {
+            countdownTimerStarted = true;
+            window.setInterval(updateFlightCountdowns, 1000);
+        }
     }
 
     function showTab(tab) {
@@ -40,7 +46,8 @@ window.LivingGalaxyUi = (() => {
             state.draft = selectedFleet()?.commands?.filter(x => x.status === "Planned").map(stripCommand) ?? [];
         }
         $("#fleetSummary").textContent = `${fleets.length} групп · ${fleets.filter(x => x.status === "Orbiting").length} на орбите`;
-        renderReserve(); renderFleetGrid(); renderFleetSelect(); renderPlan(); renderService();
+        renderAttackIntent(); renderReserve(); renderFleetGrid(); renderFleetSelect(); renderPlan(); renderService();
+        if (attackIntent()) showTab("groups");
     }
 
     function renderReserve() {
@@ -129,7 +136,16 @@ window.LivingGalaxyUi = (() => {
     }
 
     function renderFleetGrid() {
-        $("#fleetGrid").innerHTML = state.fleets.length ? state.fleets.map(fleet => `<article class="fleet-card ${fleet.id === state.selectedFleetId ? "selected" : ""}" data-fleet-id="${fleet.id}"><header><strong>${esc(fleet.name)}</strong><span class="status-pill ${fleet.status === "InBattle" ? "danger" : ""}">${names[fleet.status] ?? fleet.status}</span></header><p>${fleet.ships.length} кораблей · ${fleet.galaxyNumber}:${fleet.systemNumber}:${fleet.position}<br>Трюм ${fmt(fleet.materialsCargo + fleet.deuteriumCargo)} / ${fmt(fleet.cargoCapacity)} · топливо ${fmt(fleet.fuelReserve)}</p><div class="battle-actions"><button data-action="plan">Полётник</button>${fleet.status === "Orbiting" ? `<button data-action="land">Посадка</button>` : ""}</div></article>`).join("") : `<div class="empty-living">Сформируйте первую группу из кораблей резерва.</div>`;
+        const intent = attackIntent();
+        $("#fleetGrid").innerHTML = state.fleets.length ? state.fleets.map(fleet => `<article class="fleet-card ${fleet.id === state.selectedFleetId ? "selected" : ""}" data-fleet-id="${fleet.id}"><header><strong>${esc(fleet.name)}</strong><span class="status-pill ${fleet.status === "InBattle" ? "danger" : ""}">${names[fleet.status] ?? fleet.status}</span></header><p>${fleet.ships.length} кораблей · ${fleet.galaxyNumber}:${fleet.systemNumber}:${fleet.position}<br>Трюм ${fmt(fleet.materialsCargo + fleet.deuteriumCargo)} / ${fmt(fleet.cargoCapacity)} · топливо ${fmt(fleet.fuelReserve)}</p><div class="battle-actions"><button data-action="plan">Полётник</button>${fleet.status === "Orbiting" ? `<button data-action="land">Посадка</button>` : ""}${intent && ["Landed", "Orbiting"].includes(fleet.status) ? `<button data-action="select-attack">Выбрать для атаки</button>` : ""}</div></article>`).join("") : `<div class="empty-living">Сформируйте первую группу из кораблей резерва.</div>`;
+    }
+
+    function renderAttackIntent() {
+        const panel = $("#attackIntentPanel");
+        const intent = attackIntent();
+        if (!panel) return;
+        panel.hidden = !intent;
+        panel.innerHTML = intent ? `<span><strong>Выберите флот для перехвата «${esc(intent.targetName)}»</strong><small>Цель ${intent.galaxy}:${intent.system}:${intent.position}. Доступны флоты на планете и орбите.</small></span><button data-cancel-attack>Отмена</button>` : "";
     }
 
     function renderFleetSelect() {
@@ -150,13 +166,18 @@ window.LivingGalaxyUi = (() => {
         $("#flightPlanList").innerHTML = commands.length ? commands.map((command, index) => {
             const sequence = command.sequence ?? index + 1;
             const locked = !["Landed", "Orbiting"].includes(fleet.status) && sequence !== fleet.editableSequence;
-            const target = command.targetFleetId ? "флот" : command.targetObjectId ? "объект" : [command.targetGalaxy, command.targetSystem, command.targetPosition].filter(x => x != null).join(":");
-            return `<article class="command-card ${locked ? "locked" : ""} ${command.status === "Active" ? "current" : ""}"><span class="command-number">${sequence}</span><div><header><strong>${names[command.type] ?? command.type}</strong><small>${command.status ?? "Planned"}</small></header><small>${target || "контекстная цель"}${command.outcome ? ` · ${esc(command.outcome)}` : ""}</small></div>${!locked && ["Landed", "Orbiting"].includes(fleet.status) ? `<button data-remove-command="${index}">×</button>` : ""}</article>`;
+            const coordinates = [command.targetGalaxy, command.targetSystem, command.targetPosition].filter(x => x != null).join(":");
+            const target = command.targetFleetId ? `флот · ${coordinates}` : command.targetObjectId ? `объект · ${coordinates}` : coordinates;
+            const countdown = command.status === "Active" && command.completesAt
+                ? `<time class="flight-countdown" data-flight-completes="${esc(command.completesAt)}"></time>`
+                : "";
+            return `<article class="command-card ${locked ? "locked" : ""} ${command.status === "Active" ? "current" : ""}"><span class="command-number">${sequence}</span><div><header><strong>${names[command.type] ?? command.type}</strong><small>${command.status ?? "Planned"}</small></header><small>${target || "контекстная цель"}${command.outcome ? ` · ${esc(command.outcome)}` : ""}</small>${countdown}</div>${!locked && ["Landed", "Orbiting"].includes(fleet.status) ? `<button data-remove-command="${index}">×</button>` : ""}</article>`;
         }).join("") : `<div class="empty-living">Полётный лист пуст. Добавьте первую команду.</div>`;
         const editableBeforeStart = ["Landed", "Orbiting"].includes(fleet.status);
         $("#savePlanButton").hidden = !editableBeforeStart; $("#launchFleetButton").hidden = !editableBeforeStart;
         $("#addCommandButton").textContent = editableBeforeStart ? "Добавить команду" : `Назначить команду № ${fleet.editableSequence}`;
         renderTargets();
+        updateFlightCountdowns();
     }
 
     function renderService() {
@@ -213,8 +234,8 @@ window.LivingGalaxyUi = (() => {
     function selectFleet(id) { state.selectedFleetId = id; state.draftFleetId = id; state.draft = selectedFleet()?.commands?.filter(x => x.status === "Planned").map(stripCommand) ?? []; renderFleetGrid(); renderPlan(); renderService(); }
     function selectedFleet() { return state.fleets.find(x => x.id === state.selectedFleetId); }
     function stripCommand(x) { return { type: x.type, speedMode: x.speedMode, targetGalaxy: x.targetGalaxy, targetSystem: x.targetSystem, targetPosition: x.targetPosition, targetFleetId: x.targetFleetId, targetObjectId: x.targetObjectId, durationMinutes: x.durationMinutes, manifestMaterials: x.manifestMaterials, manifestDeuterium: x.manifestDeuterium }; }
-    function readCommand() { const target = $("#commandTarget").selectedOptions[0]?.dataset ?? {}; const type = $("#commandType").value; return { type, speedMode: $("#commandSpeed").value, targetGalaxy: num("#commandGalaxy"), targetSystem: num("#commandSystem"), targetPosition: num("#commandPosition"), targetFleetId: type === "Attack" ? target.fleetId ?? null : null, targetObjectId: type === "Mine" ? target.objectId ?? null : null, durationMinutes: num("#commandDuration") ?? 30, manifestMaterials: num("#commandMaterials") ?? 0, manifestDeuterium: num("#commandDeuterium") ?? 0 }; }
-    async function addCommand() { const fleet = selectedFleet(); if (!fleet) return; const command = readCommand(); if (["Landed", "Orbiting"].includes(fleet.status)) { state.draft.push(command); renderPlan(); } else try { await context.api(`/api/game/living-galaxy/fleets/${fleet.id}/next-command`, { method: "PUT", body: JSON.stringify({ command }) }); context.message("Следующая команда изменена."); await context.reload(); } catch (error) { context.message(error.message, true); } }
+    function readCommand() { const target = $("#commandTarget").selectedOptions[0]?.dataset ?? {}; const type = $("#commandType").value; const command = { type, speedMode: $("#commandSpeed").value, targetGalaxy: coordinate("#commandGalaxy"), targetSystem: coordinate("#commandSystem"), targetPosition: coordinate("#commandPosition"), targetFleetId: type === "Attack" ? target.fleetId ?? null : null, targetObjectId: type === "Mine" ? target.objectId ?? null : null, durationMinutes: num("#commandDuration") ?? 30, manifestMaterials: num("#commandMaterials") ?? 0, manifestDeuterium: num("#commandDeuterium") ?? 0 }; if (["Flight", "Recon", "Attack", "Mine"].includes(type) && [command.targetGalaxy, command.targetSystem, command.targetPosition].some(value => value == null)) { context.message("Укажите целые координаты цели не меньше 1.", true); return null; } return command; }
+    async function addCommand() { const fleet = selectedFleet(); if (!fleet) return; const command = readCommand(); if (!command) return; if (["Landed", "Orbiting"].includes(fleet.status)) { state.draft.push(command); renderPlan(); } else try { await context.api(`/api/game/living-galaxy/fleets/${fleet.id}/next-command`, { method: "PUT", body: JSON.stringify({ command }) }); context.message("Следующая команда изменена."); await context.reload(); } catch (error) { context.message(error.message, true); } }
     async function savePlan() { const fleet = selectedFleet(); if (!fleet) return; try { await context.api(`/api/game/living-galaxy/fleets/${fleet.id}/plan`, { method: "PUT", body: JSON.stringify({ commands: state.draft }) }); context.message("Полётный лист сохранён."); await context.reload(); } catch (error) { context.message(error.message, true); } }
     async function launch() { const fleet = selectedFleet(); if (!fleet) return; try { if (state.draft.length) await context.api(`/api/game/living-galaxy/fleets/${fleet.id}/plan`, { method: "PUT", body: JSON.stringify({ commands: state.draft }) }); await context.api(`/api/game/living-galaxy/fleets/${fleet.id}/launch`, { method: "POST" }); context.message("Полётный лист запущен. Текущая команда заблокирована."); await context.reload(); } catch (error) { context.message(error.message, true); } }
     async function refuelFleet() {
@@ -237,7 +258,10 @@ window.LivingGalaxyUi = (() => {
             context.message(error.message, true);
         }
     }
-    async function fleetAction(event) { const card = event.target.closest("[data-fleet-id]"); if (!card) return; selectFleet(card.dataset.fleetId); if (event.target.dataset.action === "plan") showTab("plan"); if (event.target.dataset.action === "land") try { await context.api(`/api/game/living-galaxy/fleets/${card.dataset.fleetId}/land`, { method: "POST" }); context.message("Флот совершил посадку и защищён."); await context.reload(); } catch (error) { context.message(error.message, true); } }
+    async function fleetAction(event) { const card = event.target.closest("[data-fleet-id]"); if (!card) return; selectFleet(card.dataset.fleetId); if (event.target.dataset.action === "select-attack") { prepareAttackPlan(selectedFleet()); return; } if (event.target.dataset.action === "plan") showTab("plan"); if (event.target.dataset.action === "land") try { await context.api(`/api/game/living-galaxy/fleets/${card.dataset.fleetId}/land`, { method: "POST" }); context.message("Флот совершил посадку и защищён."); await context.reload(); } catch (error) { context.message(error.message, true); } }
+    function prepareAttackPlan(fleet) { const intent = attackIntent(); if (!intent || !fleet || !["Landed", "Orbiting"].includes(fleet.status)) return; const route = { speedMode: "Cruise", targetGalaxy: intent.galaxy, targetSystem: intent.system, targetPosition: intent.position, targetObjectId: null, durationMinutes: 0, manifestMaterials: 0, manifestDeuterium: 0 }; state.draft.push({ ...route, type: "Flight", targetFleetId: null }, { ...route, type: "Attack", targetFleetId: intent.targetFleetId }); window.localStorage.removeItem("livingAttackIntent"); renderAttackIntent(); renderFleetGrid(); renderPlan(); showTab("plan"); context.message(`Маршрут к ${intent.galaxy}:${intent.system}:${intent.position} и атака добавлены в полётный лист.`); }
+    function cancelAttackIntent(event) { if (!event.target.closest("[data-cancel-attack]")) return; window.localStorage.removeItem("livingAttackIntent"); renderAttackIntent(); renderFleetGrid(); }
+    function attackIntent() { try { const value = JSON.parse(window.localStorage.getItem("livingAttackIntent")); return value?.targetFleetId && Number.isInteger(value.galaxy) && Number.isInteger(value.system) && Number.isInteger(value.position) ? value : null; } catch { return null; } }
     function commandAction(event) { if (event.target.dataset.removeCommand == null) return; state.draft.splice(Number(event.target.dataset.removeCommand), 1); renderPlan(); }
     function targetAction(event) { const button = event.target.closest("[data-target-object],[data-target-fleet]"); if (!button) return; $("#commandGalaxy").value = state.system.galaxy; $("#commandSystem").value = state.system.system; $("#commandPosition").value = button.dataset.position; $("#commandType").value = button.dataset.targetFleet ? "Attack" : "Mine"; if (button.dataset.targetFleet) { localStorage.setItem("livingTargetFleet", button.dataset.targetFleet); localStorage.removeItem("livingTargetObject"); } else { localStorage.setItem("livingTargetObject", button.dataset.targetObject); localStorage.removeItem("livingTargetFleet"); } context.openPage("fleet"); showTab("plan"); renderTargets(); }
     function renderTargets() { const select = $("#commandTarget"); const fleetTarget = localStorage.getItem("livingTargetFleet"); const objectTarget = localStorage.getItem("livingTargetObject"); const options = [`<option value="">По координатам</option>`]; if (objectTarget) options.push(`<option selected data-object-id="${objectTarget}">Выбранное поле / обломки</option>`); if (fleetTarget) options.push(`<option selected data-fleet-id="${fleetTarget}">Выбранный чужой флот</option>`); select.innerHTML = options.join(""); }
@@ -246,6 +270,8 @@ window.LivingGalaxyUi = (() => {
     async function loadBattles() { try { renderBattles(await context.api("/api/game/living-galaxy/battles")); } catch (error) { context.message(error.message, true); } }
     async function serviceAction(event) { const button = event.target.closest("[data-service]"); if (!button) return; try { await context.api(`/api/game/living-galaxy/ships/${button.dataset.ship}/service`, { method: "POST", body: JSON.stringify({ type: button.dataset.service }) }); context.message("Корабль принят в орбитальный сервис."); await context.reload(); } catch (error) { context.message(error.message, true); } }
     async function battleAction(event) { const button = event.target.closest("[data-order]"); if (!button) return; const priority = button.closest(".battle-card")?.querySelector("[data-battle-priority]")?.value ?? "Weakest"; try { await context.api(`/api/game/living-galaxy/battles/${button.dataset.battle}/orders`, { method: "POST", body: JSON.stringify({ fleetId: button.dataset.fleet, targetPriority: priority, retreat: button.dataset.order === "retreat" }) }); context.message("Боевой приказ принят до конца раунда."); await loadBattles(); } catch (error) { context.message(error.message, true); } }
+    function updateFlightCountdowns() { document.querySelectorAll("[data-flight-completes]").forEach(element => { const milliseconds = new Date(element.dataset.flightCompletes).getTime() - Date.now(); if (!Number.isFinite(milliseconds)) { element.textContent = ""; return; } if (milliseconds <= 0) { element.textContent = "Выполнение команды…"; return; } const totalSeconds = Math.ceil(milliseconds / 1000); const hours = Math.floor(totalSeconds / 3600); const minutes = Math.floor(totalSeconds % 3600 / 60); const seconds = totalSeconds % 60; element.textContent = `До выполнения ${hours ? `${hours}:` : ""}${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`; }); }
+    function coordinate(selector) { const raw = $(selector).value.trim(); if (raw === "") return null; const value = Number(raw); return Number.isInteger(value) && value >= 1 ? value : null; }
     function num(selector) { const value = Number($(selector).value); return Number.isFinite(value) && value >= 0 ? value : null; }
     function fmt(value) { return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 1 }).format(value ?? 0); }
     return { init, render, loadSystem, loadBattles };

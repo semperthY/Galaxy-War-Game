@@ -52,6 +52,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<PirateCell> PirateCells => Set<PirateCell>();
     public DbSet<Battle> Battles => Set<Battle>();
     public DbSet<BattleOrder> BattleOrders => Set<BattleOrder>();
+    public DbSet<GameEvent> GameEvents => Set<GameEvent>();
     public DbSet<ShipServiceOrder> ShipServiceOrders => Set<ShipServiceOrder>();
 
     protected override void OnModelCreating(

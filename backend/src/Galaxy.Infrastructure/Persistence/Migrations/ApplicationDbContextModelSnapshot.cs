@@ -130,6 +130,15 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                     b.Navigation("Fleet");
                 });
 
+            modelBuilder.Entity("Galaxy.Domain.Entities.GameEvent", b =>
+                {
+                    b.HasOne("Galaxy.Domain.Entities.Player", null)
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Galaxy.Domain.Entities.PirateCell", b =>
                 {
                     b.HasOne("Galaxy.Domain.Entities.StarSystem", null)
@@ -652,6 +661,51 @@ namespace Galaxy.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
                     b.HasIndex("GalaxyNumber", "SystemNumber", "Position");
                     b.ToTable("DebrisFields");
+                });
+
+            modelBuilder.Entity("Galaxy.Domain.Entities.GameEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(600)
+                        .HasColumnType("character varying(600)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DataJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("SourceCommandId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(140)
+                        .HasColumnType("character varying(140)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SourceCommandId")
+                        .IsUnique();
+
+                    b.HasIndex("PlayerId", "CreatedAt");
+
+                    b.ToTable("GameEvents");
                 });
 
             modelBuilder.Entity("Galaxy.Domain.Entities.Fleet", b =>

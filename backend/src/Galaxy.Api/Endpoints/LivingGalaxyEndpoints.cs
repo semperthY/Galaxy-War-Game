@@ -79,7 +79,10 @@ public static class LivingGalaxyEndpoints
         if (fleet is null) return Results.NotFound();
         try
         {
-            FlightRules.Start(fleet, DateTime.UtcNow); await db.SaveChangesAsync(token);
+            var now = DateTime.UtcNow;
+            FlightRules.Start(fleet, now);
+            await LivingGalaxyProcessor.CreateAttackAlertAsync(db, fleet, now, token);
+            await db.SaveChangesAsync(token);
             return Results.Ok(ToFleetResponse(fleet));
         }
         catch (InvalidOperationException ex) { return Results.BadRequest(new { message = ex.Message }); }
@@ -100,7 +103,9 @@ public static class LivingGalaxyEndpoints
             if (fleet.Status == FleetStatus.Patrolling && request.Command is not null)
             {
                 var current = fleet.Commands.Single(x => x.Sequence == fleet.CurrentCommandSequence);
-                FlightRules.FinishAndAdvance(fleet, current, DateTime.UtcNow, "Патруль завершён новым приказом.");
+                var now = DateTime.UtcNow;
+                FlightRules.FinishAndAdvance(fleet, current, now, "Патруль завершён новым приказом.");
+                await LivingGalaxyProcessor.CreateAttackAlertAsync(db, fleet, now, token);
             }
             await db.SaveChangesAsync(token); return Results.Ok(ToFleetResponse(fleet));
         }
