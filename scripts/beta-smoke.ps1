@@ -242,7 +242,9 @@ try {
         -NoProxy
     if ($operationsPage.StatusCode -ne 200 -or
         $operationsPage.Content -notmatch 'data-game-page="operations"' -or
-        $operationsPage.Content -notmatch 'data-page="operations"') {
+        $operationsPage.Content -notmatch 'data-page="operations"' -or
+        $operationsPage.Content -notmatch 'data-game-page="events"' -or
+        $operationsPage.Content -notmatch 'data-page="events"') {
         Fail('Living Galaxy routes or mobile navigation are missing')
     }
 
@@ -469,6 +471,7 @@ try {
         confirmPassword = 'BetaSmokeTwo2026'
     } | Out-Null
     Invoke-Api -Path '/api/auth/race' -Method POST -Session $secondCommanderSession -Body @{ race = 'Synthetics' } | Out-Null
+    $secondGame = Invoke-Api -Path '/api/game/current' -Session $secondCommanderSession
 
     $secondCommanderIdentity = Invoke-Api -Path '/api/auth/me' -Session $secondCommanderSession
     if ($secondCommanderIdentity.commanderName -ne 'BetaSmokeTwo') {
@@ -483,6 +486,15 @@ try {
     if ([string]::IsNullOrWhiteSpace($secondHomeworldId) -or
         $secondHomeworldId -eq $homeworldId) {
         Fail('Second commander did not receive a distinct starting planet')
+    }
+
+    $secondShipId = [Guid]::NewGuid().ToString()
+    $insertSecondShipSql = "INSERT INTO `"Ships`" (`"Id`", `"PlayerId`", `"PlanetId`", `"ShipBlueprintId`", `"Name`", `"CreatedAt`") VALUES ('$secondShipId', '$($secondGame.playerId)', '$secondHomeworldId', '$($blueprint.id)', 'Smoke Defender', NOW());"
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $insertSecondShipSql | Out-Null
+    $secondFleet = Invoke-Api -Path '/api/game/living-galaxy/fleets' -Method POST -Session $secondCommanderSession -Body @{
+        planetId = $secondHomeworldId
+        name = 'Smoke Defender'
+        shipIds = @($secondShipId)
     }
 
     $firstCommanderIdentity = Invoke-Api -Path '/api/auth/me' -Session $firstCommanderSession
@@ -522,6 +534,18 @@ try {
         Fail('Refueling did not transfer deuterium into the fleet fuel reserve')
     }
 
+    Write-Step "Delivering an incoming attack alert to the defending commander"
+    $alertCommandId = [Guid]::NewGuid().ToString()
+    $insertAlertSql = "INSERT INTO `"FlightCommands`" (`"Id`", `"FleetId`", `"Sequence`", `"Type`", `"Status`", `"SpeedMode`", `"TargetGalaxy`", `"TargetSystem`", `"TargetPosition`", `"TargetFleetId`", `"DurationMinutes`", `"ManifestMaterials`", `"ManifestDeuterium`", `"StartedAt`", `"CompletesAt`") VALUES ('$alertCommandId', '$($combatFleet.id)', 1, 3, 2, 2, $($secondCommanderPlanets[0].galaxy), $($secondCommanderPlanets[0].system), $($secondCommanderPlanets[0].position), '$($secondFleet.id)', 0, 0, 0, NOW(), NOW() + INTERVAL '10 minutes'); UPDATE `"Fleets`" SET `"Status`" = 3, `"CurrentCommandSequence`" = 1 WHERE `"Id`" = '$($combatFleet.id)';"
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $insertAlertSql | Out-Null
+    $defenderEvents = Invoke-Api -Path '/api/game/events/?limit=50' -Method GET -Session $secondCommanderSession
+    $attackAlert = @($defenderEvents.events | Where-Object { $_.type -eq 'IncomingAttack' })[0]
+    if ($null -eq $attackAlert -or $attackAlert.data.targetFleetId -ne $secondFleet.id) {
+        Fail('The defending commander did not receive the incoming attack alert')
+    }
+    $clearAlertCommandSql = "DELETE FROM `"FlightCommands`" WHERE `"Id`" = '$alertCommandId'; UPDATE `"Fleets`" SET `"Status`" = 1, `"CurrentCommandSequence`" = 0 WHERE `"Id`" = '$($combatFleet.id)';"
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $clearAlertCommandSql | Out-Null
+
     Write-Step "Validating permanent fields and physical pirate contacts"
     $systemView = Invoke-Api -Path "/api/game/living-galaxy/system?galaxy=$($game.galaxy)&system=$($game.system)" -Method GET
     if ($systemView.fields.Count -lt 4 -or $systemView.fields.Count -gt 6) {
@@ -531,6 +555,47 @@ try {
     if ($null -eq $pirate -or [string]::IsNullOrWhiteSpace($pirate.id)) {
         Fail('The system did not contain a physical pirate fleet')
     }
+
+    Write-Step "Completing reconnaissance and storing a persistent scan report"
+    $enableScannerSql = "UPDATE `"FleetShips`" SET `"ScanRange`" = 100 WHERE `"FleetId`" = '$($combatFleet.id)';"
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $enableScannerSql | Out-Null
+    $reconPlan = @{
+        commands = @(
+            @{
+                type = 'Recon'; speedMode = 'Cruise'
+                targetGalaxy = $game.galaxy; targetSystem = $game.system; targetPosition = $pirate.position
+                targetFleetId = $null; targetObjectId = $null; durationMinutes = 0
+                manifestMaterials = 0; manifestDeuterium = 0
+            },
+            @{
+                type = 'Return'; speedMode = 'Economy'
+                targetGalaxy = $null; targetSystem = $null; targetPosition = $null
+                targetFleetId = $null; targetObjectId = $null; durationMinutes = 0
+                manifestMaterials = 0; manifestDeuterium = 0
+            }
+        )
+    }
+    Invoke-Api -Path "/api/game/living-galaxy/fleets/$($combatFleet.id)/plan" -Method PUT -Body $reconPlan | Out-Null
+    Invoke-Api -Path "/api/game/living-galaxy/fleets/$($combatFleet.id)/launch" -Method POST | Out-Null
+    $forceReconSql = "UPDATE `"FlightCommands`" SET `"CompletesAt`" = NOW() - INTERVAL '1 second' WHERE `"FleetId`" = '$($combatFleet.id)' AND `"Status`" = 2;"
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $forceReconSql | Out-Null
+    Invoke-Api -Path '/api/game/living-galaxy/fleets' -Method GET | Out-Null
+    $eventFeed = Invoke-Api -Path '/api/game/events/?limit=50' -Method GET
+    $reconReport = @($eventFeed.events | Where-Object { $_.type -eq 'ReconReport' })[0]
+    $reportedPirate = if ($null -ne $reconReport) {
+        @($reconReport.data.contacts | Where-Object { $_.fleetId -eq $pirate.id })[0]
+    }
+    else {
+        $null
+    }
+    if ($null -eq $reconReport -or $null -eq $reportedPirate -or -not $reportedPirate.canAttack) {
+        Fail('Reconnaissance did not persist an actionable pirate contact')
+    }
+    Invoke-Api -Path "/api/game/events/$($reconReport.id)/read" -Method POST | Out-Null
+    $forceReconReturnSql = "UPDATE `"FlightCommands`" SET `"CompletesAt`" = NOW() - INTERVAL '1 second' WHERE `"FleetId`" = '$($combatFleet.id)' AND `"Status`" = 2;"
+    docker compose exec -T postgres psql -U galaxy -d $tempDbName -v ON_ERROR_STOP=1 -c $forceReconReturnSql | Out-Null
+    Invoke-Api -Path '/api/game/living-galaxy/fleets' -Method GET | Out-Null
+    Invoke-Api -Path "/api/game/living-galaxy/fleets/$($combatFleet.id)/land" -Method POST | Out-Null
 
     Write-Step "Launching attack, resolving a simultaneous round and creating debris"
     $combatPlan = @{

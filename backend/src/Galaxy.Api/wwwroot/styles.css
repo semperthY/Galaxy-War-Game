@@ -218,6 +218,13 @@ svg {
     text-transform: uppercase;
 }
 
+.nav-item .nav-event-badge {
+    position: absolute;
+    top: 5px;
+    right: 7px;
+    margin-left: 0;
+}
+
 .nav-item.locked {
     cursor: default;
     opacity: 0.48;

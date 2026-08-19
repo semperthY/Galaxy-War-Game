@@ -9,6 +9,7 @@ namespace Galaxy.Api.Endpoints;
 internal static class LivingGalaxyProcessor
 {
     private static readonly SemaphoreSlim ProcessGate = new(1, 1);
+    private static readonly JsonSerializerOptions EventJsonOptions = new(JsonSerializerDefaults.Web);
 
     public static async Task EnsureWorldAsync(ApplicationDbContext db, DateTime now, CancellationToken token)
     {
@@ -47,9 +48,51 @@ internal static class LivingGalaxyProcessor
         finally { ProcessGate.Release(); }
     }
 
+    public static async Task CreateAttackAlertAsync(
+        ApplicationDbContext db,
+        Fleet attacker,
+        DateTime now,
+        CancellationToken token)
+    {
+        var command = attacker.Commands.SingleOrDefault(x =>
+            x.Status == FlightCommandStatus.Active &&
+            x.Type == FlightCommandType.Attack &&
+            x.TargetFleetId != null);
+        if (command is null ||
+            await db.GameEvents.AnyAsync(x => x.SourceCommandId == command.Id, token)) return;
+
+        var target = await db.Fleets.AsNoTracking().SingleOrDefaultAsync(
+            x => x.Id == command.TargetFleetId && x.PlayerId != null,
+            token);
+        if (target?.PlayerId is not Guid defenderId || defenderId == attacker.PlayerId) return;
+
+        db.GameEvents.Add(new GameEvent
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = defenderId,
+            Type = GameEventType.IncomingAttack,
+            Title = "Тревога: обнаружена атака",
+            Body = $"Флот «{attacker.Name}» направляется к флоту «{target.Name}».",
+            SourceCommandId = command.Id,
+            CreatedAt = now,
+            DataJson = JsonSerializer.Serialize(new
+            {
+                attackerFleetId = attacker.Id,
+                attackerName = attacker.Name,
+                targetFleetId = target.Id,
+                targetName = target.Name,
+                galaxy = command.TargetGalaxy,
+                system = command.TargetSystem,
+                position = command.TargetPosition,
+                arrivesAt = command.CompletesAt
+            }, EventJsonOptions)
+        });
+    }
+
     private static async Task ProcessCoreAsync(ApplicationDbContext db, DateTime now, CancellationToken token)
     {
         await EnsureWorldAsync(db, now, token);
+        await EnsureAttackAlertsAsync(db, now, token);
         var services = await db.ShipServiceOrders.Where(x => x.CompletesAt <= now).ToListAsync(token);
         if (services.Count > 0)
         {
@@ -78,9 +121,11 @@ internal static class LivingGalaxyProcessor
             {
                 fleet.FuelReserve += FlightRules.FuelCost(fleet, command);
                 Fail(fleet, command, now, "Некорректная команда отменена: координаты цели должны быть не меньше 1. Топливо возвращено.");
+                await CreateAttackAlertAsync(db, fleet, now, token);
                 continue;
             }
             await CompleteCommandAsync(db, fleet, command, now, token);
+            await CreateAttackAlertAsync(db, fleet, now, token);
         }
 
         var battles = await db.Battles.Where(x => x.Status != BattleStatus.Completed && x.ResolveAt <= now).ToListAsync(token);
@@ -112,8 +157,44 @@ internal static class LivingGalaxyProcessor
                 Move(fleet, command);
                 var scanRange = fleet.Ships.Select(x => x.ScanRange).DefaultIfEmpty(0).Max();
                 var scanPositions = (int)decimal.Floor(scanRange);
-                var contacts = await db.Fleets.CountAsync(x => x.Id != fleet.Id && x.Status != FleetStatus.Landed && x.GalaxyNumber == fleet.GalaxyNumber && x.SystemNumber == fleet.SystemNumber && x.Position >= fleet.Position - scanPositions && x.Position <= fleet.Position + scanPositions, token);
-                FlightRules.FinishAndAdvance(fleet, command, now, $"Разведка завершена: обнаружено контактов — {contacts}."); break;
+                var contacts = await db.Fleets.AsNoTracking()
+                    .Where(x => x.Id != fleet.Id && x.Status != FleetStatus.Landed &&
+                        x.GalaxyNumber == fleet.GalaxyNumber && x.SystemNumber == fleet.SystemNumber &&
+                        x.Position >= fleet.Position - scanPositions && x.Position <= fleet.Position + scanPositions)
+                    .Select(x => new
+                    {
+                        fleetId = x.Id,
+                        x.Name,
+                        x.IsPirate,
+                        shipCount = x.Ships.Count,
+                        x.Position,
+                        canAttack = x.PlayerId != fleet.PlayerId
+                    })
+                    .OrderBy(x => x.Position).ToListAsync(token);
+                if (fleet.PlayerId is Guid reconPlayerId)
+                {
+                    db.GameEvents.Add(new GameEvent
+                    {
+                        Id = Guid.NewGuid(),
+                        PlayerId = reconPlayerId,
+                        Type = GameEventType.ReconReport,
+                        Title = $"Разведка {fleet.GalaxyNumber}:{fleet.SystemNumber}:{fleet.Position}",
+                        Body = contacts.Count == 0
+                            ? "Сканирование завершено. Флоты не обнаружены."
+                            : $"Сканирование завершено. Обнаружено флотов: {contacts.Count}.",
+                        SourceCommandId = command.Id,
+                        CreatedAt = now,
+                        DataJson = JsonSerializer.Serialize(new
+                        {
+                            galaxy = fleet.GalaxyNumber,
+                            system = fleet.SystemNumber,
+                            position = fleet.Position,
+                            scanRange,
+                            contacts
+                        }, EventJsonOptions)
+                    });
+                }
+                FlightRules.FinishAndAdvance(fleet, command, now, $"Разведка завершена: обнаружено контактов — {contacts.Count}."); break;
             case FlightCommandType.Return:
                 var home = await db.Planets.Include(x => x.StarSystem).SingleOrDefaultAsync(x => x.Id == fleet.HomePlanetId, token);
                 if (home is null) { Fail(fleet, command, now, "Домашняя планета недоступна."); break; }
@@ -277,5 +358,21 @@ internal static class LivingGalaxyProcessor
         command.Status = FlightCommandStatus.Failed; command.CompletedAt = now; command.Outcome = reason;
         var next = fleet.Commands.Where(x => x.Sequence > command.Sequence && x.Status == FlightCommandStatus.Planned).OrderBy(x => x.Sequence).FirstOrDefault();
         if (next is null) fleet.Status = FleetStatus.Orbiting; else FlightRules.Activate(fleet, next, now);
+    }
+
+    private static async Task EnsureAttackAlertsAsync(
+        ApplicationDbContext db,
+        DateTime now,
+        CancellationToken token)
+    {
+        var attackers = await db.Fleets
+            .Include(x => x.Commands)
+            .Where(x => !x.IsPirate && x.Commands.Any(c =>
+                c.Status == FlightCommandStatus.Active &&
+                c.Type == FlightCommandType.Attack &&
+                c.TargetFleetId != null))
+            .ToListAsync(token);
+        foreach (var attacker in attackers)
+            await CreateAttackAlertAsync(db, attacker, now, token);
     }
 }

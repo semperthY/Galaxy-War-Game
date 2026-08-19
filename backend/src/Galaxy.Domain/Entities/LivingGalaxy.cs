@@ -80,6 +80,12 @@ public enum ShipServiceType
     HullRepair = 2
 }
 
+public enum GameEventType
+{
+    ReconReport = 1,
+    IncomingAttack = 2
+}
+
 public class Fleet
 {
     public Guid Id { get; set; }
@@ -224,6 +230,19 @@ public class BattleOrder
     public string TargetPriority { get; set; } = "Weakest";
     public bool Retreat { get; set; }
     public DateTime SubmittedAt { get; set; }
+}
+
+public class GameEvent
+{
+    public Guid Id { get; set; }
+    public Guid PlayerId { get; set; }
+    public GameEventType Type { get; set; }
+    public string Title { get; set; } = null!;
+    public string Body { get; set; } = null!;
+    public string DataJson { get; set; } = "{}";
+    public Guid? SourceCommandId { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? ReadAt { get; set; }
 }
 
 public class ShipServiceOrder

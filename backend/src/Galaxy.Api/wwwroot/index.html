@@ -7,10 +7,11 @@
         content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#050912">
     <title>Galaxy War Game</title>
-    <link rel="stylesheet" href="/styles.css?v=3">
+    <link rel="stylesheet" href="/styles.css?v=4">
     <link rel="stylesheet" href="/assembly-ui.css">
     <link rel="stylesheet" href="/galaxy-ui.css">
-    <link rel="stylesheet" href="/living-galaxy-ui.css?v=4">
+    <link rel="stylesheet" href="/living-galaxy-ui.css?v=5">
+    <link rel="stylesheet" href="/event-center-ui.css?v=1">
     <link rel="stylesheet" href="/dev-tools.css?v=3">
 </head>
 <body>
@@ -132,6 +133,11 @@
                 <a href="/game/operations" class="nav-item" data-page="operations">
                     <svg><use href="#icon-radar"></use></svg>
                     <span>Операции</span>
+                </a>
+                <a href="/game/events" class="nav-item" data-page="events">
+                    <svg><use href="#icon-command"></use></svg>
+                    <span>События</span>
+                    <small class="nav-event-badge" data-event-badge>0</small>
                 </a>
                 <a href="/game/battles" class="nav-item" data-page="battles">
                     <svg><use href="#icon-battle"></use></svg>
@@ -819,6 +825,7 @@
                         <button data-fleet-tab="service">Сервис</button>
                     </div>
                     <div class="living-tab active" data-fleet-view="groups">
+                        <div id="attackIntentPanel" class="attack-intent-panel" hidden></div>
                         <div class="living-split">
                             <section class="living-console">
                                 <span class="section-label">НОВАЯ ГРУППА</span><h3>Корабли резерва</h3>
@@ -864,6 +871,26 @@
                 <section id="battles" class="content-panel living-panel game-page" data-game-page="battles">
                     <div class="living-hero"><div><span class="section-label">БОЕВОЙ ЦЕНТР</span><h2>Бои и рапорты</h2><p>Раунд длится 90 секунд: 60 секунд на приказ и 30 на расчёт.</p></div><div id="battleSummary" class="living-summary">Нет активных боёв</div></div>
                     <div id="battleGrid" class="battle-grid"></div>
+                </section>
+
+                <section id="events" class="content-panel living-panel game-page" data-game-page="events">
+                    <div class="living-hero">
+                        <div><span class="section-label">КОМАНДНАЯ СЕТЬ</span><h2>Центр событий</h2><p>Разведывательные отчёты, боевые тревоги и оперативные действия.</p></div>
+                        <div id="eventUnreadCount" class="living-summary">0 новых</div>
+                    </div>
+                    <div id="eventCenter">
+                        <div class="event-toolbar">
+                            <div class="living-tabs">
+                                <button class="active" data-event-filter="unread">Новые</button>
+                                <button data-event-filter="all">Все</button>
+                            </div>
+                            <button data-event-read-all>Прочитать всё</button>
+                        </div>
+                        <div class="event-layout">
+                            <div id="eventList" class="event-list"></div>
+                            <section id="eventDetail" class="event-detail"></section>
+                        </div>
+                    </div>
                 </section>
 
                 <section id="galaxy" class="content-panel galaxy-panel game-page" data-game-page="galaxy">
@@ -927,8 +954,9 @@
 
     <script src="/assembly-ui.js?v=2"></script>
     <script src="/galaxy-ui.js"></script>
-    <script src="/living-galaxy-ui.js?v=4"></script>
+    <script src="/living-galaxy-ui.js?v=5"></script>
+    <script src="/event-center-ui.js?v=1"></script>
     <script src="/dev-tools.js?v=3"></script>
-    <script src="/app.js?v=3"></script>
+    <script src="/app.js?v=4"></script>
 </body>
 </html>
