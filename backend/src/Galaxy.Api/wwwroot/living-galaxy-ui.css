@@ -60,6 +60,14 @@
     padding: 10px 12px;
 }
 
+.flight-countdown {
+    display: block;
+    margin-top: 5px;
+    color: #79d8ff;
+    font-size: 11px;
+    font-weight: 700;
+}
+
 @media(max-width:580px) {
     .fleet-refuel-panel {
         grid-template-columns: minmax(0, 1fr) 92px;

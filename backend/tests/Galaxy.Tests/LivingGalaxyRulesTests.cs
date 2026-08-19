@@ -22,6 +22,28 @@ public class LivingGalaxyRulesTests
         Assert.Equal(1, fleet.CurrentCommandSequence);
     }
 
+    [Theory]
+    [InlineData(0, 1, 1)]
+    [InlineData(1, 0, 1)]
+    [InlineData(1, 1, 0)]
+    public void ReplacePlan_RejectsCoordinatesBelowOne(int galaxy, int system, int position)
+    {
+        var fleet = CreateFleet();
+        fleet.Ships.Single().ScanRange = 10;
+        var command = new FlightCommand
+        {
+            Type = FlightCommandType.Recon,
+            TargetGalaxy = galaxy,
+            TargetSystem = system,
+            TargetPosition = position
+        };
+
+        var error = Assert.Throws<InvalidOperationException>(() =>
+            FlightRules.ReplacePlan(fleet, [command]));
+
+        Assert.Equal("Координаты цели должны быть целыми числами не меньше 1.", error.Message);
+    }
+
     [Fact]
     public void FinishWithoutNextCommand_LeavesFleetVulnerableInOrbit()
     {

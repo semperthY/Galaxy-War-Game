@@ -63,10 +63,23 @@ internal static class LivingGalaxyProcessor
         }
 
         var dueFleets = await db.Fleets.Where(x => !x.IsPirate).Include(x => x.Ships)
-            .Include(x => x.Commands).Where(x => x.Commands.Any(c => c.Status == FlightCommandStatus.Active && c.CompletesAt != null && c.CompletesAt <= now)).ToListAsync(token);
+            .Include(x => x.Commands).Where(x => x.Commands.Any(c =>
+                c.Status == FlightCommandStatus.Active &&
+                ((c.CompletesAt != null && c.CompletesAt <= now) ||
+                 ((c.Type == FlightCommandType.Flight || c.Type == FlightCommandType.Recon ||
+                   c.Type == FlightCommandType.Attack || c.Type == FlightCommandType.Mine) &&
+                  (c.TargetGalaxy == null || c.TargetGalaxy < 1 ||
+                   c.TargetSystem == null || c.TargetSystem < 1 ||
+                   c.TargetPosition == null || c.TargetPosition < 1))))).ToListAsync(token);
         foreach (var fleet in dueFleets)
         {
             var command = fleet.Commands.Single(x => x.Status == FlightCommandStatus.Active);
+            if (!FlightRules.HasValidTargetCoordinates(command))
+            {
+                fleet.FuelReserve += FlightRules.FuelCost(fleet, command);
+                Fail(fleet, command, now, "Некорректная команда отменена: координаты цели должны быть не меньше 1. Топливо возвращено.");
+                continue;
+            }
             await CompleteCommandAsync(db, fleet, command, now, token);
         }
 
